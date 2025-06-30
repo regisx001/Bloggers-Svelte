@@ -4,6 +4,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 	import { base } from '$app/paths';
+	import { enhance } from '$app/forms';
+	import type { PageProps } from './$types';
+
+	let { data, form }: PageProps = $props();
 
 	const id = $props.id();
 </script>
@@ -22,17 +26,23 @@
 		</div>
 		<div class="flex flex-1 items-center justify-center">
 			<div class="w-full max-w-xs">
-				<form class="flex flex-col gap-6">
+				<form class="flex flex-col gap-6" method="post" use:enhance>
 					<div class="flex flex-col items-center gap-2 text-center">
 						<h1 class="text-2xl font-bold">Login to your account</h1>
 						<p class="text-muted-foreground text-sm text-balance">
-							Enter your email below to login to your account
+							Enter your username below to login to your account
 						</p>
 					</div>
 					<div class="grid gap-6">
 						<div class="grid gap-3">
-							<Label for="email-{id}">Email</Label>
-							<Input id="email-{id}" type="email" placeholder="m@example.com" required />
+							<Label for="username-{id}">username</Label>
+							<Input
+								name="username"
+								id="username-{id}"
+								type="username"
+								placeholder="m@example.com"
+								required
+							/>
 						</div>
 						<div class="grid gap-3">
 							<div class="flex items-center">
@@ -41,7 +51,13 @@
 									Forgot your password?
 								</a>
 							</div>
-							<Input id="password-{id}" type="password" required />
+							<Input
+								name="password"
+								id="password-{id}"
+								placeholder="password"
+								type="password"
+								required
+							/>
 						</div>
 						<Button type="submit" class="w-full">Login</Button>
 						<div
@@ -68,6 +84,12 @@
 				</form>
 			</div>
 		</div>
+
+		<pre class="pre">
+			<code>
+				{JSON.stringify(form, null, 2)}
+			</code>
+		</pre>
 	</div>
 	<div class="bg-muted relative hidden lg:block">
 		<img
