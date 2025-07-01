@@ -2,8 +2,10 @@ import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { LOGIN_URL } from '$lib/urls';
 
-export const load: PageServerLoad = () => {
-	return;
+export const load: PageServerLoad = ({ locals }) => {
+	if (locals.user?.accessToken) {
+		throw redirect(308, '/');
+	}
 };
 
 export const actions: Actions = {
