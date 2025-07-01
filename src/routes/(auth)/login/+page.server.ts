@@ -52,7 +52,7 @@ export const actions: Actions = {
 			cookies.set('access', jsonData.accessToken, {
 				path: '/',
 				httpOnly: true,
-				maxAge: jsonData.expireIn / 1000
+				maxAge: 60 * 60
 			});
 			throw redirect(300, '/');
 		}
