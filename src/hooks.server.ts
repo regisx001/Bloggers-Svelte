@@ -1,4 +1,4 @@
-import { USER_INFO_URL } from '$lib/urls';
+import { REFRESH_TOKEN_URL, USER_INFO_URL } from '$lib/urls';
 import type { Handle } from '@sveltejs/kit';
 
 async function getUserInfo(accessToken: string): Promise<User> {
@@ -21,8 +21,26 @@ export const handle: Handle = async ({ resolve, event }) => {
 	}
 
 	if (!access) {
-		// TODO: REFRESH TOKEN
-		// RefreshToken Logic
+		const refreshResponse = await fetch(REFRESH_TOKEN_URL, {
+			method: 'POST',
+			body: JSON.stringify({ refreshToken: refresh }),
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (refreshResponse.ok) {
+			const accessToken = (await refreshResponse.json()).accessToken;
+			event.cookies.set('access', accessToken, {
+				httpOnly: true,
+				path: '/',
+				maxAge: 60 * 60
+			});
+
+			const userInfo = await getUserInfo(accessToken);
+			event.locals.user = userInfo;
+		}
 		return resolve(event);
 	}
 
