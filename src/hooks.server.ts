@@ -1,4 +1,4 @@
-import { REFRESH_TOKEN_URL, USER_INFO_URL } from '$lib/urls';
+import { REFRESH_TOKEN_URL, USER_INFO_URL, VERIFY_TOKEN_URL } from '$lib/urls';
 import type { Handle } from '@sveltejs/kit';
 
 async function getUserInfo(accessToken: string): Promise<User> {
@@ -39,16 +39,25 @@ export const handle: Handle = async ({ resolve, event }) => {
 			});
 
 			const userInfo = await getUserInfo(accessToken);
-			event.locals.user = userInfo;
+			event.locals.user = { ...userInfo, accessToken };
 		}
 		return resolve(event);
 	}
 
-	// TODO: VERIFY TOKEN
-	// verify token validity
+	const verifyResponse = await fetch(VERIFY_TOKEN_URL, {
+		method: 'POST',
+		body: JSON.stringify({ token: access }),
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json'
+		}
+	});
 
-	const userInfo = await getUserInfo(access);
-	event.locals.user = userInfo;
+	if (verifyResponse.ok) {
+		const userInfo = await getUserInfo(access);
+		event.locals.user = { ...userInfo, accessToken: access };
+		return resolve(event);
+	}
 
 	return resolve(event);
 };
