@@ -118,6 +118,16 @@
 					<NavigationMenu.Item>
 						<NavigationMenu.Link>
 							{#snippet child()}
+								<a href="{base}/dashboard" class="{navigationMenuTriggerStyle()} cursor-pointer"
+									>Dashboard</a
+								>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+
+					<NavigationMenu.Item>
+						<NavigationMenu.Link>
+							{#snippet child()}
 								<form action="/logout" method="post" use:enhance>
 									<button class="{navigationMenuTriggerStyle()} cursor-pointer" type="submit"
 										>Logout</button
