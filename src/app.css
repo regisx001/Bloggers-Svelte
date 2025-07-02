@@ -7,6 +7,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Loading spinner for page navigation */
+.loading-spinner {
+	@apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite];
+}
+
+/* Page loading overlay */
+.page-loading {
+	@apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

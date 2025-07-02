@@ -18,13 +18,13 @@
 
 {#snippet userInfo(user: User)}
 	<Avatar.Root class="size-8 rounded-lg grayscale hover:grayscale-0">
-		<Avatar.Image src={PUBLIC_BACKEND_URL + user.avatar} alt={user.username} />
-		<Avatar.Fallback class="rounded-lg">{user.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+		<Avatar.Image src={PUBLIC_BACKEND_URL + user?.avatar} alt={user?.username} />
+		<Avatar.Fallback class="rounded-lg">{user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
 	</Avatar.Root>
 	<div class="grid flex-1 text-left text-sm leading-tight">
-		<span class="truncate font-medium">{user.username}</span>
+		<span class="truncate font-medium">{user?.username}</span>
 		<span class="text-muted-foreground truncate text-xs">
-			{user.email}
+			{user?.email}
 		</span>
 	</div>
 {/snippet}
