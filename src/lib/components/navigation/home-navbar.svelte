@@ -7,6 +7,7 @@
 	import CircleIcon from '@lucide/svelte/icons/circle';
 	import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
 	import { base } from '$app/paths';
+	import { enhance } from '$app/forms';
 
 	const components: { title: string; href: string; description: string }[] = [
 		{
@@ -50,6 +51,8 @@
 		href: string;
 		content: string;
 	};
+
+	let { user, isLoggedIn }: { user: User; isLoggedIn: boolean } = $props();
 </script>
 
 {#snippet ListItem({ title, content, href, class: className, ...restProps }: ListItemProps)}
@@ -84,6 +87,48 @@
 		<NavigationMenu.Root style="width: 100%;" viewport={false}>
 			<NavigationMenu.List>
 				<NavigationMenu.Item>
+					<NavigationMenu.Link>
+						{#snippet child()}
+							<a href="{base}/" class="{navigationMenuTriggerStyle()} cursor-pointer">Home</a>
+						{/snippet}
+					</NavigationMenu.Link>
+				</NavigationMenu.Item>
+
+				{#if !isLoggedIn}
+					<NavigationMenu.Item>
+						<NavigationMenu.Link>
+							{#snippet child()}
+								<a href="{base}/login" class="{navigationMenuTriggerStyle()} cursor-pointer"
+									>Login</a
+								>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+
+					<NavigationMenu.Item>
+						<NavigationMenu.Link>
+							{#snippet child()}
+								<a href="{base}/register" class="{navigationMenuTriggerStyle()} cursor-pointer"
+									>Register</a
+								>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+				{:else}
+					<NavigationMenu.Item>
+						<NavigationMenu.Link>
+							{#snippet child()}
+								<form action="/logout" method="post" use:enhance>
+									<button class="{navigationMenuTriggerStyle()} cursor-pointer" type="submit"
+										>Logout</button
+									>
+								</form>
+							{/snippet}
+						</NavigationMenu.Link>
+					</NavigationMenu.Item>
+				{/if}
+
+				<!-- <NavigationMenu.Item>
 					<NavigationMenu.Trigger>Home</NavigationMenu.Trigger>
 					<NavigationMenu.Content>
 						<ul class="grid gap-2 p-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
@@ -197,7 +242,7 @@
 							</li>
 						</ul>
 					</NavigationMenu.Content>
-				</NavigationMenu.Item>
+				</NavigationMenu.Item> -->
 			</NavigationMenu.List>
 		</NavigationMenu.Root>
 	</div>

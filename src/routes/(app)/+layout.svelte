@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import HomeNavbar from '$lib/components/navigation/home-navbar.svelte';
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
-<HomeNavbar />
+<HomeNavbar user={data.user} isLoggedIn={!!data.user?.accessToken} />
 
 <main class="w-full overflow-y-scroll">
 	{@render children?.()}
