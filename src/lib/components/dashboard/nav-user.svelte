@@ -1,14 +1,15 @@
 <script lang="ts">
-	import CreditCardIcon from "@tabler/icons-svelte/icons/credit-card";
-	import DotsVerticalIcon from "@tabler/icons-svelte/icons/dots-vertical";
-	import LogoutIcon from "@tabler/icons-svelte/icons/logout";
-	import NotificationIcon from "@tabler/icons-svelte/icons/notification";
-	import UserCircleIcon from "@tabler/icons-svelte/icons/user-circle";
-	import * as Avatar from "$lib/components/ui/avatar/index.js";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+	import CreditCardIcon from '@tabler/icons-svelte/icons/credit-card';
+	import DotsVerticalIcon from '@tabler/icons-svelte/icons/dots-vertical';
+	import LogoutIcon from '@tabler/icons-svelte/icons/logout';
+	import NotificationIcon from '@tabler/icons-svelte/icons/notification';
+	import UserCircleIcon from '@tabler/icons-svelte/icons/user-circle';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { enhance } from '$app/forms';
 
-	let { user }: { user: { name: string; email: string; avatar: string } } = $props();
+	let { user }: { user: User } = $props();
 
 	const sidebar = Sidebar.useSidebar();
 </script>
@@ -24,11 +25,11 @@
 						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 					>
 						<Avatar.Root class="size-8 rounded-lg grayscale">
-							<Avatar.Image src={user.avatar} alt={user.name} />
+							<Avatar.Image src={user.avatar} alt={user.username} />
 							<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
-							<span class="truncate font-medium">{user.name}</span>
+							<span class="truncate font-medium">{user.username}</span>
 							<span class="text-muted-foreground truncate text-xs">
 								{user.email}
 							</span>
@@ -39,18 +40,18 @@
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content
 				class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
-				side={sidebar.isMobile ? "bottom" : "right"}
+				side={sidebar.isMobile ? 'bottom' : 'right'}
 				align="end"
 				sideOffset={4}
 			>
 				<DropdownMenu.Label class="p-0 font-normal">
 					<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 						<Avatar.Root class="size-8 rounded-lg">
-							<Avatar.Image src={user.avatar} alt={user.name} />
+							<Avatar.Image src={user.avatar} alt={user.username} />
 							<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
-							<span class="truncate font-medium">{user.name}</span>
+							<span class="truncate font-medium">{user.username}</span>
 							<span class="text-muted-foreground truncate text-xs">
 								{user.email}
 							</span>
@@ -73,10 +74,14 @@
 					</DropdownMenu.Item>
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item>
-					<LogoutIcon />
-					Log out
-				</DropdownMenu.Item>
+				<form action="/logout" method="post" use:enhance>
+					<button class="w-full" type="submit">
+						<DropdownMenu.Item>
+							<LogoutIcon />
+							Log out
+						</DropdownMenu.Item>
+					</button>
+				</form>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</Sidebar.MenuItem>
