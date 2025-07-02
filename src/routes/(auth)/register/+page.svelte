@@ -8,6 +8,14 @@
 	const id = $props.id();
 </script>
 
+<svelte:head>
+	<title>Register | Blog App</title>
+	<meta
+		name="description"
+		content="Create a new Blog App account to access your dashboard and manage your posts."
+	/>
+</svelte:head>
+
 <!-- TODO: VALIDATION MESSAGES -->
 <form class="flex flex-col gap-6" method="post" use:enhance>
 	<div class="flex flex-col items-center gap-2 text-center">
