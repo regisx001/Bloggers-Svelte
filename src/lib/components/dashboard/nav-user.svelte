@@ -8,6 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { enhance } from '$app/forms';
+	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	let { user }: { user: User } = $props();
 
@@ -24,9 +25,11 @@
 						size="lg"
 						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 					>
-						<Avatar.Root class="size-8 rounded-lg grayscale">
-							<Avatar.Image src={user.avatar} alt={user.username} />
-							<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
+						<Avatar.Root class="size-8 rounded-lg grayscale hover:grayscale-0">
+							<Avatar.Image src={PUBLIC_BACKEND_URL + user.avatar} alt={user.username} />
+							<Avatar.Fallback class="rounded-lg"
+								>{user.username.slice(0, 2).toUpperCase()}</Avatar.Fallback
+							>
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
 							<span class="truncate font-medium">{user.username}</span>
