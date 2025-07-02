@@ -20,6 +20,7 @@
 	import NavUser from './nav-user.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
+	import { base } from '$app/paths';
 
 	const data = {
 		user: {
@@ -30,30 +31,35 @@
 		},
 		navMain: [
 			{
-				title: 'Dashboard',
-				url: '#',
+				title: 'Overview',
+				url: '/dashboard',
 				icon: DashboardIcon
 			},
 			{
-				title: 'Lifecycle',
-				url: '#',
-				icon: ListDetailsIcon
-			},
-			{
-				title: 'Analytics',
-				url: '#',
-				icon: ChartBarIcon
-			},
-			{
-				title: 'Projects',
-				url: '#',
-				icon: FolderIcon
-			},
-			{
-				title: 'Team',
-				url: '#',
-				icon: UsersIcon
+				title: 'Insight',
+				url: '/dashboard/insight',
+				icon: DashboardIcon
 			}
+			// {
+			// 	title: 'Lifecycle',
+			// 	url: '#',
+			// 	icon: ListDetailsIcon
+			// },
+			// {
+			// 	title: 'Analytics',
+			// 	url: '#',
+			// 	icon: ChartBarIcon
+			// },
+			// {
+			// 	title: 'Projects',
+			// 	url: '#',
+			// 	icon: FolderIcon
+			// },
+			// {
+			// 	title: 'Team',
+			// 	url: '#',
+			// 	icon: UsersIcon
+			// }
 		],
 		navClouds: [
 			{
@@ -148,9 +154,9 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton class="data-[slot=sidebar-menu-button]:!p-1.5">
 					{#snippet child({ props })}
-						<a href="##" {...props}>
+						<a href="{base}/" {...props}>
 							<InnerShadowTopIcon class="!size-5" />
-							<span class="text-base font-semibold">Acme Inc.</span>
+							<span class="text-base font-semibold">Bloggers</span>
 						</a>
 					{/snippet}
 				</Sidebar.MenuButton>
@@ -159,8 +165,8 @@
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavMain items={data.navMain} />
-		<NavDocuments items={data.documents} />
-		<NavSecondary items={data.navSecondary} class="mt-auto" />
+		<!-- <NavDocuments items={data.documents} /> -->
+		<!-- <NavSecondary items={data.navSecondary} class="mt-auto" /> -->
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		<NavUser user={data.user} />
