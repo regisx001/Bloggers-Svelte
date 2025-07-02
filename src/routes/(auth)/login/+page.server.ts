@@ -30,33 +30,43 @@ export const actions: Actions = {
 			};
 		}
 
-		const response = await fetch(LOGIN_URL, {
-			method: 'POST',
-			body: JSON.stringify(formData),
-			headers: { 'content-type': 'application/json' }
-		});
-		const jsonData: LoginResponse = await response.json();
+		try {
+			const response = await fetch(LOGIN_URL, {
+				method: 'POST',
+				body: JSON.stringify(formData),
+				headers: { 'content-type': 'application/json' }
+			});
 
-		if (!response.ok) {
+			const jsonData: LoginResponse = await response.json();
+
+			if (!response.ok) {
+				return {
+					username: { data: formData['username'] }
+					// error: jsonData?.detail
+				};
+			}
+
+			if (response.status === 200) {
+				cookies.set('refresh', jsonData.refreshToken, {
+					path: '/',
+					httpOnly: true,
+					maxAge: 60 * 60 * 24 * 90
+				});
+
+				cookies.set('access', jsonData.accessToken, {
+					path: '/',
+					httpOnly: true,
+					maxAge: 60 * 60
+				});
+				throw redirect(300, '/');
+			}
+		} catch (error) {
+			// Handle network errors, JSON parsing errors, etc.
+			console.error('Login API error:', error);
 			return {
-				username: { data: formData['username'] }
-				// error: jsonData?.detail
+				username: { data: formData['username'] },
+				error: 'Network error. Please try again.'
 			};
-		}
-
-		if (response.status === 200) {
-			cookies.set('refresh', jsonData.refreshToken, {
-				path: '/',
-				httpOnly: true,
-				maxAge: 60 * 60 * 24 * 90
-			});
-
-			cookies.set('access', jsonData.accessToken, {
-				path: '/',
-				httpOnly: true,
-				maxAge: 60 * 60
-			});
-			throw redirect(300, '/');
 		}
 	}
 };
