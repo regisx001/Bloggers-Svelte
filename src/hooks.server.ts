@@ -1,5 +1,5 @@
 import { REFRESH_TOKEN_URL, USER_INFO_URL, VERIFY_TOKEN_URL } from '$lib/urls';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleFetch } from '@sveltejs/kit';
 
 async function getUserInfo(accessToken: string): Promise<User> {
 	const response = await (
@@ -60,4 +60,9 @@ export const handle: Handle = async ({ resolve, event }) => {
 	}
 
 	return resolve(event);
+};
+
+export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
+	request.headers.set('Authorization', event.cookies.get('access') || '');
+	return fetch(request);
 };
