@@ -14,6 +14,7 @@ Home page
 
 <a href="/login">Login</a>
 <a href="/register">Register</a>
+<a href="/dashboard/account?tab=verification">Verification</a>
 
 <form action="/logout" method="post" use:enhance>
 	<button type="submit">Logout</button>

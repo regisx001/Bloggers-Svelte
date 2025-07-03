@@ -22,10 +22,13 @@
 	import { enhance } from '$app/forms';
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 	import { REGEXP_ONLY_DIGITS } from 'bits-ui';
+	import { page } from '$app/state';
 
 	let mounted = false;
 
 	let { data, form } = $props();
+
+	let selectedTab = page.url.searchParams.get('tab');
 
 	onMount(() => {
 		mounted = true;
@@ -69,7 +72,7 @@
 		</Button>
 	</div>
 
-	<Tabs.Root value="verification" class="space-y-6">
+	<Tabs.Root value={selectedTab || 'profile'} class="space-y-6">
 		<Tabs.List class="grid w-full grid-cols-3">
 			<Tabs.Trigger value="profile">Profile</Tabs.Trigger>
 			<Tabs.Trigger value="verification">Verification</Tabs.Trigger>
@@ -117,62 +120,6 @@
 					</Button>
 				</Card.Footer>
 			</Card.Root>
-
-			<!-- Account Information -->
-			<div class="grid gap-6 md:grid-cols-2">
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Account Details</Card.Title>
-						<Card.Description>Your account information and status</Card.Description>
-					</Card.Header>
-					<Card.Content class="space-y-4">
-						<div class="space-y-2">
-							<div class="text-sm font-medium">User ID</div>
-							<p class="text-muted-foreground bg-muted rounded p-2 font-mono text-xs break-all">
-								{data.user?.id}
-							</p>
-						</div>
-						<div class="space-y-2">
-							<div class="text-sm font-medium">Username</div>
-							<p class="text-sm">{data.user?.username}</p>
-						</div>
-						<div class="space-y-2">
-							<div class="text-sm font-medium">Email Address</div>
-							<p class="text-sm">{data.user?.email}</p>
-						</div>
-						<div class="space-y-2">
-							<div class="text-sm font-medium">Account Status</div>
-							<Badge variant={data.user?.enabled ? 'default' : 'secondary'}>
-								{data.user?.enabled ? 'Enabled' : 'Disabled'}
-							</Badge>
-						</div>
-					</Card.Content>
-				</Card.Root>
-
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Timestamps</Card.Title>
-						<Card.Description>Account creation and modification dates</Card.Description>
-					</Card.Header>
-					<Card.Content class="space-y-4">
-						<div class="flex items-center space-x-2">
-							<Calendar class="text-muted-foreground h-4 w-4" />
-							<div class="space-y-1">
-								<p class="text-sm font-medium">Created</p>
-								<p class="text-muted-foreground text-sm">{formatDate(data.user?.createdAt)}</p>
-							</div>
-						</div>
-						<Separator.Root />
-						<div class="flex items-center space-x-2">
-							<Clock class="text-muted-foreground h-4 w-4" />
-							<div class="space-y-1">
-								<p class="text-sm font-medium">Last Updated</p>
-								<p class="text-muted-foreground text-sm">{formatDate(data.user?.updatedAt)}</p>
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
 
 			<!-- Permissions & Roles -->
 			<Card.Root>

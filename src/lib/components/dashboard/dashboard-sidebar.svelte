@@ -14,7 +14,6 @@
 	import SearchIcon from '@tabler/icons-svelte/icons/search';
 	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
 	import UsersIcon from '@tabler/icons-svelte/icons/users';
-	import NavDocuments from './nav-documents.svelte';
 	import NavMain from './nav-main.svelte';
 	import NavSecondary from './nav-secondary.svelte';
 	import NavUser from './nav-user.svelte';
