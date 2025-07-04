@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import DataTable from '$lib/components/data-tables/data-table.svelte';
+	import DataTable from './data-table-categories.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { createRawSnippet } from 'svelte';
 	let { data }: PageProps = $props();
 	import { renderSnippet } from '$lib/components/ui/data-table/index.js';
-	import DataTableActions from '$lib/components/data-tables/data-table-actions.svelte';
 	import DataTableCheckbox from '$lib/components/data-tables/data-table-checkbox.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table/index.js';
+	import DataTableCategoriesActions from './data-table-categories-actions.svelte';
 	const columns: ColumnDef<Category>[] = [
 		{
 			id: 'select',
@@ -56,15 +56,14 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				// You can pass whatever you need from `row.original` to the component
-				return renderComponent(DataTableActions, { id: row.original.id });
+				return renderComponent(DataTableCategoriesActions, { id: row.original.id });
 			}
 		}
 	];
 </script>
 
 <section class="p-6">
-	<DataTable data={data.categories?.content || []} {columns} />
+	<DataTable showHeader data={data.categories?.content || []} {columns} />
 	<!-- <pre class="pre">
 		{JSON.stringify(data.categories, null, 2)}
 		</pre> -->
