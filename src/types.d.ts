@@ -14,3 +14,43 @@ interface User {
 	createdAt: string;
 	updatedAt: string;
 }
+
+type Category = {
+	id: string;
+	title: string;
+	description: string;
+	image: string | null;
+	createdAt: string;
+	updatedAt: string;
+};
+
+type Pageable = {
+	pageNumber: number;
+	pageSize: number;
+	sort: {
+		sorted: boolean;
+		unsorted: boolean;
+		empty: boolean;
+	};
+	offset: number;
+	paged: boolean;
+	unpaged: boolean;
+};
+
+type Page<T> = {
+	content: T[];
+	pageable: Pageable;
+	totalPages: number;
+	totalElements: number;
+	last: boolean;
+	size: number;
+	number: number;
+	sort: {
+		sorted: boolean;
+		unsorted: boolean;
+		empty: boolean;
+	};
+	numberOfElements: number;
+	first: boolean;
+	empty: boolean;
+};

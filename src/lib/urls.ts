@@ -6,3 +6,5 @@ export const VERIFY_ACCOUNT_URL = PRIVATE_BACKEND_URL + '/auth/verify-account';
 export const VERIFY_TOKEN_URL = PRIVATE_BACKEND_URL + '/auth/verify-token';
 export const USER_INFO_URL = PRIVATE_BACKEND_URL + '/auth/me';
 export const REFRESH_TOKEN_URL = PRIVATE_BACKEND_URL + '/auth/refresh-token';
+
+export const CATEGORIES_URL = PRIVATE_BACKEND_URL + '/categories';
