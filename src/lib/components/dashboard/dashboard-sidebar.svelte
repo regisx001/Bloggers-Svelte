@@ -1,24 +1,19 @@
 <script lang="ts">
 	import CameraIcon from '@tabler/icons-svelte/icons/camera';
-	import ChartBarIcon from '@tabler/icons-svelte/icons/chart-bar';
 	import DashboardIcon from '@tabler/icons-svelte/icons/dashboard';
 	import DatabaseIcon from '@tabler/icons-svelte/icons/database';
 	import FileAiIcon from '@tabler/icons-svelte/icons/file-ai';
 	import FileDescriptionIcon from '@tabler/icons-svelte/icons/file-description';
 	import FileWordIcon from '@tabler/icons-svelte/icons/file-word';
-	import FolderIcon from '@tabler/icons-svelte/icons/folder';
 	import HelpIcon from '@tabler/icons-svelte/icons/help';
 	import InnerShadowTopIcon from '@tabler/icons-svelte/icons/inner-shadow-top';
-	import ListDetailsIcon from '@tabler/icons-svelte/icons/list-details';
 	import ReportIcon from '@tabler/icons-svelte/icons/report';
 	import SearchIcon from '@tabler/icons-svelte/icons/search';
 	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
-	import UsersIcon from '@tabler/icons-svelte/icons/users';
+	import Category from '@tabler/icons-svelte/icons/category';
 	import NavMain from './nav-main.svelte';
-	import NavSecondary from './nav-secondary.svelte';
 	import NavUser from './nav-user.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { ComponentProps } from 'svelte';
 	import { base } from '$app/paths';
 
 	const data = {
@@ -38,6 +33,11 @@
 				title: 'Insight',
 				url: '/dashboard/insight',
 				icon: DashboardIcon
+			},
+			{
+				title: 'Categories',
+				url: '/dashboard/categories',
+				icon: Category
 			}
 			// {
 			// 	title: 'Lifecycle',
