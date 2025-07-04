@@ -63,6 +63,8 @@ export const handle: Handle = async ({ resolve, event }) => {
 };
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
-	request.headers.set('Authorization', event.cookies.get('access') || '');
+	if (event.cookies.get('access')) {
+		request.headers.set('Authorization', 'Bearer ' + event.cookies.get('access'));
+	}
 	return fetch(request);
 };
