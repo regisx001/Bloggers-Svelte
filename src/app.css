@@ -17,6 +17,10 @@
 	@apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm;
 }
 
+button {
+	cursor: pointer;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

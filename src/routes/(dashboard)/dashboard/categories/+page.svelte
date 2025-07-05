@@ -17,8 +17,12 @@
 
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	// import { Textarea } from '$lib/components/ui/textarea/';
-	// import { toast } from 'svelte-sonner';
+	import TimeStamp from '$lib/components/time-stamp.svelte';
+
+	const timeStampSnippet = createRawSnippet(() => ({
+		render: () => '<TimeStamp />'
+	}));
+
 	const columns: ColumnDef<Category>[] = [
 		{
 			id: 'select',
@@ -39,6 +43,26 @@
 			enableHiding: false
 		},
 		{
+			accessorKey: 'image',
+			header: () => {
+				const updatedAtHeaderSnippet = createRawSnippet(() => ({
+					render: () => `<div class="">Image</div>`
+				}));
+				return renderSnippet(updatedAtHeaderSnippet, '');
+			},
+			cell: ({ row }) => {
+				const imageCellSnippet = createRawSnippet(() => ({
+					render: () =>
+						row.original.image
+							? `<a href="${row.original.image}" target="_blank" rel="noopener noreferrer">
+								<div class="h-8 w-14 bg-cover bg-center cursor-pointer hover:opacity-80 transition-opacity" style="background-image: url('${row.original.image}');"></div>
+							</a>`
+							: `<div class="h-8 w-14 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">No Image</div>`
+				}));
+				return renderSnippet(imageCellSnippet, '');
+			}
+		},
+		{
 			accessorKey: 'title',
 			header: 'Title'
 		},
@@ -53,8 +77,14 @@
 					render: () => `<div class="">Created At</div>`
 				}));
 				return renderSnippet(createdAtHeaderSnippet, '');
+			},
+			cell: ({ row }) => {
+				return renderComponent(TimeStamp, {
+					date: row.original.createdAt
+				});
 			}
 		},
+
 		{
 			accessorKey: 'updatedAt',
 			header: () => {
@@ -62,6 +92,11 @@
 					render: () => `<div class="">Updated At</div>`
 				}));
 				return renderSnippet(updatedAtHeaderSnippet, '');
+			},
+			cell: ({ row }) => {
+				return renderComponent(TimeStamp, {
+					date: row.original.updatedAt
+				});
 			}
 		},
 		{
@@ -140,14 +175,7 @@
 				</div>
 
 				<Dialog.Footer>
-					<Button
-						onclick={() => {
-							if (form?.action == 'create' && form?.success && createDialogOpen === true) {
-								createDialogOpen = false;
-							}
-						}}
-						type="submit">Save changes</Button
-					>
+					<Button type="submit">Save changes</Button>
 				</Dialog.Footer>
 			</form>
 		</Dialog.Content>
