@@ -22,10 +22,15 @@
 		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
 		showHeader?: boolean;
-		trigger: Snippet;
+		triggerAddCategory: Snippet;
 	};
 
-	let { data, columns, showHeader = false, trigger }: DataTableProps<TData, TValue> = $props();
+	let {
+		data,
+		columns,
+		showHeader = false,
+		triggerAddCategory
+	}: DataTableProps<TData, TValue> = $props();
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
@@ -133,7 +138,7 @@
 						{/each}
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
-				{@render trigger()}
+				{@render triggerAddCategory()}
 			</div>
 		</div>
 	{/if}

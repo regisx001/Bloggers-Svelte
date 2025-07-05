@@ -156,7 +156,7 @@
 
 <section class="p-6">
 	<DataTable showHeader data={data.categories?.content || []} {columns}>
-		{#snippet trigger()}
+		{#snippet triggerAddCategory()}
 			{@render addCategory()}
 		{/snippet}
 	</DataTable>
