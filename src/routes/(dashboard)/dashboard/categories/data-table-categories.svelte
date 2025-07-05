@@ -14,16 +14,18 @@
 		getFilteredRowModel
 	} from '@tanstack/table-core';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
+	import type { Snippet } from 'svelte';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
 		showHeader?: boolean;
+		trigger: Snippet;
 	};
 
-	let { data, columns, showHeader = false }: DataTableProps<TData, TValue> = $props();
+	let { data, columns, showHeader = false, trigger }: DataTableProps<TData, TValue> = $props();
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 	let sorting = $state<SortingState>([]);
@@ -97,7 +99,7 @@
 
 <div>
 	{#if showHeader}
-		<div class="flex items-center py-4">
+		<div class="flex items-center justify-between py-4">
 			<Input
 				placeholder="Filter titles..."
 				value={table.getColumn('title')?.getFilterValue() as string}
@@ -105,31 +107,34 @@
 				oninput={(e) => table.getColumn('title')?.setFilterValue(e.currentTarget.value)}
 				class="max-w-sm"
 			/>
-			<Button
+			<!-- <Button
 				variant="outline"
 				class="ml-auto"
 				onclick={() => {
 					console.log(table.getSelectedRowModel().rows[0].original);
 				}}>Log Selected</Button
-			>
+			> -->
 
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="outline" class="ml-auto">Columns</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="end">
-					{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
-						<DropdownMenu.CheckboxItem
-							class="capitalize"
-							bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
-						>
-							{column.id}
-						</DropdownMenu.CheckboxItem>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+			<div class="flex items-center gap-4">
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button {...props} variant="outline" class="ml-auto">Columns</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end">
+						{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
+							<DropdownMenu.CheckboxItem
+								class="capitalize"
+								bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
+							>
+								{column.id}
+							</DropdownMenu.CheckboxItem>
+						{/each}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+				{@render trigger()}
+			</div>
 		</div>
 	{/if}
 
