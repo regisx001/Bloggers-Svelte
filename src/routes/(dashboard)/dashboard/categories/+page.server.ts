@@ -14,13 +14,26 @@ export const actions: Actions = {
 	createCategory: async ({ request, fetch }) => {
 		const formData = Object.fromEntries(await request.formData());
 
-		console.log(formData);
+		// Form validation
+		const { title, description } = formData;
 
-		// TODO: FORM VALIDATION
+		if (!title || typeof title !== 'string' || title.trim().length === 0) {
+			return {
+				success: false,
+				message: 'Title is required'
+			};
+		}
+
+		if (!description || typeof description !== 'string' || description.trim().length === 0) {
+			return {
+				success: false,
+				message: 'Description is required'
+			};
+		}
 
 		const createCategoryResponse = await fetch(CATEGORIES_URL, {
 			method: 'post',
-			body: JSON.stringify(formData),
+			body: JSON.stringify({ title: title.trim(), description: description.trim() }),
 			headers: {
 				'Content-Type': 'application/json'
 			}

@@ -14,9 +14,10 @@
 
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { enhance } from '$app/forms';
 
+	import { enhance } from '$app/forms';
+	// import { Textarea } from '$lib/components/ui/textarea/';
+	// import { toast } from 'svelte-sonner';
 	const columns: ColumnDef<Category>[] = [
 		{
 			id: 'select',
@@ -70,8 +71,16 @@
 		}
 	];
 
+	// onMount(() => {
+	// 	if (form?.success) {
+	// 		toast.success('Category Created');
+	// 	}
+	// });
+
 	let createDialogOpen = $state(false);
 </script>
+
+{JSON.stringify(createDialogOpen)}
 
 {#snippet addCategory()}
 	<Dialog.Root bind:open={createDialogOpen}>
@@ -92,14 +101,21 @@
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="description" class="text-right">Description*</Label>
-						<Textarea name="description" placeholder="description" class="col-span-3" />
+						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
+						<Input
+							id="description"
+							name="description"
+							value=""
+							placeholder="description"
+							class="col-span-3"
+						/>
 					</div>
 				</div>
 
 				<Dialog.Footer>
 					<Button
 						onclick={() => {
-							if (form?.success) {
+							if (form?.success && createDialogOpen === true) {
 								createDialogOpen = false;
 							}
 						}}

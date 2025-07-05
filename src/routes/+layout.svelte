@@ -16,7 +16,11 @@
 	// 		}, 100); // Small delay to show loading
 	// 	});
 	// });
+
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 </script>
+
+<Toaster />
 
 <ModeWatcher />
 
