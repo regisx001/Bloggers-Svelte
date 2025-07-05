@@ -16,6 +16,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 
 	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
 	// import { Textarea } from '$lib/components/ui/textarea/';
 	// import { toast } from 'svelte-sonner';
 	const columns: ColumnDef<Category>[] = [
@@ -71,6 +72,16 @@
 		}
 	];
 
+	$effect(() => {
+		if (form?.success) {
+			if (form?.action === 'delete') {
+				toast.error(form?.message);
+			} else {
+				toast.success(form?.message);
+			}
+		}
+	});
+
 	// onMount(() => {
 	// 	if (form?.success) {
 	// 		toast.success('Category Created');
@@ -80,7 +91,8 @@
 	let createDialogOpen = $state(false);
 </script>
 
-{JSON.stringify(createDialogOpen)}
+<!-- {JSON.stringify(createDialogOpen, null, 2)}
+{JSON.stringify(form, null, 2)} -->
 
 {#snippet addCategory()}
 	<Dialog.Root bind:open={createDialogOpen}>
@@ -115,7 +127,7 @@
 				<Dialog.Footer>
 					<Button
 						onclick={() => {
-							if (form?.success && createDialogOpen === true) {
+							if (form?.action == 'create' && form?.success && createDialogOpen === true) {
 								createDialogOpen = false;
 							}
 						}}

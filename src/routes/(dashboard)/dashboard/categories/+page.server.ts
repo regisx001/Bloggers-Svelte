@@ -41,7 +41,9 @@ export const actions: Actions = {
 
 		if (createCategoryResponse.status == 201) {
 			return {
-				success: true
+				action: 'create',
+				success: true,
+				message: 'Category Created successfully'
 			};
 		}
 	},
@@ -59,7 +61,11 @@ export const actions: Actions = {
 		});
 
 		if (deleteCategoryResponse.status == 204) {
-			return;
+			return {
+				action: 'delete',
+				success: true,
+				message: 'Category Deleted successfully'
+			};
 		}
 	}
 };
