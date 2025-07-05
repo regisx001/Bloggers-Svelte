@@ -74,7 +74,10 @@
 
 	$effect(() => {
 		if (form?.success) {
-			if (form?.action === 'delete') {
+			if (form?.action === 'createCategory') {
+				createDialogOpen = false;
+				toast.success(form?.message || 'Category created successfully');
+			} else if (form?.action === 'delete') {
 				toast.error(form?.message);
 			} else {
 				toast.success(form?.message);
@@ -105,7 +108,19 @@
 				<Dialog.Title>Add Category</Dialog.Title>
 				<Dialog.Description>Fill the nessesary fields :</Dialog.Description>
 			</Dialog.Header>
-			<form action="?/createCategory" method="post" use:enhance>
+			<form
+				action="?/createCategory"
+				method="post"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						if (result.type == 'success') {
+							createDialogOpen = false;
+						}
+
+						await update();
+					};
+				}}
+			>
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="title" class="text-right">Title*</Label>
