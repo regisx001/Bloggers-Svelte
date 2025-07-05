@@ -12,10 +12,11 @@ export const load: PageServerLoad = async ({}) => {
 
 export const actions: Actions = {
 	createCategory: async ({ request, fetch }) => {
-		const formData = Object.fromEntries(await request.formData());
+		const formData = await request.formData();
 
 		// Form validation
-		const { title, description } = formData;
+		const title = formData.get('title');
+		const description = formData.get('description');
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
 			return {
@@ -31,12 +32,14 @@ export const actions: Actions = {
 			};
 		}
 
+		// const categoryFormData = new FormData();
+		// categoryFormData.append('title', title.trim());
+		// categoryFormData.append('description', description.trim());
+		// categoryFormData.append('image', description.trim());
+
 		const createCategoryResponse = await fetch(CATEGORIES_URL, {
 			method: 'post',
-			body: JSON.stringify({ title: title.trim(), description: description.trim() }),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			body: formData
 		});
 
 		if (createCategoryResponse.status == 201) {

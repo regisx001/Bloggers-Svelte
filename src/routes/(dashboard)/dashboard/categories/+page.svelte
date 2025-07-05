@@ -146,13 +146,13 @@
 			<form
 				action="?/createCategory"
 				method="post"
+				enctype="multipart/form-data"
 				use:enhance={() => {
 					return async ({ result, update }) => {
+						await update();
 						if (result.type == 'success') {
 							createDialogOpen = false;
 						}
-
-						await update();
 					};
 				}}
 			>
@@ -171,6 +171,10 @@
 							placeholder="description"
 							class="col-span-3"
 						/>
+					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="image" class="text-right">Image</Label>
+						<Input id="image" name="image" type="file" accept="image/*" class="col-span-3" />
 					</div>
 				</div>
 
