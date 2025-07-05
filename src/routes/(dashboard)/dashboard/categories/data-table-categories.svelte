@@ -37,6 +37,7 @@
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
 	let rowSelection = $state<RowSelectionState>({});
+	let globalFilter = $state<String>('');
 
 	const table = createSvelteTable({
 		get data() {
