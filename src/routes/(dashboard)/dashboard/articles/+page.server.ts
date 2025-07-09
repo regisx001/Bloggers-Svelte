@@ -15,7 +15,8 @@ export const actions: Actions = {
 
 		// Form validation
 		const title = formData.get('title');
-		const description = formData.get('description');
+		const content = formData.get('content');
+		const image = formData.get('featuredImage') as File;
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
 			return {
@@ -24,17 +25,23 @@ export const actions: Actions = {
 			};
 		}
 
-		if (!description || typeof description !== 'string' || description.trim().length === 0) {
+		if (!content || typeof content !== 'string' || content.trim().length === 0) {
 			return {
 				success: false,
-				message: 'Description is required'
+				message: 'content is required'
 			};
 		}
 
-		// const categoryFormData = new FormData();
-		// categoryFormData.append('title', title.trim());
-		// categoryFormData.append('description', description.trim());
-		// categoryFormData.append('image', description.trim());
+		// Check if image is provided and valid
+		if (!image || image.size === 0 || image.name === '') {
+			// Remove image field if no file is provided
+			formData.delete('featuredImage');
+		} else if (!image.type.startsWith('image/')) {
+			return {
+				success: false,
+				message: 'Please upload a valid image file'
+			};
+		}
 
 		const createCategoryResponse = await fetch(ARTICLES_URL, {
 			method: 'post',
@@ -45,7 +52,7 @@ export const actions: Actions = {
 			return {
 				action: 'create',
 				success: true,
-				message: 'Category Created successfully'
+				message: 'Article Created successfully'
 			};
 		}
 	},
@@ -66,7 +73,7 @@ export const actions: Actions = {
 			return {
 				action: 'delete',
 				success: true,
-				message: 'Category Deleted successfully'
+				message: 'Article Deleted successfully'
 			};
 		}
 	}

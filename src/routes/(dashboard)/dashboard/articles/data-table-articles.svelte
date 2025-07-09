@@ -23,14 +23,14 @@
 		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
 		showHeader?: boolean;
-		triggerAddCategory: Snippet;
+		triggerAddArticle: Snippet;
 	};
 
 	let {
 		data,
 		columns,
 		showHeader = false,
-		triggerAddCategory
+		triggerAddArticle
 	}: DataTableProps<TData, TValue> = $props();
 
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -140,7 +140,7 @@
 						{/each}
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
-				{@render triggerAddCategory()}
+				{@render triggerAddArticle()}
 			</div>
 		</div>
 	{/if}

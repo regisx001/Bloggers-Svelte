@@ -134,9 +134,9 @@
 
 	$effect(() => {
 		if (form?.success) {
-			if (form?.action === 'createCategory') {
+			if (form?.action === 'createArticle') {
 				createDialogOpen = false;
-				toast.success(form?.message || 'Category created successfully');
+				toast.success(form?.message || 'Article created successfully');
 			} else if (form?.action === 'delete') {
 				toast.error(form?.message);
 			} else {
@@ -147,7 +147,7 @@
 
 	// onMount(() => {
 	// 	if (form?.success) {
-	// 		toast.success('Category Created');
+	// 		toast.success('Article Created');
 	// 	}
 	// });
 
@@ -160,7 +160,7 @@
 <!-- {JSON.stringify(createDialogOpen, null, 2)}
 {JSON.stringify(form, null, 2)} -->
 
-{#snippet addCategory()}
+{#snippet addArticle()}
 	<Dialog.Root bind:open={createDialogOpen}>
 		<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 			<Plus />
@@ -192,17 +192,17 @@
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="description" class="text-right">Description*</Label>
 						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
-						<Input
-							id="description"
-							name="description"
-							value=""
-							placeholder="description"
-							class="col-span-3"
-						/>
+						<Input id="content" name="content" value="" placeholder="content" class="col-span-3" />
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="image" class="text-right">Image</Label>
-						<Input id="image" name="image" type="file" accept="image/*" class="col-span-3" />
+						<Input
+							id="image"
+							name="featuredImage"
+							type="file"
+							accept="image/*"
+							class="col-span-3"
+						/>
 					</div>
 				</div>
 
@@ -216,8 +216,8 @@
 
 <section class="p-6">
 	<DataTable showHeader data={data.articles?.content || []} {columns}>
-		{#snippet triggerAddCategory()}
-			{@render addCategory()}
+		{#snippet triggerAddArticle()}
+			{@render addArticle()}
 		{/snippet}
 	</DataTable>
 	<!-- <pre class="pre">
