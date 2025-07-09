@@ -1,11 +1,14 @@
 <script lang="ts">
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
+	import * as Avatar from '$lib/components/ui/avatar';
 	import { cn } from '$lib/utils.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
-	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-	import CircleIcon from '@lucide/svelte/icons/circle';
-	import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+
+	import { toggleMode } from 'mode-watcher';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { base } from '$app/paths';
 	import { enhance } from '$app/forms';
 
@@ -54,6 +57,18 @@
 
 	let { user, isLoggedIn }: { user: User; isLoggedIn: boolean } = $props();
 </script>
+
+{#snippet userInfo(user: User)}
+	<div class="flex flex-row items-center justify-center gap-2 px-2">
+		<Avatar.Root class="size-6 rounded ">
+			<Avatar.Image src={user?.avatar} alt={user?.username} />
+			<Avatar.Fallback class="rounded-lg"
+				>{user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback
+			>
+		</Avatar.Root>
+		<span class="text-sm font-medium">{user?.username}</span>
+	</div>
+{/snippet}
 
 {#snippet ListItem({ title, content, href, class: className, ...restProps }: ListItemProps)}
 	<li>
@@ -257,5 +272,18 @@
 		</NavigationMenu.Root>
 	</div>
 
-	<div class="w-25"></div>
+	<div class="flex flex-row">
+		{#if isLoggedIn}
+			{@render userInfo(user)}
+		{/if}
+		<Button onclick={toggleMode} variant="outline" size="icon">
+			<SunIcon
+				class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 !transition-all dark:scale-0 dark:-rotate-90"
+			/>
+			<MoonIcon
+				class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 !transition-all dark:scale-100 dark:rotate-0"
+			/>
+			<span class="sr-only">Toggle theme</span>
+		</Button>
+	</div>
 </section>

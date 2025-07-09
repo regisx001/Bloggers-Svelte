@@ -14,7 +14,7 @@
 {#snippet DeleteConfirm()}
 	<AlertDialog.Root bind:open={alertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
-			<Trash size="16" class="text-destructive" />
+			<Trash size="16" class=" text-destructive " />
 		</AlertDialog.Trigger>
 		<AlertDialog.Content>
 			<AlertDialog.Header>

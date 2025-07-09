@@ -5,6 +5,7 @@
 		type ColumnDef,
 		type PaginationState,
 		type SortingState,
+		type Row,
 		type ColumnFiltersState,
 		type VisibilityState,
 		type RowSelectionState,
