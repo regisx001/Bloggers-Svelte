@@ -17,6 +17,7 @@ export const actions: Actions = {
 		// Form validation
 		const title = formData.get('title');
 		const description = formData.get('description');
+		const image = formData.get('image') as File;
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
 			return {
@@ -32,6 +33,17 @@ export const actions: Actions = {
 			};
 		}
 
+		// Check if image is provided and valid
+		if (!image || image.size === 0 || image.name === '') {
+			// Remove image field if no file is provided
+			formData.delete('image');
+		} else if (!image.type.startsWith('image/')) {
+			return {
+				success: false,
+				message: 'Please upload a valid image file'
+			};
+		}
+
 		// const categoryFormData = new FormData();
 		// categoryFormData.append('title', title.trim());
 		// categoryFormData.append('description', description.trim());
@@ -41,6 +53,8 @@ export const actions: Actions = {
 			method: 'post',
 			body: formData
 		});
+
+		const j = await createCategoryResponse.json();
 
 		if (createCategoryResponse.status == 201) {
 			return {
