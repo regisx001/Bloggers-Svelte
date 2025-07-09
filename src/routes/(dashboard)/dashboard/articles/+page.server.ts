@@ -1,5 +1,4 @@
-import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
-import { success } from 'zod/v4';
+import { ARTICLES_URL } from '$lib/urls';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({}) => {
@@ -11,7 +10,7 @@ export const load: PageServerLoad = async ({}) => {
 };
 
 export const actions: Actions = {
-	createCategory: async ({ request, fetch }) => {
+	createArticle: async ({ request, fetch }) => {
 		const formData = await request.formData();
 
 		// Form validation
@@ -37,7 +36,7 @@ export const actions: Actions = {
 		// categoryFormData.append('description', description.trim());
 		// categoryFormData.append('image', description.trim());
 
-		const createCategoryResponse = await fetch(CATEGORIES_URL, {
+		const createCategoryResponse = await fetch(ARTICLES_URL, {
 			method: 'post',
 			body: formData
 		});
@@ -51,15 +50,15 @@ export const actions: Actions = {
 		}
 	},
 
-	deleteCategory: async ({ request, fetch, locals }) => {
-		const id = (await request.formData()).get('categoryId');
+	deleteArticle: async ({ request, fetch, locals }) => {
+		const id = (await request.formData()).get('articleId');
 		if (!id) {
 			return {
 				message: 'Id Not provided'
 			};
 		}
 
-		const deleteCategoryResponse = await fetch(CATEGORIES_URL + '/' + id, {
+		const deleteCategoryResponse = await fetch(ARTICLES_URL + '/' + id, {
 			method: 'delete'
 		});
 

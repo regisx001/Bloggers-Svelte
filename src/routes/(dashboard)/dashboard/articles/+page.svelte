@@ -178,7 +178,7 @@
 				<Dialog.Description>Fill the nessesary fields :</Dialog.Description>
 			</Dialog.Header>
 			<form
-				action="?/createCategory"
+				action="?/createArticle"
 				method="post"
 				enctype="multipart/form-data"
 				use:enhance={() => {

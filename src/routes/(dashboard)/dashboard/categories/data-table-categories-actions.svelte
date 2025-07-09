@@ -6,11 +6,13 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Trash } from '@lucide/svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+
 	let { id }: { id: string } = $props();
+	let alertDialogOpen = $state(false);
 </script>
 
 {#snippet DeleteConfirm()}
-	<AlertDialog.Root>
+	<AlertDialog.Root bind:open={alertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
 			<Trash size="16" class="text-destructive" />
 		</AlertDialog.Trigger>
@@ -24,7 +26,18 @@
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-				<form action="?/deleteCategory" method="post" use:enhance>
+				<form
+					action="?/deleteCategory"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								alertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
 					<input type="hidden" name="categoryId" value={id} />
 					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
 				</form>
