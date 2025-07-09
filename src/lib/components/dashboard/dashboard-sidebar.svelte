@@ -11,6 +11,7 @@
 	import SearchIcon from '@tabler/icons-svelte/icons/search';
 	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
 	import Category from '@tabler/icons-svelte/icons/category';
+	import Article from '@tabler/icons-svelte/icons/article';
 	import NavMain from './nav-main.svelte';
 	import NavUser from './nav-user.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -38,6 +39,11 @@
 				title: 'Categories',
 				url: '/dashboard/categories',
 				icon: Category
+			},
+			{
+				title: 'Articles',
+				url: '/dashboard/articles',
+				icon: Article
 			}
 			// {
 			// 	title: 'Lifecycle',

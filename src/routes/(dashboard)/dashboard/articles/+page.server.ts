@@ -1,12 +1,12 @@
-import { CATEGORIES_URL } from '$lib/urls';
+import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
 import { success } from 'zod/v4';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({}) => {
 	try {
-		const categoriesResponse = await fetch(CATEGORIES_URL + '?sort=createdAt,desc');
-		const categories: Page<Category> = await categoriesResponse.json();
-		return { categories };
+		const articlesResponse = await fetch(ARTICLES_URL + '?sort=createdAt,desc');
+		const articles: Page<Article> = await articlesResponse.json();
+		return { articles };
 	} catch (error) {}
 };
 

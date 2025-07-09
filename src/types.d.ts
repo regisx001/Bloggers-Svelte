@@ -54,3 +54,22 @@ type Page<T> = {
 	first: boolean;
 	empty: boolean;
 };
+
+type Article = {
+	id: string;
+	title: string;
+	content: string;
+	featuredImage: string | null;
+	status: string;
+	isPublished: boolean;
+	publishedAt: string | null;
+	createdAt: string;
+	updatedAt: string;
+	user: {
+		id: string;
+		username: string;
+		avatar: string;
+	};
+	category: Category | null;
+	tags: string[];
+};
