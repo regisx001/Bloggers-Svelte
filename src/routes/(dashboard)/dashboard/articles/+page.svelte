@@ -21,7 +21,7 @@
 	import TimeStamp from '$lib/components/time-stamp.svelte';
 	import CircleCheckFilledIcon from '@tabler/icons-svelte/icons/circle-check-filled';
 	import LoaderIcon from '@tabler/icons-svelte/icons/loader';
-
+	import TagInput from '$lib/components/ui/tag-input/tag-input.svelte';
 	const columns: ColumnDef<Article>[] = [
 		{
 			id: 'select',
@@ -203,6 +203,10 @@
 							accept="image/*"
 							class="col-span-3"
 						/>
+					</div>
+
+					<div class=" items-center gap-4">
+						<TagInput name="tags" placeholder="add tags" />
 					</div>
 				</div>
 
