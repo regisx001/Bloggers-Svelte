@@ -1,11 +1,13 @@
-import { ARTICLES_URL } from '$lib/urls';
+import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({}) => {
 	try {
+		const categoriesResponse = await fetch(CATEGORIES_URL + '?sort=createdAt,desc');
+		const categories: Page<Category> = await categoriesResponse.json();
 		const articlesResponse = await fetch(ARTICLES_URL + '?sort=createdAt,desc');
 		const articles: Page<Article> = await articlesResponse.json();
-		return { articles };
+		return { articles, categories };
 	} catch (error) {}
 };
 

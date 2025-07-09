@@ -22,6 +22,7 @@
 	import CircleCheckFilledIcon from '@tabler/icons-svelte/icons/circle-check-filled';
 	import LoaderIcon from '@tabler/icons-svelte/icons/loader';
 	import TagInput from '$lib/components/ui/tag-input/tag-input.svelte';
+	import * as Select from '$lib/components/ui/select/index.js';
 	const columns: ColumnDef<Article>[] = [
 		{
 			id: 'select',
@@ -152,6 +153,7 @@
 	// });
 
 	let createDialogOpen = $state(false);
+	let selectedCategory: string | undefined = $state(undefined);
 </script>
 
 <!-- <pre>
@@ -166,7 +168,7 @@
 			<Plus />
 			<span>Add Article</span>
 		</Dialog.Trigger>
-		<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Content class="sm:max-w-[750px]">
 			<Dialog.Header>
 				<Dialog.Title>Add Article</Dialog.Title>
 				<Dialog.Description>Fill the nessesary fields :</Dialog.Description>
@@ -204,8 +206,20 @@
 							class="col-span-3"
 						/>
 					</div>
-
-					<div class=" items-center gap-4">
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="Category" class="text-right">Category</Label>
+						<Select.Root type="single" bind:value={selectedCategory}>
+							<Select.Trigger class="col-span-3 w-full"
+								>{selectedCategory ? selectedCategory : 'Select a category'}</Select.Trigger
+							>
+							<Select.Content>
+								{#each data?.categories?.content || [] as category}
+									<Select.Item value={category.title}>{category.title}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
+					<div class="items-center gap-4">
 						<TagInput name="tags" placeholder="add tags" />
 					</div>
 				</div>
