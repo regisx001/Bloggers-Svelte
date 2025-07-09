@@ -85,10 +85,7 @@
 				<Card.Header>
 					<div class="flex items-center space-x-4">
 						<Avatar.Root class="h-20 w-20">
-							<Avatar.Image
-								src={PUBLIC_BACKEND_URL + data.user?.avatar}
-								alt={data.user?.username}
-							/>
+							<Avatar.Image src={data.user?.avatar} alt={data.user?.username} />
 							<Avatar.Fallback class="text-lg">{getInitials(data.user?.username)}</Avatar.Fallback>
 						</Avatar.Root>
 						<div class="space-y-1">

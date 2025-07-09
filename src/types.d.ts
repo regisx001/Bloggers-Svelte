@@ -65,7 +65,7 @@ type Article = {
 	publishedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
-	user: {
+	author: {
 		id: string;
 		username: string;
 		avatar: string;

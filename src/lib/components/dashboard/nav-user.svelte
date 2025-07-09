@@ -8,7 +8,6 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { enhance } from '$app/forms';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 	import { base } from '$app/paths';
 
 	let { user }: { user: User } = $props();
@@ -18,7 +17,7 @@
 
 {#snippet userInfo(user: User)}
 	<Avatar.Root class="size-8 rounded-lg grayscale hover:grayscale-0">
-		<Avatar.Image src={PUBLIC_BACKEND_URL + user?.avatar} alt={user?.username} />
+		<Avatar.Image src={user?.avatar} alt={user?.username} />
 		<Avatar.Fallback class="rounded-lg">{user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
 	</Avatar.Root>
 	<div class="grid flex-1 text-left text-sm leading-tight">

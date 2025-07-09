@@ -68,7 +68,13 @@
 		},
 		{
 			accessorKey: 'description',
-			header: 'Description'
+			header: 'Description',
+
+			cell: ({ row }) => {
+				return row.original.description.length <= 30
+					? row.original.description
+					: row.original.description.slice(0, 30) + '...';
+			}
 		},
 		{
 			accessorKey: 'createdAt',

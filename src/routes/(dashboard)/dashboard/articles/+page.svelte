@@ -67,10 +67,13 @@
 			accessorKey: 'title',
 			header: 'Title'
 		},
-		// {
-		// 	accessorKey: 'description',
-		// 	header: 'Description'
-		// },
+		{
+			accessorKey: 'author',
+			header: 'Author',
+			cell: ({ row }) => {
+				return row.original.author.username;
+			}
+		},
 		{
 			accessorKey: 'status',
 			header: 'Status',
@@ -95,7 +98,7 @@
 					? renderComponent(TimeStamp, {
 							date: row.original.publishedAt
 						})
-					: 'null';
+					: 'Not Published';
 			}
 		},
 		{
@@ -113,20 +116,20 @@
 			}
 		},
 
-		{
-			accessorKey: 'updatedAt',
-			header: () => {
-				const updatedAtHeaderSnippet = createRawSnippet(() => ({
-					render: () => `<div class="">Updated At</div>`
-				}));
-				return renderSnippet(updatedAtHeaderSnippet, '');
-			},
-			cell: ({ row }) => {
-				return renderComponent(TimeStamp, {
-					date: row.original.updatedAt
-				});
-			}
-		},
+		// {
+		// 	accessorKey: 'updatedAt',
+		// 	header: () => {
+		// 		const updatedAtHeaderSnippet = createRawSnippet(() => ({
+		// 			render: () => `<div class="">Updated At</div>`
+		// 		}));
+		// 		return renderSnippet(updatedAtHeaderSnippet, '');
+		// 	},
+		// 	cell: ({ row }) => {
+		// 		return renderComponent(TimeStamp, {
+		// 			date: row.original.updatedAt
+		// 		});
+		// 	}
+		// },
 		{
 			id: 'actions',
 			cell: ({ row }) => {
