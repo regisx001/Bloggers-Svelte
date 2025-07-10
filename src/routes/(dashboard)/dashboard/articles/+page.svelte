@@ -12,7 +12,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Plus } from '@lucide/svelte';
 	import { Badge, badgeVariants } from '$lib/components/ui/badge/index.js';
-
+	import * as Avatar from '$lib/components/ui/avatar';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
 
@@ -70,7 +70,7 @@
 			accessorKey: 'author',
 			header: 'Author',
 			cell: ({ row }) => {
-				return row.original.author.username;
+				return renderSnippet(AuthorCellSnippet, { row });
 			}
 		},
 		{
@@ -252,4 +252,19 @@
 		{/if}
 		{row.original.status}
 	</Badge>
+{/snippet}
+
+{#snippet AuthorCellSnippet({ row }: { row: Row<Article> })}
+	<div class="flex items-center gap-2">
+		<Avatar.Root class="border-border/50 size-8 rounded-lg border">
+			<Avatar.Image src={row.original.author.avatar} alt={row.original.author.username} />
+			<Avatar.Fallback class="bg-muted text-muted-foreground rounded-lg text-sm font-medium">
+				{row.original.author.username.slice(0, 2).toUpperCase()}
+			</Avatar.Fallback>
+		</Avatar.Root>
+		<div class="flex flex-col">
+			<span class="text-foreground text-sm font-medium">{row.original.author.username}</span>
+			<span class="text-muted-foreground text-xs">Author</span>
+		</div>
+	</div>
 {/snippet}
