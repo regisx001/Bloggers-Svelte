@@ -3,8 +3,8 @@ import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({}) => {
 	try {
-		const categoriesResponse = await fetch(CATEGORIES_URL + '?sort=createdAt,desc');
-		const categories: Page<Category> = await categoriesResponse.json();
+		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
+		const categories: string[] = await categoriesResponse.json();
 		const articlesResponse = await fetch(ARTICLES_URL + '?sort=createdAt,desc');
 		const articles: Page<Article> = await articlesResponse.json();
 		return { articles, categories };

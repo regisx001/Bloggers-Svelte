@@ -213,8 +213,8 @@
 								>{selectedCategory ? selectedCategory : 'Select a category'}</Select.Trigger
 							>
 							<Select.Content>
-								{#each data?.categories?.content || [] as category}
-									<Select.Item value={category.title}>{category.title}</Select.Item>
+								{#each data?.categories || [] as category}
+									<Select.Item value={category}>{category}</Select.Item>
 								{/each}
 							</Select.Content>
 						</Select.Root>
