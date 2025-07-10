@@ -83,6 +83,13 @@
 			}
 		},
 		{
+			accessorKey: 'category',
+			header: 'Category',
+			cell: ({ row }) => {
+				return renderSnippet(CategoryCellSnippet, { row });
+			}
+		},
+		{
 			accessorKey: 'status',
 			header: 'Status',
 			cell: ({ row }) => {
@@ -155,12 +162,6 @@
 		}
 	});
 
-	// onMount(() => {
-	// 	if (form?.success) {
-	// 		toast.success('Article Created');
-	// 	}
-	// });
-
 	let createDialogOpen = $state(false);
 	let selectedCategory: string | undefined = $state(undefined);
 </script>
@@ -168,8 +169,6 @@
 <!-- <pre>
 	{JSON.stringify(data.articles, null, 2)}
 </pre> -->
-<!-- {JSON.stringify(createDialogOpen, null, 2)}
-{JSON.stringify(form, null, 2)} -->
 
 {#snippet addArticle()}
 	<Dialog.Root bind:open={createDialogOpen}>
@@ -217,7 +216,7 @@
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="Category" class="text-right">Category</Label>
-						<Select.Root type="single" bind:value={selectedCategory}>
+						<Select.Root name="category" type="single" bind:value={selectedCategory}>
 							<Select.Trigger class="col-span-3 w-full"
 								>{selectedCategory ? selectedCategory : 'Select a category'}</Select.Trigger
 							>
@@ -247,9 +246,6 @@
 			{@render addArticle()}
 		{/snippet}
 	</DataTable>
-	<!-- <pre class="pre">
-		{JSON.stringify(data.categories, null, 2)}
-		</pre> -->
 </section>
 
 {#snippet statusCellSnippet({ row }: { row: Row<Article> })}
@@ -306,6 +302,33 @@
 			{/if}
 		{:else}
 			<span class="text-muted-foreground text-xs italic">No tags</span>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet CategoryCellSnippet({ row }: { row: Row<Article> })}
+	<div class="flex items-center gap-2">
+		{#if row.original.category}
+			{#if row.original.category.image}
+				<div
+					class="border-border/50 aspect-video h-full w-full rounded border bg-cover bg-center"
+					style="background-image: url('{row.original.category.image}');"
+					title={row.original.category.title}
+				></div>
+			{:else}
+				<div
+					class="bg-muted border-border/50 flex h-6 w-6 items-center justify-center rounded border"
+				>
+					<span class="text-muted-foreground text-xs font-medium">
+						{row.original.category.title.charAt(0).toUpperCase()}
+					</span>
+				</div>
+			{/if}
+			<Badge variant="outline" class="px-2 py-1 text-xs font-medium">
+				{row.original.category.title}
+			</Badge>
+		{:else}
+			<Badge variant="secondary" class="text-muted-foreground px-2 py-1 text-xs">No Category</Badge>
 		{/if}
 	</div>
 {/snippet}

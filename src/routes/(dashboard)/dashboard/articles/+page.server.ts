@@ -18,7 +18,12 @@ export const actions: Actions = {
 		// Form validation
 		const title = formData.get('title');
 		const content = formData.get('content');
+		const category = formData.get('category');
 		const image = formData.get('featuredImage') as File;
+
+		if (!category || typeof category !== 'string' || category.trim().length === 0) {
+			formData.delete('category');
+		}
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
 			return {
