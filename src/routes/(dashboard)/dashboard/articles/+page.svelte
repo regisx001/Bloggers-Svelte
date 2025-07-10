@@ -23,6 +23,8 @@
 	import LoaderIcon from '@tabler/icons-svelte/icons/loader';
 	import TagInput from '$lib/components/ui/tag-input/tag-input.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+
 	const columns: ColumnDef<Article>[] = [
 		{
 			id: 'select',
@@ -71,6 +73,13 @@
 			header: 'Author',
 			cell: ({ row }) => {
 				return renderSnippet(AuthorCellSnippet, { row });
+			}
+		},
+		{
+			accessorKey: 'tags',
+			header: 'Tags',
+			cell: ({ row }) => {
+				return renderSnippet(TagsCellSnippet, { row });
 			}
 		},
 		{
@@ -266,5 +275,37 @@
 			<span class="text-foreground text-sm font-medium">{row.original.author.username}</span>
 			<span class="text-muted-foreground text-xs">Author</span>
 		</div>
+	</div>
+{/snippet}
+
+{#snippet TagsCellSnippet({ row }: { row: Row<Article> })}
+	<div class="flex max-w-48 flex-wrap gap-1">
+		{#if row.original.tags && row.original.tags.length > 0}
+			{#each row.original.tags.slice(0, 2) as tag}
+				<Badge variant="secondary" class="px-2 py-1 text-xs">
+					{tag}
+				</Badge>
+			{/each}
+			{#if row.original.tags.length > 2}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<Badge variant="outline" class="cursor-help px-2 py-1 text-xs">
+							+{row.original.tags.length - 2} more
+						</Badge>
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<div class="flex max-w-64 flex-wrap gap-1">
+							{#each row.original.tags.slice(2) as tag}
+								<Badge variant="secondary" class="px-2 py-1 text-xs">
+									{tag}
+								</Badge>
+							{/each}
+						</div>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			{/if}
+		{:else}
+			<span class="text-muted-foreground text-xs italic">No tags</span>
+		{/if}
 	</div>
 {/snippet}
