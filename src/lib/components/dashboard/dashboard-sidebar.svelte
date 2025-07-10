@@ -12,7 +12,9 @@
 	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
 	import Category from '@tabler/icons-svelte/icons/category';
 	import Article from '@tabler/icons-svelte/icons/article';
+	import Tag from '@lucide/svelte/icons/tag';
 	import NavMain from './nav-main.svelte';
+
 	import NavUser from './nav-user.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { base } from '$app/paths';
@@ -43,6 +45,11 @@
 			{
 				title: 'Articles',
 				url: '/dashboard/articles',
+				icon: Article
+			},
+			{
+				title: 'Tags',
+				url: '/dashboard/tags',
 				icon: Article
 			}
 			// {
