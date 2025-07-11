@@ -17,15 +17,53 @@
 	@apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm;
 }
 
+/* Simple background patterns with theme support */
+.bg-grid-white\/\[0\.02\] {
+	background-image:
+		linear-gradient(hsl(var(--foreground) / 0.08) 1px, transparent 1px),
+		linear-gradient(90deg, hsl(var(--foreground) / 0.08) 1px, transparent 1px);
+}
+
+.bg-\[size\:60px_60px\] {
+	background-size: 60px 60px;
+}
+
+.bg-\[size\:20px_20px\] {
+	background-image:
+		radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.08) 0%, transparent 70%),
+		linear-gradient(hsl(var(--foreground) / 0.08) 1px, transparent 1px),
+		linear-gradient(90deg, hsl(var(--foreground) / 0.08) 1px, transparent 1px);
+	background-size:
+		100px 100px,
+		20px 20px,
+		20px 20px;
+	animation: pulse-gentle 4s ease-in-out infinite;
+}
+
+/* Gentle pulse for newsletter section only */
+@keyframes pulse-gentle {
+	0%,
+	100% {
+		opacity: 0.6;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.8;
+		transform: scale(1.02);
+	}
+}
+
 button {
 	cursor: pointer;
 }
 
 @layer base {
 	* {
-		@apply border-border outline-ring/50;
+		border-color: var(--border);
+		outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
 	}
 	body {
-		@apply bg-background text-foreground;
+		background-color: var(--background);
+		color: var(--foreground);
 	}
 }
