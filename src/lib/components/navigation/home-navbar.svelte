@@ -1,53 +1,31 @@
 <script lang="ts">
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { cn } from '$lib/utils.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import MoonIcon from '@lucide/svelte/icons/moon';
+	import {
+		Sun,
+		Moon,
+		Menu,
+		X,
+		Search,
+		PenTool,
+		BookOpen,
+		Bookmark,
+		Settings,
+		LogOut,
+		User as UserIcon,
+		TrendingUp,
+		Home
+	} from '@lucide/svelte';
 
 	import { toggleMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { base } from '$app/paths';
 	import { enhance } from '$app/forms';
-
-	const components: { title: string; href: string; description: string }[] = [
-		{
-			title: 'Alert Dialog',
-			href: '/docs/components/alert-dialog',
-			description:
-				'A modal dialog that interrupts the user with important content and expects a response.'
-		},
-		{
-			title: 'Hover Card',
-			href: '/docs/components/hover-card',
-			description: 'For sighted users to preview content available behind a link.'
-		},
-		{
-			title: 'Progress',
-			href: '/docs/components/progress',
-			description:
-				'Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.'
-		},
-		{
-			title: 'Scroll-area',
-			href: '/docs/components/scroll-area',
-			description: 'Visually or semantically separates content.'
-		},
-		{
-			title: 'Tabs',
-			href: '/docs/components/tabs',
-			description:
-				'A set of layered sections of content—known as tab panels—that are displayed one at a time.'
-		},
-		{
-			title: 'Tooltip',
-			href: '/docs/components/tooltip',
-			description:
-				'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.'
-		}
-	];
 
 	type ListItemProps = HTMLAttributes<HTMLAnchorElement> & {
 		title: string;
@@ -55,235 +33,258 @@
 		content: string;
 	};
 
-	let { user, isLoggedIn }: { user: User; isLoggedIn: boolean } = $props();
+	let { user, isLoggedIn }: { user: User | null; isLoggedIn: boolean } = $props();
+	let mobileMenuOpen = $state(false);
+	let searchQuery = $state('');
+
+	const navigationItems = [
+		{ href: `${base}/`, label: 'Home', icon: Home },
+		{ href: `${base}/articles`, label: 'Articles', icon: BookOpen },
+		{ href: `${base}/trending`, label: 'Trending', icon: TrendingUp },
+		{ href: `${base}/categories`, label: 'Categories', icon: Bookmark }
+	];
 </script>
 
-{#snippet userInfo(user: User)}
-	<div class="flex flex-row items-center justify-center gap-2 px-2">
-		<Avatar.Root class="size-6 rounded ">
-			<Avatar.Image src={user?.avatar} alt={user?.username} />
-			<Avatar.Fallback class="rounded-lg"
-				>{user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback
-			>
-		</Avatar.Root>
-		<span class="text-sm font-medium">{user?.username}</span>
-	</div>
+{#snippet userInfo(user: User | null)}
+	{#if user}
+		<div class="flex items-center gap-2 py-1">
+			<Avatar.Root class="border-primary/20 size-8 shrink-0 rounded-full border-2">
+				<Avatar.Image src={user.avatar} alt={user.username} />
+				<Avatar.Fallback class="bg-primary/10 text-primary rounded-full text-xs font-semibold">
+					{user.username.slice(0, 2).toUpperCase()}
+				</Avatar.Fallback>
+			</Avatar.Root>
+			<span class="hidden text-sm font-medium whitespace-nowrap sm:block">{user.username}</span>
+		</div>
+	{/if}
 {/snippet}
 
-{#snippet ListItem({ title, content, href, class: className, ...restProps }: ListItemProps)}
-	<li>
-		<NavigationMenu.Link>
-			{#snippet child()}
-				<a
-					{href}
-					class={cn(
-						'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none',
-						className
-					)}
-					{...restProps}
-				>
-					<div class="text-sm leading-none font-medium">{title}</div>
-					<p class="text-muted-foreground line-clamp-2 text-sm leading-snug">
-						{content}
-					</p>
-				</a>
-			{/snippet}
-		</NavigationMenu.Link>
-	</li>
-{/snippet}
+{#snippet MobileMenu()}
+	{#if mobileMenuOpen}
+		<div class="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm lg:hidden">
+			<div class="bg-background fixed inset-y-0 right-0 z-50 w-3/4 max-w-sm border-l p-6 shadow-lg">
+				<!-- Mobile menu header -->
+				<div class="mb-6 flex items-center justify-between">
+					<div class="flex items-center space-x-2">
+						<img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App" />
+						<span class="text-xl font-bold">Blog App</span>
+					</div>
+					<Button variant="ghost" size="icon" onclick={() => (mobileMenuOpen = false)}>
+						<X class="h-5 w-5" />
+					</Button>
+				</div>
 
-<section class="flex w-full flex-row p-4">
-	<div class="flex w-25 flex-row items-center gap-2">
-		<img src="{base}/favicon.png" class="h-10 w-10" alt="site logo books articles blog" srcset="" />
-		<h1 class="text-2xl font-semibold">Bloggers</h1>
-	</div>
+				<!-- Mobile search -->
+				<div class="mb-6">
+					<div class="relative">
+						<Search
+							class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+						/>
+						<Input bind:value={searchQuery} placeholder="Search articles..." class="pl-10" />
+					</div>
+				</div>
 
-	<div class="flex w-full justify-center">
-		<NavigationMenu.Root style="width: 100%;" viewport={false}>
-			<NavigationMenu.List>
-				<NavigationMenu.Item>
-					<NavigationMenu.Link>
-						{#snippet child()}
-							<a href="{base}/" class="{navigationMenuTriggerStyle()} cursor-pointer">Home</a>
-						{/snippet}
-					</NavigationMenu.Link>
-				</NavigationMenu.Item>
+				<!-- Mobile navigation links -->
+				<nav class="mb-6 space-y-2">
+					{#each navigationItems as item}
+						<a
+							href={item.href}
+							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							<item.icon class="h-4 w-4" />
+							<span>{item.label}</span>
+						</a>
+					{/each}
+				</nav>
 
-				{#if !isLoggedIn}
-					<NavigationMenu.Item>
-						<NavigationMenu.Link>
-							{#snippet child()}
-								<a href="{base}/login" class="{navigationMenuTriggerStyle()} cursor-pointer"
-									>Login</a
-								>
-							{/snippet}
-						</NavigationMenu.Link>
-					</NavigationMenu.Item>
-
-					<NavigationMenu.Item>
-						<NavigationMenu.Link>
-							{#snippet child()}
-								<a href="{base}/register" class="{navigationMenuTriggerStyle()} cursor-pointer"
-									>Register</a
-								>
-							{/snippet}
-						</NavigationMenu.Link>
-					</NavigationMenu.Item>
+				<!-- Mobile user section -->
+				{#if isLoggedIn}
+					<div class="space-y-2 border-t pt-4">
+						<a
+							href="{base}/dashboard"
+							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							<UserIcon class="h-4 w-4" />
+							<span>Dashboard</span>
+						</a>
+						<a
+							href="{base}/write"
+							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							<PenTool class="h-4 w-4" />
+							<span>Write Article</span>
+						</a>
+						<form action="/logout" method="post" use:enhance>
+							<button
+								type="submit"
+								class="hover:bg-accent hover:text-accent-foreground flex w-full items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							>
+								<LogOut class="h-4 w-4" />
+								<span>Logout</span>
+							</button>
+						</form>
+					</div>
 				{:else}
-					<NavigationMenu.Item>
-						<NavigationMenu.Link>
-							{#snippet child()}
-								<a href="{base}/dashboard" class="{navigationMenuTriggerStyle()} cursor-pointer"
-									>Dashboard</a
-								>
-							{/snippet}
-						</NavigationMenu.Link>
-					</NavigationMenu.Item>
-
-					<NavigationMenu.Item>
-						<NavigationMenu.Link>
-							{#snippet child()}
-								<form action="/logout" method="post" use:enhance>
-									<button class="{navigationMenuTriggerStyle()} cursor-pointer" type="submit"
-										>Logout</button
-									>
-								</form>
-							{/snippet}
-						</NavigationMenu.Link>
-					</NavigationMenu.Item>
+					<div class="space-y-2 border-t pt-4">
+						<a
+							href="{base}/login"
+							class="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							Login
+						</a>
+						<a
+							href="{base}/register"
+							class="border-input bg-background hover:bg-accent hover:text-accent-foreground flex items-center justify-center rounded-md border px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							Sign Up
+						</a>
+					</div>
 				{/if}
 
-				<!-- <NavigationMenu.Item>
-					<NavigationMenu.Trigger>Home</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="grid gap-2 p-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-							<li class="row-span-3">
-								<NavigationMenu.Link
-									class="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-hidden select-none focus:shadow-md"
-								>
-									{#snippet child({ props })}
-										<a {...props} href="/">
-											<div class="mt-4 mb-2 text-lg font-medium">shadcn-svelte</div>
-											<p class="text-muted-foreground text-sm leading-tight">
-												Beautifully designed components built with Tailwind CSS.
-											</p>
-										</a>
-									{/snippet}
-								</NavigationMenu.Link>
-							</li>
-							{@render ListItem({
-								href: '/docs',
-								title: 'Introduction',
-								content: 'Re-usable components built using Bits UI and Tailwind CSS.'
-							})}
-							{@render ListItem({
-								href: '/docs/installation',
-								title: 'Installation',
-								content: 'How to install dependencies and structure your app.'
-							})}
-							{@render ListItem({
-								href: '/docs/components/typography',
-								title: 'Typography',
-								content: 'Styles for headings, paragraphs, lists...etc'
-							})}
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>Components</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="grid w-[400px] gap-2 p-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-							{#each components as component, i (i)}
-								{@render ListItem({
-									href: component.href,
-									title: component.title,
-									content: component.description
-								})}
-							{/each}
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>
+				<!-- Mobile theme toggle -->
+				<div class="border-t pt-4">
+					<Button onclick={toggleMode} variant="outline" size="sm" class="w-full">
+						<Sun class="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+						<Moon class=" h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+						<span class="ml-2">Toggle theme</span>
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/if}
+{/snippet}
 
-				<NavigationMenu.Item>
-					<NavigationMenu.Link>
-						{#snippet child()}
-							<a href="/docs" class={navigationMenuTriggerStyle()}>Docs</a>
-						{/snippet}
-					</NavigationMenu.Link>
-				</NavigationMenu.Item>
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>List</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="grid w-[300px] gap-4 p-2">
-							<li>
-								<NavigationMenu.Link href="#">
-									<div class="font-medium">Components</div>
-									<div class="text-muted-foreground">Browse all components in the library.</div>
-								</NavigationMenu.Link>
-								<NavigationMenu.Link href="#">
-									<div class="font-medium">Documentation</div>
-									<div class="text-muted-foreground">Learn how to use the library.</div>
-								</NavigationMenu.Link>
-								<NavigationMenu.Link href="#">
-									<div class="font-medium">Blog</div>
-									<div class="text-muted-foreground">Read our latest blog posts.</div>
-								</NavigationMenu.Link>
-							</li>
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>Simple</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="grid w-[200px] gap-4 p-2">
-							<li>
-								<NavigationMenu.Link href="#">Components</NavigationMenu.Link>
-								<NavigationMenu.Link href="#">Documentation</NavigationMenu.Link>
-								<NavigationMenu.Link href="#">Blocks</NavigationMenu.Link>
-							</li>
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>With Icon</NavigationMenu.Trigger>
+<!-- Main Navigation Bar -->
+<header
+	class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur"
+>
+	<div class="container mx-auto px-4">
+		<div class="flex h-16 items-center justify-between gap-4">
+			<!-- Logo Section -->
+			<div class="flex shrink-0 items-center space-x-3">
+				<img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App Logo" />
+				<div class="hidden sm:block">
+					<h1 class="text-xl font-bold tracking-tight">Blog App</h1>
+					<p class="text-muted-foreground hidden text-xs md:block">Discover amazing stories</p>
+				</div>
+			</div>
 
-					<NavigationMenu.Content>
-						<ul class="grid w-[200px] gap-4 p-2">
-							<li>
-								<NavigationMenu.Link href="#" class="flex-row items-center gap-2">
-									<CircleHelpIcon />
-									Backlog
-								</NavigationMenu.Link>
+			<!-- Desktop Navigation -->
+			<nav class="hidden shrink-0 items-center space-x-1 lg:flex">
+				{#each navigationItems as item}
+					<a
+						href={item.href}
+						class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors"
+					>
+						<item.icon class="h-4 w-4" />
+						<span>{item.label}</span>
+					</a>
+				{/each}
+			</nav>
 
-								<NavigationMenu.Link href="#" class="flex-row items-center gap-2">
-									<CircleIcon />
-									To Do
-								</NavigationMenu.Link>
+			<!-- Search Bar (Desktop) -->
+			<div class="mx-4 hidden max-w-lg flex-1 md:flex">
+				<div class="relative w-full">
+					<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+					<Input
+						bind:value={searchQuery}
+						placeholder="Search articles, tutorials..."
+						class="bg-muted/50 focus-visible:bg-background border-0 pl-10"
+					/>
+				</div>
+			</div>
 
-								<NavigationMenu.Link href="#" class="flex-row items-center gap-2">
-									<CircleCheckIcon />
-									Done
-								</NavigationMenu.Link>
-							</li>
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item> -->
-			</NavigationMenu.List>
-		</NavigationMenu.Root>
+			<!-- Right Section -->
+			<div class="flex items-center space-x-3">
+				<!-- Theme Toggle -->
+				<Button onclick={toggleMode} variant="ghost" size="icon" class="hidden sm:flex">
+					<Sun class="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+					<Moon
+						class="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+					/>
+					<span class="sr-only">Toggle theme</span>
+				</Button>
+
+				{#if isLoggedIn}
+					<!-- Write Button -->
+					<Button href="{base}/write" size="sm" class="hidden shrink-0 sm:flex">
+						<PenTool class="mr-2 h-4 w-4" />
+						Write
+					</Button>
+
+					<!-- User Dropdown -->
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+							<Button variant="ghost" class="relative h-auto rounded-full px-2 py-1">
+								{@render userInfo(user)}
+							</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-56" align="end">
+							<DropdownMenu.Label class="font-normal">
+								<div class="flex flex-col space-y-1">
+									<p class="text-sm leading-none font-medium">{user?.username || 'User'}</p>
+									<p class="text-muted-foreground text-xs leading-none">
+										{user?.email || 'user@example.com'}
+									</p>
+								</div>
+							</DropdownMenu.Label>
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item>
+								<a href="{base}/dashboard" class="flex w-full items-center">
+									<UserIcon class="mr-2 h-4 w-4" />
+									<span>Dashboard</span>
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								<a href="{base}/profile" class="flex w-full items-center">
+									<Settings class="mr-2 h-4 w-4" />
+									<span>Settings</span>
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								<a href="{base}/bookmarks" class="flex w-full items-center">
+									<Bookmark class="mr-2 h-4 w-4" />
+									<span>Bookmarks</span>
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item>
+								<form action="/logout" method="post" use:enhance class="w-full">
+									<button type="submit" class="flex w-full items-center text-left">
+										<LogOut class="mr-2 h-4 w-4" />
+										<span>Log out</span>
+									</button>
+								</form>
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				{:else}
+					<!-- Auth Buttons -->
+					<Button href="{base}/login" variant="ghost" size="sm" class="hidden shrink-0 sm:flex">
+						Login
+					</Button>
+					<Button href="{base}/register" size="sm" class="hidden shrink-0 sm:flex">Sign Up</Button>
+				{/if}
+
+				<!-- Mobile Menu Toggle -->
+				<Button
+					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+					variant="ghost"
+					size="icon"
+					class="shrink-0 lg:hidden"
+				>
+					<Menu class="h-5 w-5" />
+					<span class="sr-only">Toggle menu</span>
+				</Button>
+			</div>
+		</div>
 	</div>
+</header>
 
-	<div class="flex flex-row">
-		{#if isLoggedIn}
-			{@render userInfo(user)}
-		{/if}
-		<Button onclick={toggleMode} variant="outline" size="icon">
-			<SunIcon
-				class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 !transition-all dark:scale-0 dark:-rotate-90"
-			/>
-			<MoonIcon
-				class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 !transition-all dark:scale-100 dark:rotate-0"
-			/>
-			<span class="sr-only">Toggle theme</span>
-		</Button>
-	</div>
-</section>
+<!-- Mobile Menu -->
+{@render MobileMenu()}

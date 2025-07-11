@@ -6,6 +6,6 @@
 
 <HomeNavbar user={data.user} isLoggedIn={!!data.user?.accessToken} />
 
-<main class="w-full overflow-y-scroll">
+<main class="w-full">
 	{@render children?.()}
 </main>

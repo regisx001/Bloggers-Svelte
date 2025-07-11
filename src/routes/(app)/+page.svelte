@@ -119,7 +119,7 @@
 
 <div class="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br">
 	<!-- Hero Section -->
-	<section class="relative py-16">
+	<section class="relative py-16 pt-32">
 		<div class="bg-grid-white/[0.02] absolute inset-0 bg-[size:60px_60px]"></div>
 		<div class="relative container mx-auto px-4">
 			<div class="mx-auto max-w-3xl text-center">
