@@ -18,6 +18,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import type { Snippet } from 'svelte';
+	import { enhance } from '$app/forms';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -33,7 +35,7 @@
 		triggerAddArticle
 	}: DataTableProps<TData, TValue> = $props();
 
-	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 30 });
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
@@ -102,25 +104,79 @@
 			}
 		}
 	});
+
+	let alertDialogOpen = $state(false);
 </script>
+
+{#snippet DeleteConfirm()}
+	<AlertDialog.Root bind:open={alertDialogOpen}>
+		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
+			<Button variant="outline" type="submit" class="ml-auto">Delete All</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This will permanently delete the article and remove the data
+					from our servers.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/deleteArticlesBatch"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								alertDialogOpen = false;
+							}
+							table.toggleAllRowsSelected(false);
+							await update();
+						};
+					}}
+				>
+					<input
+						type="hidden"
+						name="ids"
+						id=""
+						value={table
+							.getFilteredSelectedRowModel()
+							.rows.map((row: Row<TData>) => (row.original as any).id)}
+					/>
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
 
 <div>
 	{#if showHeader}
 		<div class="flex items-center justify-between py-4">
-			<Input
-				placeholder="Filter titles..."
-				value={table.getColumn('title')?.getFilterValue() as string}
-				onchange={(e) => table.getColumn('title')?.setFilterValue(e.currentTarget.value)}
-				oninput={(e) => table.getColumn('title')?.setFilterValue(e.currentTarget.value)}
-				class="max-w-sm"
-			/>
-			<!-- <Button
-				variant="outline"
-				class="ml-auto"
-				onclick={() => {
-					console.log(table.getSelectedRowModel().rows[0].original);
-				}}>Log Selected</Button
-			> -->
+			<div class="flex items-center gap-4">
+				<Input
+					placeholder="Filter titles..."
+					value={table.getColumn('title')?.getFilterValue() as string}
+					onchange={(e) => table.getColumn('title')?.setFilterValue(e.currentTarget.value)}
+					oninput={(e) => table.getColumn('title')?.setFilterValue(e.currentTarget.value)}
+					class="max-w-sm"
+				/>
+				{#if table.getFilteredSelectedRowModel().rows.length > 0}
+					{@render DeleteConfirm()}
+					<!-- <form action="?/deleteArticlesBatch" method="post" use:enhance>
+						<input
+							type="hidden"
+							name="ids"
+							id=""
+							value={table
+								.getFilteredSelectedRowModel()
+								.rows.map((row: Row<TData>) => (row.original as any).id)}
+						/>
+						<Button variant="outline" type="submit" class="ml-auto">Delete All</Button>
+					</form> -->
+				{/if}
+			</div>
 
 			<div class="flex items-center gap-4">
 				<DropdownMenu.Root>
@@ -185,3 +241,9 @@
 		{table.getFilteredRowModel().rows.length} row(s) selected.
 	</div>
 </div>
+
+{JSON.stringify(
+	table.getFilteredSelectedRowModel().rows.map((row: Row<TData>) => (row.original as any).id),
+	null,
+	2
+)}

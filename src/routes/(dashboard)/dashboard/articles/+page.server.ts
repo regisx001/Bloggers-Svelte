@@ -18,11 +18,11 @@ export const actions: Actions = {
 		// Form validation
 		const title = formData.get('title');
 		const content = formData.get('content');
-		const category = formData.get('category');
+		const Article = formData.get('Article');
 		const image = formData.get('featuredImage') as File;
 
-		if (!category || typeof category !== 'string' || category.trim().length === 0) {
-			formData.delete('category');
+		if (!Article || typeof Article !== 'string' || Article.trim().length === 0) {
+			formData.delete('Article');
 		}
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -50,12 +50,12 @@ export const actions: Actions = {
 			};
 		}
 
-		const createCategoryResponse = await fetch(ARTICLES_URL, {
+		const createArticleResponse = await fetch(ARTICLES_URL, {
 			method: 'post',
 			body: formData
 		});
 
-		if (createCategoryResponse.status == 201) {
+		if (createArticleResponse.status == 201) {
 			return {
 				action: 'create',
 				success: true,
@@ -72,16 +72,32 @@ export const actions: Actions = {
 			};
 		}
 
-		const deleteCategoryResponse = await fetch(ARTICLES_URL + '/' + id, {
+		const deleteArticleResponse = await fetch(ARTICLES_URL + '/' + id, {
 			method: 'delete'
 		});
 
-		if (deleteCategoryResponse.status == 204) {
+		if (deleteArticleResponse.status == 204) {
 			return {
 				action: 'delete',
 				success: true,
 				message: 'Article Deleted successfully'
 			};
+		}
+	},
+	deleteArticlesBatch: async ({ request, fetch, locals }) => {
+		const formData = await request.formData();
+
+		// TODO: ADD VALIDATION LATER
+
+		const batchDeleteResponse = await fetch(ARTICLES_URL + '/batch', {
+			method: 'DELETE',
+			body: formData
+		});
+
+		if (batchDeleteResponse.status === 204) {
+			return;
+		} else {
+			console.log(await batchDeleteResponse.json());
 		}
 	}
 };
