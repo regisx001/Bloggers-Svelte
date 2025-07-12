@@ -95,7 +95,11 @@ export const actions: Actions = {
 		});
 
 		if (batchDeleteResponse.status === 204) {
-			return;
+			return {
+				action: 'delete',
+				success: true,
+				message: 'Article Deleted successfully'
+			};
 		} else {
 			console.log(await batchDeleteResponse.json());
 		}
