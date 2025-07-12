@@ -4,66 +4,9 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Search, Calendar, Users } from '@lucide/svelte';
+	import type { PageProps } from './$types';
 
 	// Dummy data simulating API response
-	let categoriesData = {
-		content: [
-			{
-				id: '1839c471-f6ec-4967-ac0d-4b6b1f7651d4',
-				title: 'Java',
-				description: 'Community dedicated for Java programming language and ecosystem',
-				image: 'http://localhost:8080/uploads/7a2884e2-0ead-4e55-8eca-8ce8b1cf73b7-java.png',
-				createdAt: '2025-07-10T15:32:50.14792'
-			},
-			{
-				id: '2839c471-f6ec-4967-ac0d-4b6b1f7651d5',
-				title: 'JavaScript',
-				description: 'Modern web development with JavaScript, TypeScript, and frameworks',
-				image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop',
-				createdAt: '2025-07-09T10:20:30.14792'
-			},
-			{
-				id: '3839c471-f6ec-4967-ac0d-4b6b1f7651d6',
-				title: 'Python',
-				description: 'Data science, web development, and automation with Python',
-				image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=300&fit=crop',
-				createdAt: '2025-07-08T14:15:45.14792'
-			},
-			{
-				id: '4839c471-f6ec-4967-ac0d-4b6b1f7651d7',
-				title: 'Web Design',
-				description: 'UI/UX design principles, tools, and modern design trends',
-				image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
-				createdAt: '2025-07-07T09:30:20.14792'
-			},
-			{
-				id: '5839c471-f6ec-4967-ac0d-4b6b1f7651d8',
-				title: 'DevOps',
-				description: 'CI/CD, containerization, cloud infrastructure, and automation',
-				image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop',
-				createdAt: '2025-07-06T16:45:10.14792'
-			},
-			{
-				id: '6839c471-f6ec-4967-ac0d-4b6b1f7651d9',
-				title: 'Mobile Development',
-				description: 'iOS, Android, and cross-platform mobile app development',
-				image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop',
-				createdAt: '2025-07-05T11:20:35.14792'
-			}
-		],
-		totalElements: 6,
-		totalPages: 1,
-		numberOfElements: 6
-	};
-
-	let searchQuery = $state('');
-	let filteredCategories = $derived(
-		categoriesData.content.filter(
-			(category) =>
-				category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				category.description.toLowerCase().includes(searchQuery.toLowerCase())
-		)
-	);
 
 	function formatDate(dateString: string) {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -72,6 +15,8 @@
 			day: 'numeric'
 		});
 	}
+
+	let { data }: PageProps = $props();
 </script>
 
 <svelte:head>
@@ -93,30 +38,26 @@
 			<div class="mb-12 flex justify-center">
 				<div class="relative w-full max-w-lg">
 					<Search class="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
-					<Input
-						bind:value={searchQuery}
-						placeholder="Search categories..."
-						class="h-12 border-2 pr-4 pl-12 text-base"
-					/>
+					<Input placeholder="Search categories..." class="h-12 border-2 pr-4 pl-12 text-base" />
 				</div>
 			</div>
 
 			<!-- Stats -->
-			<div class="text-muted-foreground mb-12 flex items-center justify-center gap-8 text-sm">
+			<!-- <div class="text-muted-foreground mb-12 flex items-center justify-center gap-8 text-sm">
 				<div class="flex items-center gap-2">
 					<Users class="h-4 w-4" />
-					<span>{categoriesData.totalElements} categories</span>
+					<span>{data.categories.totalElements} categories</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<Badge variant="secondary">
 						{filteredCategories.length} shown
 					</Badge>
 				</div>
-			</div>
+			</div> -->
 
 			<!-- Categories Grid -->
 			<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-				{#each filteredCategories as category (category.id)}
+				{#each data.categories?.content || [] as category (category.id)}
 					<Card.Root
 						class="group overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
 					>
@@ -155,16 +96,14 @@
 			</div>
 
 			<!-- Empty State -->
-			{#if filteredCategories.length === 0}
+			{#if data.categories?.empty}
 				<div class="flex flex-col items-center justify-center py-16 text-center">
 					<div class="mb-6 text-7xl">🔍</div>
 					<h3 class="mb-3 text-2xl font-semibold">No categories found</h3>
 					<p class="text-muted-foreground mb-6 max-w-md">
 						Try adjusting your search terms or browse all categories
 					</p>
-					<Button variant="outline" size="lg" onclick={() => (searchQuery = '')}>
-						Clear search
-					</Button>
+					<Button variant="outline" size="lg">Clear search</Button>
 				</div>
 			{/if}
 		</div>

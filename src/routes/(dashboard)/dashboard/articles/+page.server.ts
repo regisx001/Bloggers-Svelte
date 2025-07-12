@@ -1,7 +1,7 @@
 import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({}) => {
+export const load: PageServerLoad = async ({ fetch }) => {
 	try {
 		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
 		const categories: string[] = await categoriesResponse.json();
