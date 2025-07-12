@@ -5,6 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Search, Calendar, Users } from '@lucide/svelte';
 	import type { PageProps } from './$types';
+	import { base } from '$app/paths';
 
 	// Dummy data simulating API response
 
@@ -84,6 +85,7 @@
 								<span>{formatDate(category.createdAt)}</span>
 							</div>
 							<Button
+								href="{base}/categories/{category.title}"
 								size="sm"
 								variant="ghost"
 								class="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
