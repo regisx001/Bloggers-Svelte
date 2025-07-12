@@ -73,3 +73,10 @@ type Article = {
 	category: Category | null;
 	tags: string[];
 };
+
+type Tag = {
+	id: string;
+	name: string;
+	articlesCount: number;
+	createdAt: string;
+};

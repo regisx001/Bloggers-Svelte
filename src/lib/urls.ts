@@ -9,3 +9,4 @@ export const REFRESH_TOKEN_URL = PRIVATE_BACKEND_URL + '/auth/refresh-token';
 
 export const CATEGORIES_URL = PRIVATE_BACKEND_URL + '/categories';
 export const ARTICLES_URL = PRIVATE_BACKEND_URL + '/articles';
+export const TAGS_URL = PRIVATE_BACKEND_URL + '/tags';
