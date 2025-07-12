@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import HomeNavbar from '$lib/components/navigation/home-navbar.svelte';
+	import Footer from '$lib/components/app/footer.svelte';
 	let { children, data } = $props();
 </script>
 
@@ -9,3 +9,5 @@
 <main class="w-full">
 	{@render children?.()}
 </main>
+
+<Footer user={data.user} />
