@@ -242,8 +242,8 @@
 	</div>
 </div>
 
-{JSON.stringify(
+<!-- {JSON.stringify(
 	table.getFilteredSelectedRowModel().rows.map((row: Row<TData>) => (row.original as any).id),
 	null,
 	2
-)}
+)} -->

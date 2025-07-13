@@ -18,11 +18,11 @@ export const actions: Actions = {
 		// Form validation
 		const title = formData.get('title');
 		const content = formData.get('content');
-		const Article = formData.get('Article');
+		const category = formData.get('category');
 		const image = formData.get('featuredImage') as File;
 
-		if (!Article || typeof Article !== 'string' || Article.trim().length === 0) {
-			formData.delete('Article');
+		if (!category || typeof category !== 'string' || category.trim().length === 0) {
+			formData.delete('category');
 		}
 
 		if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -54,6 +54,8 @@ export const actions: Actions = {
 			method: 'post',
 			body: formData
 		});
+
+		const json = await createArticleResponse.json();
 
 		if (createArticleResponse.status == 201) {
 			return {
@@ -98,7 +100,7 @@ export const actions: Actions = {
 			return {
 				action: 'delete',
 				success: true,
-				message: 'Article Deleted successfully'
+				message: 'Articles Deleted successfully'
 			};
 		} else {
 			console.log(await batchDeleteResponse.json());

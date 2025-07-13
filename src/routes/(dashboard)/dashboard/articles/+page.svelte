@@ -13,7 +13,7 @@
 	import { Plus } from '@lucide/svelte';
 	import { Badge, badgeVariants } from '$lib/components/ui/badge/index.js';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
 
 	import { enhance } from '$app/forms';
@@ -24,6 +24,7 @@
 	import TagInput from '$lib/components/ui/tag-input/tag-input.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
 
 	const columns: ColumnDef<Article>[] = [
 		{
@@ -171,16 +172,16 @@
 </pre> -->
 
 {#snippet addArticle()}
-	<Dialog.Root bind:open={createDialogOpen}>
-		<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+	<AlertDialog.Root bind:open={createDialogOpen}>
+		<AlertDialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 			<Plus />
 			<span>Add Article</span>
-		</Dialog.Trigger>
-		<Dialog.Content class="sm:max-w-[750px]">
-			<Dialog.Header>
-				<Dialog.Title>Add Article</Dialog.Title>
-				<Dialog.Description>Fill the nessesary fields :</Dialog.Description>
-			</Dialog.Header>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content class="sm:max-w-[750px]">
+			<AlertDialog.Header>
+				<AlertDialog.Title>Add Article</AlertDialog.Title>
+				<AlertDialog.Description>Fill the nessesary fields :</AlertDialog.Description>
+			</AlertDialog.Header>
 			<form
 				action="?/createArticle"
 				method="post"
@@ -199,10 +200,13 @@
 						<Label for="title" class="text-right">Title*</Label>
 						<Input id="title" name="title" value="" placeholder="title" class="col-span-3" />
 					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
+					<div class="mb-8 grid h-96 grid-cols-4 items-center gap-4">
 						<Label for="description" class="text-right">Description*</Label>
 						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
-						<Input id="content" name="content" value="" placeholder="content" class="col-span-3" />
+						<!-- <Input id="content" name="content" value="" placeholder="content" class="col-span-3" /> -->
+						<div class="relative col-span-4">
+							<RichTextEditor name="content" class="col-span-4 max-h-96" />
+						</div>
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="image" class="text-right">Image</Label>
@@ -232,12 +236,12 @@
 					</div>
 				</div>
 
-				<Dialog.Footer>
+				<AlertDialog.Footer>
 					<Button type="submit">Save changes</Button>
-				</Dialog.Footer>
+				</AlertDialog.Footer>
 			</form>
-		</Dialog.Content>
-	</Dialog.Root>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
 {/snippet}
 
 <section class="p-6">

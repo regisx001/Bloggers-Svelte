@@ -34,6 +34,11 @@
 	export let placeholder: string = 'Start writing your content...';
 	export let readonly: boolean = false;
 	export let minHeight: string = '300px';
+	export let maxHeight: string = '';
+	export let name: string = '';
+
+	let className: string = '';
+	export { className as class };
 
 	let editor: HTMLDivElement;
 	let linkDialogOpen = false;
@@ -83,8 +88,93 @@
 
 	function handlePaste(e: ClipboardEvent) {
 		e.preventDefault();
-		const text = e.clipboardData?.getData('text/plain') || '';
-		document.execCommand('insertText', false, text);
+
+		if (!e.clipboardData) return;
+
+		// Try to get HTML content first
+		const htmlData = e.clipboardData.getData('text/html');
+		const plainTextData = e.clipboardData.getData('text/plain');
+
+		if (htmlData && htmlData.trim()) {
+			// Clean and sanitize HTML content
+			const cleanedHtml = sanitizeHtml(htmlData);
+			document.execCommand('insertHTML', false, cleanedHtml);
+		} else if (plainTextData) {
+			// Fallback to plain text
+			document.execCommand('insertText', false, plainTextData);
+		}
+
+		// Update content and toolbar state
+		content = editor.innerHTML;
+		updateToolbarState();
+	}
+
+	function sanitizeHtml(html: string): string {
+		// Create a temporary div to parse HTML
+		const tempDiv = document.createElement('div');
+		tempDiv.innerHTML = html;
+
+		// Remove potentially dangerous elements and attributes
+		const allowedTags = [
+			'p',
+			'br',
+			'strong',
+			'b',
+			'em',
+			'i',
+			'u',
+			'strike',
+			'del',
+			'h1',
+			'h2',
+			'h3',
+			'h4',
+			'h5',
+			'h6',
+			'ul',
+			'ol',
+			'li',
+			'blockquote',
+			'a',
+			'img',
+			'code',
+			'pre',
+			'hr'
+		];
+		const allowedAttributes = ['href', 'src', 'alt', 'title', 'target'];
+
+		// Remove unwanted elements
+		const allElements = tempDiv.querySelectorAll('*');
+		allElements.forEach((element) => {
+			const tagName = element.tagName.toLowerCase();
+
+			if (!allowedTags.includes(tagName)) {
+				// Replace unwanted tags with their content
+				const parent = element.parentNode;
+				if (parent) {
+					while (element.firstChild) {
+						parent.insertBefore(element.firstChild, element);
+					}
+					parent.removeChild(element);
+				}
+			} else {
+				// Remove unwanted attributes
+				const attributes = Array.from(element.attributes);
+				attributes.forEach((attr) => {
+					if (!allowedAttributes.includes(attr.name)) {
+						element.removeAttribute(attr.name);
+					}
+				});
+
+				// Add security attributes for links
+				if (tagName === 'a') {
+					element.setAttribute('target', '_blank');
+					element.setAttribute('rel', 'noopener noreferrer');
+				}
+			}
+		});
+
+		return tempDiv.innerHTML;
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -338,9 +428,13 @@
 	}
 </script>
 
-<div class="rich-text-editor bg-background overflow-hidden rounded-lg border">
-	<!-- Toolbar -->
-	<div class="bg-muted/30 border-b p-2">
+<div
+	class="rich-text-editor bg-background flex flex-col overflow-hidden rounded-lg border {className}"
+>
+	<input type="hidden" {name} bind:value={content} />
+
+	<!-- Fixed Toolbar -->
+	<div class="bg-muted/30 flex-shrink-0 border-b p-2">
 		<div class="flex flex-wrap items-center gap-1">
 			<!-- Text Formatting Group -->
 			<div class="flex items-center gap-1">
@@ -615,12 +709,12 @@
 		</div>
 	</div>
 
-	<!-- Editor Content -->
+	<!-- Scrollable Content Area -->
 	<div
 		bind:this={editor}
 		contenteditable={!readonly}
-		class="prose prose-sm editor-content max-w-none p-4 focus:outline-none"
-		style="min-height: {minHeight};"
+		class="prose prose-sm editor-content max-w-none flex-1 overflow-y-auto p-4 focus:outline-none"
+		style="min-height: {minHeight}; {maxHeight ? `max-height: ${maxHeight};` : ''}"
 		data-placeholder={placeholder}
 		role="textbox"
 		aria-label="Rich text editor"
