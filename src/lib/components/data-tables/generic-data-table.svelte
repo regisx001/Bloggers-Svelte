@@ -121,7 +121,9 @@
 	};
 
 	const getSelectedIds = () => {
-		return table.getFilteredSelectedRowModel().rows.map((row: Row<TData>) => (row.original as any).id);
+		return table
+			.getFilteredSelectedRowModel()
+			.rows.map((row: Row<TData>) => (row.original as any).id);
 	};
 </script>
 
@@ -137,11 +139,7 @@
 					class="max-w-sm"
 				/>
 				{#if table.getFilteredSelectedRowModel().rows.length > 0}
-					<Button 
-						variant="outline" 
-						class="ml-auto"
-						onclick={() => deleteDialogOpen = true}
-					>
+					<Button variant="outline" class="ml-auto" onclick={() => (deleteDialogOpen = true)}>
 						Delete All
 					</Button>
 				{/if}
@@ -199,7 +197,8 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={columns.length} class="h-24 text-center">{emptyMessage}</Table.Cell>
+						<Table.Cell colspan={columns.length} class="h-24 text-center">{emptyMessage}</Table.Cell
+						>
 					</Table.Row>
 				{/each}
 			</Table.Body>
@@ -213,7 +212,7 @@
 
 <DeleteConfirmation
 	bind:open={deleteDialogOpen}
-	entityName={entityName}
+	{entityName}
 	entityType="batch"
 	deleteAction={deleteBatchAction}
 	selectedIds={getSelectedIds()}

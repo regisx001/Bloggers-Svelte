@@ -29,8 +29,8 @@
 		<Button
 			variant="ghost"
 			size="sm"
-			class="hover:bg-muted hover:cursor-pointer p-1"
-			onclick={() => deleteConfirmOpen = true}
+			class="hover:bg-muted p-1 hover:cursor-pointer"
+			onclick={() => (deleteConfirmOpen = true)}
 		>
 			<Trash size="16" class="text-destructive" />
 		</Button>
@@ -52,7 +52,7 @@
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 			<DropdownMenu.Separator />
-			
+
 			{#if viewDetailsRoute}
 				<DropdownMenu.Item>
 					<a href={viewDetailsRoute} class="w-full">
@@ -64,7 +64,7 @@
 					View {entityName.charAt(0).toUpperCase() + entityName.slice(1)} details
 				</DropdownMenu.Item>
 			{/if}
-			
+
 			{#each additionalActions as action}
 				<DropdownMenu.Item onclick={action.action}>
 					{action.label}
@@ -77,8 +77,8 @@
 <!-- Delete Confirmation Dialog -->
 <DeleteConfirmation
 	bind:open={deleteConfirmOpen}
-	entityName={entityName}
+	{entityName}
 	entityType="single"
-	deleteAction={deleteAction}
+	{deleteAction}
 	selectedIds={entityId}
 />

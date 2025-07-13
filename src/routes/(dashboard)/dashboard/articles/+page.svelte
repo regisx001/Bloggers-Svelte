@@ -145,7 +145,7 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				return renderComponent(GenericDataTableActions, { 
+				return renderComponent(GenericDataTableActions, {
 					entityId: row.original.id,
 					entityName: 'article',
 					deleteAction: '?/deleteArticle'
@@ -249,9 +249,9 @@
 {/snippet}
 
 <section class="p-6">
-	<GenericDataTable 
-		showHeader 
-		data={data.articles?.content || []} 
+	<GenericDataTable
+		showHeader
+		data={data.articles?.content || []}
 		{columns}
 		entityName="article"
 		deleteBatchAction="?/deleteArticlesBatch"
