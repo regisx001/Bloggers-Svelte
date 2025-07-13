@@ -5,7 +5,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	try {
 		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
 		const categories: string[] = await categoriesResponse.json();
-		const articlesResponse = await fetch(ARTICLES_URL + '?sort=createdAt,desc');
+		const articlesResponse = await fetch(ARTICLES_URL + '/admin' + '?sort=createdAt,desc');
 		const articles: Page<Article> = await articlesResponse.json();
 		return { articles, categories };
 	} catch (error) {}

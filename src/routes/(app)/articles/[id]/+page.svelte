@@ -6,7 +6,6 @@
 	import TimeStamp from '$lib/components/time-stamp.svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { CalendarIcon, ArrowLeftIcon, TagIcon, FolderIcon, ShareIcon } from '@lucide/svelte';
-	import { page } from '$app/stores';
 
 	let { data }: PageProps = $props();
 	const article = data.article;
@@ -90,7 +89,7 @@
 			<!-- Actions -->
 			<div class="flex items-center space-x-2">
 				<!-- Status -->
-				{#if article.isPublished}
+				{#if article.status === 'PUBLISHED'}
 					<Badge variant="default">Published</Badge>
 				{:else}
 					<Badge variant="secondary">Draft</Badge>

@@ -16,7 +16,7 @@
 				</p>
 				<div class="flex space-x-2">
 					{#if user}
-						<Button variant="outline" size="sm" href="/dashboard">Dashboard</Button>
+						<Button variant="outline" size="sm" href="/admin">Dashboard</Button>
 						<form action="/logout" method="post" use:enhance class="inline">
 							<Button variant="ghost" size="sm" type="submit">Logout</Button>
 						</form>

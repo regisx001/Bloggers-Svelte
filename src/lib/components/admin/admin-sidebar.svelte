@@ -29,27 +29,27 @@
 		navMain: [
 			{
 				title: 'Overview',
-				url: '/dashboard',
+				url: '/admin',
 				icon: DashboardIcon
 			},
 			{
 				title: 'Insight',
-				url: '/dashboard/insight',
+				url: '/admin/insight',
 				icon: DashboardIcon
 			},
 			{
 				title: 'Categories',
-				url: '/dashboard/categories',
+				url: '/admin/categories',
 				icon: Category
 			},
 			{
 				title: 'Articles',
-				url: '/dashboard/articles',
+				url: '/admin/articles',
 				icon: Article
 			},
 			{
 				title: 'Tags',
-				url: '/dashboard/tags',
+				url: '/admin/tags',
 				icon: Article
 			}
 			// {

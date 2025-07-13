@@ -235,7 +235,7 @@
 							</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>
-								<a href="{base}/dashboard" class="flex w-full items-center">
+								<a href="{base}/admin" class="flex w-full items-center">
 									<UserIcon class="mr-2 h-4 w-4" />
 									<span>Dashboard</span>
 								</a>
