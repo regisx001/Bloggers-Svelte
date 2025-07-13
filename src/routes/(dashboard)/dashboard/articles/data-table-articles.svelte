@@ -164,17 +164,6 @@
 				/>
 				{#if table.getFilteredSelectedRowModel().rows.length > 0}
 					{@render DeleteConfirm()}
-					<!-- <form action="?/deleteArticlesBatch" method="post" use:enhance>
-						<input
-							type="hidden"
-							name="ids"
-							id=""
-							value={table
-								.getFilteredSelectedRowModel()
-								.rows.map((row: Row<TData>) => (row.original as any).id)}
-						/>
-						<Button variant="outline" type="submit" class="ml-auto">Delete All</Button>
-					</form> -->
 				{/if}
 			</div>
 

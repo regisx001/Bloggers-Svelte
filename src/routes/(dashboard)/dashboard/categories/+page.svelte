@@ -12,16 +12,12 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Plus } from '@lucide/svelte';
 
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
 
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
-
-	const timeStampSnippet = createRawSnippet(() => ({
-		render: () => '<TimeStamp />'
-	}));
 
 	const columns: ColumnDef<Category>[] = [
 		{
@@ -139,16 +135,16 @@
 {JSON.stringify(form, null, 2)} -->
 
 {#snippet addCategory()}
-	<Dialog.Root bind:open={createDialogOpen}>
-		<Dialog.Trigger class={buttonVariants({ variant: 'outline' })}>
+	<AlertDialog.Root bind:open={createDialogOpen}>
+		<AlertDialog.Trigger class={buttonVariants({ variant: 'outline' })}>
 			<Plus />
 			<span>Add Category</span>
-		</Dialog.Trigger>
-		<Dialog.Content class="sm:max-w-[425px]">
-			<Dialog.Header>
-				<Dialog.Title>Add Category</Dialog.Title>
-				<Dialog.Description>Fill the nessesary fields :</Dialog.Description>
-			</Dialog.Header>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content class="sm:max-w-[425px]">
+			<AlertDialog.Header>
+				<AlertDialog.Title>Add Category</AlertDialog.Title>
+				<AlertDialog.Description>Fill the nessesary fields :</AlertDialog.Description>
+			</AlertDialog.Header>
 			<form
 				action="?/createCategory"
 				method="post"
@@ -184,12 +180,12 @@
 					</div>
 				</div>
 
-				<Dialog.Footer>
+				<AlertDialog.Footer>
 					<Button type="submit">Save changes</Button>
-				</Dialog.Footer>
+				</AlertDialog.Footer>
 			</form>
-		</Dialog.Content>
-	</Dialog.Root>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
 {/snippet}
 
 <section class="p-6">

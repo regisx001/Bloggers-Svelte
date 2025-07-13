@@ -18,18 +18,20 @@
 
 	onMount(() => {
 		if (data.tags?.content && Array.isArray(data.tags.content)) {
-			chartData = data.tags?.content.map((tag) => ({
-				name: tag.name,
-				articlesCount: tag.articlesCount
-			}));
+			chartData = data.tags?.content
+				.map((tag) => ({
+					name: tag.name,
+					articlesCount: tag.articlesCount
+				}))
+				.slice(0, 10);
 		}
 	});
 </script>
 
-<pre>
+<!-- <pre>
     {JSON.stringify(chartData, null, 2)}
-</pre>
-<div>
+</pre> -->
+<div class="w-[500px]">
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Bar Chart - Horizontal</Card.Title>
@@ -67,7 +69,7 @@
 					}}
 				>
 					{#snippet tooltip()}
-						<Chart.Tooltip hideLabel />
+						<Chart.Tooltip />
 					{/snippet}
 				</BarChart>
 			</Chart.Container>

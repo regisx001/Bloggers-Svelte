@@ -84,5 +84,13 @@ export const actions: Actions = {
 				message: 'Category Deleted successfully'
 			};
 		}
+	},
+	deleteCategoriesBatch: async ({ request, fetch, locals }) => {
+		// TODO : Implement Later
+		return {
+			action: 'delete',
+			success: true,
+			message: 'Category Deleted successfully'
+		};
 	}
 };
