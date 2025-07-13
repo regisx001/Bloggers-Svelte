@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import DataTable from './data-table-categories.svelte';
+	import GenericDataTable from '$lib/components/data-tables/generic-data-table.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { createRawSnippet, onMount } from 'svelte';
 	let { data, form }: PageProps = $props();
 	import { renderSnippet } from '$lib/components/ui/data-table/index.js';
 	import DataTableCheckbox from '$lib/components/data-tables/data-table-checkbox.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table/index.js';
-	import DataTableCategoriesActions from './data-table-categories-actions.svelte';
+	import GenericDataTableActions from '$lib/components/data-tables/generic-data-table-actions.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Plus } from '@lucide/svelte';
@@ -104,7 +104,11 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				return renderComponent(DataTableCategoriesActions, { id: row.original.id });
+				return renderComponent(GenericDataTableActions, { 
+					entityId: row.original.id,
+					entityName: 'category',
+					deleteAction: '?/deleteCategory'
+				});
 			}
 		}
 	];
@@ -189,11 +193,20 @@
 {/snippet}
 
 <section class="p-6">
-	<DataTable showHeader data={data.categories?.content || []} {columns}>
-		{#snippet triggerAddCategory()}
+	<GenericDataTable 
+		showHeader 
+		data={data.categories?.content || []} 
+		{columns}
+		entityName="category"
+		deleteBatchAction="?/deleteCategoriesBatch"
+		filterColumn="title"
+		filterPlaceholder="Filter categories..."
+		pageSize={10}
+	>
+		{#snippet triggerAdd()}
 			{@render addCategory()}
 		{/snippet}
-	</DataTable>
+	</GenericDataTable>
 	<!-- <pre class="pre">
 		{JSON.stringify(data.categories, null, 2)}
 		</pre> -->
