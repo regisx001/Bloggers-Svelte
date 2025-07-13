@@ -13,7 +13,6 @@
 	import Category from '@tabler/icons-svelte/icons/category';
 	import Article from '@tabler/icons-svelte/icons/article';
 	import Tag from '@lucide/svelte/icons/tag';
-
 	import NavMain from '../navigation/nav-main.svelte';
 
 	import NavUser from '../navigation/nav-user.svelte';
@@ -30,28 +29,8 @@
 		navMain: [
 			{
 				title: 'Overview',
-				url: '/admin',
+				url: '/dashboard',
 				icon: DashboardIcon
-			},
-			{
-				title: 'Insight',
-				url: '/admin/insight',
-				icon: DashboardIcon
-			},
-			{
-				title: 'Categories',
-				url: '/admin/categories',
-				icon: Category
-			},
-			{
-				title: 'Articles',
-				url: '/admin/articles',
-				icon: Article
-			},
-			{
-				title: 'Tags',
-				url: '/admin/tags',
-				icon: Article
 			}
 			// {
 			// 	title: 'Lifecycle',
