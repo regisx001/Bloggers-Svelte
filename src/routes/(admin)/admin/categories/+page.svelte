@@ -88,20 +88,6 @@
 		},
 
 		{
-			accessorKey: 'updatedAt',
-			header: () => {
-				const updatedAtHeaderSnippet = createRawSnippet(() => ({
-					render: () => `<div class="">Updated At</div>`
-				}));
-				return renderSnippet(updatedAtHeaderSnippet, '');
-			},
-			cell: ({ row }) => {
-				return renderComponent(TimeStamp, {
-					date: row.original.updatedAt
-				});
-			}
-		},
-		{
 			id: 'actions',
 			cell: ({ row }) => {
 				return renderComponent(GenericDataTableActions, {

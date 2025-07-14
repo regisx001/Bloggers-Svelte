@@ -31,7 +31,7 @@
 <!-- <pre>
     {JSON.stringify(chartData, null, 2)}
 </pre> -->
-<div class="w-[500px]">
+<div class="mx-10 w-[500px]">
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Bar Chart - Horizontal</Card.Title>
@@ -45,7 +45,7 @@
 					yScale={scaleBand().padding(0.25)}
 					y="name"
 					series={[{ key: 'articlesCount', label: 'Articles Count', color: chartConfig.tag.color }]}
-					padding={{ left: 20 }}
+					padding={{ left: 60 }}
 					grid={false}
 					rule={false}
 					axis="y"
@@ -54,7 +54,7 @@
 							stroke: 'none',
 							radius: 5,
 							insets: {
-								left: 24
+								left: 30
 							},
 							rounded: 'all',
 							initialWidth: 0,
@@ -65,7 +65,7 @@
 							}
 						},
 						highlight: { area: { fill: 'none' } },
-						yAxis: { format: (d) => d.slice(0, 3) }
+						yAxis: { format: (d) => d }
 					}}
 				>
 					{#snippet tooltip()}

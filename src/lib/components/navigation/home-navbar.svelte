@@ -109,6 +109,16 @@
 							<UserIcon class="h-4 w-4" />
 							<span>Dashboard</span>
 						</a>
+
+						<a
+							href="{base}/admin"
+							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							<UserIcon class="h-4 w-4" />
+							<span>Admin</span>
+						</a>
+
 						<a
 							href="{base}/write"
 							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
@@ -235,9 +245,15 @@
 							</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>
-								<a href="{base}/admin" class="flex w-full items-center">
+								<a href="{base}/dashboard" class="flex w-full items-center">
 									<UserIcon class="mr-2 h-4 w-4" />
 									<span>Dashboard</span>
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								<a href="{base}/admin" class="flex w-full items-center">
+									<UserIcon class="mr-2 h-4 w-4" />
+									<span>Admin</span>
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Item>
