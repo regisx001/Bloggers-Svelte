@@ -3,16 +3,17 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { enhance } from '$app/forms';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import { Trash } from '@lucide/svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-
-	let { id }: { id: string } = $props();
-	let alertDialogOpen = $state(false);
+	import Send from '@tabler/icons-svelte/icons/send';
+	import type { Row } from '@tanstack/table-core';
+	let { id, row }: { id: string; row: Row<Article> } = $props();
+	let deleteAlertDialogOpen = $state(false);
+	let publishAlertDialogOpen = $state(false);
 </script>
 
-{#snippet DeleteConfirm()}
-	<AlertDialog.Root bind:open={alertDialogOpen}>
+{#snippet deleteConfirm()}
+	<AlertDialog.Root bind:open={deleteAlertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
 			<Trash size="16" class=" text-destructive " />
 		</AlertDialog.Trigger>
@@ -32,7 +33,7 @@
 					use:enhance={() => {
 						return async ({ result, update }) => {
 							if (result.type === 'success') {
-								alertDialogOpen = false;
+								deleteAlertDialogOpen = false;
 							}
 							await update();
 						};
@@ -45,9 +46,50 @@
 		</AlertDialog.Content>
 	</AlertDialog.Root>
 {/snippet}
-<div class="flex justify-around">
-	<div class="flex items-center">
-		{@render DeleteConfirm()}
+
+{#snippet publishConfirm()}
+	<AlertDialog.Root bind:open={publishAlertDialogOpen}>
+		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
+			<Send size="16" class=" text-success " />
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This will publish the article and will be visible by all the
+					users !
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/deleteArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								publishAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
+
+<div class="ml-2 flex justify-around gap-4">
+	<div class="flex w-6 items-center justify-center">
+		{#if !row.original.isPublished}
+			{@render publishConfirm()}
+		{/if}
+	</div>
+	<div class="flex w-6 items-center justify-center">
+		{@render deleteConfirm()}
 	</div>
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>

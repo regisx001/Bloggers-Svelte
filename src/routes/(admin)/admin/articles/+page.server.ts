@@ -1,4 +1,5 @@
 import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
+import { asAny } from 'layerchart';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
@@ -65,6 +66,8 @@ export const actions: Actions = {
 			};
 		}
 	},
+
+	publishArticle: async ({ request, locals }) => {},
 
 	deleteArticle: async ({ request, fetch, locals }) => {
 		const id = (await request.formData()).get('articleId');

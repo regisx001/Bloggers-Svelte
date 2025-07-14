@@ -25,6 +25,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	import DataTableArticlesActions from './data-table-articles-actions.svelte';
 
 	const columns: ColumnDef<Article>[] = [
 		{
@@ -67,7 +68,14 @@
 		},
 		{
 			accessorKey: 'title',
-			header: 'Title'
+			header: 'Title',
+
+			cell: ({ row }) => {
+				// TODO: add tooltip Later
+				return row.original.title.length > 20
+					? row.original.title.slice(0, 20) + '...'
+					: row.original.title;
+			}
 		},
 		{
 			accessorKey: 'author',
@@ -145,11 +153,7 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				return renderComponent(GenericDataTableActions, {
-					entityId: row.original.id,
-					entityName: 'article',
-					deleteAction: '?/deleteArticle'
-				});
+				return renderComponent(DataTableArticlesActions, { row, id: row.original.id });
 			}
 		}
 	];
