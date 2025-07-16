@@ -27,6 +27,13 @@
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
 	import DataTableArticlesActions from './data-table-articles-actions.svelte';
 
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import { tick } from 'svelte';
+	import * as Command from '$lib/components/ui/command/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { cn } from '$lib/utils.js';
+
 	const columns: ColumnDef<Article>[] = [
 		{
 			id: 'select',
@@ -172,7 +179,23 @@
 	});
 
 	let createDialogOpen = $state(false);
-	let selectedCategory: string | undefined = $state(undefined);
+
+	let selectCategoryOpen = $state(false);
+	let selectedCategory = $state('');
+	let triggerRef = $state<HTMLButtonElement>(null!);
+
+	// @ts-ignore
+	const selectedValue = $derived(data?.categories.find((f) => f === selectedCategory));
+
+	// We want to refocus the trigger button when the user selects
+	// an item from the list so users can continue navigating the
+	// rest of the form with the keyboard.
+	function closeAndFocusTrigger() {
+		selectCategoryOpen = false;
+		tick().then(() => {
+			triggerRef.focus();
+		});
+	}
 </script>
 
 <!-- <pre>
@@ -208,6 +231,52 @@
 						<Label for="title" class="text-right">Title*</Label>
 						<Input id="title" name="title" value="" placeholder="title" class="col-span-3" />
 					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="Category" class="text-right">Category</Label>
+
+						<Popover.Root bind:open={selectCategoryOpen}>
+							<Popover.Trigger bind:ref={triggerRef}>
+								{#snippet child({ props })}
+									<Button
+										{...props}
+										variant="outline"
+										class="col-span-3 w-full justify-between"
+										role="combobox"
+										aria-expanded={selectCategoryOpen}
+									>
+										{selectedValue || 'Select a Category...'}
+										<ChevronsUpDownIcon class="opacity-50" />
+									</Button>
+								{/snippet}
+							</Popover.Trigger>
+							<Popover.Content class="col-span-3 w-[500px] p-0">
+								<Command.Root>
+									<Command.Input placeholder="Search Category..." />
+									<Command.List>
+										<Command.Empty>No Category found.</Command.Empty>
+										<Command.Group value="category">
+											{#each data.categories || [] as category}
+												<Command.Item
+													class="cursor-pointer"
+													value={category}
+													onSelect={() => {
+														selectedCategory = category;
+														closeAndFocusTrigger();
+													}}
+												>
+													<CheckIcon
+														class={cn(selectedCategory !== category && 'text-transparent')}
+													/>
+													{category}
+												</Command.Item>
+											{/each}
+										</Command.Group>
+									</Command.List>
+								</Command.Root>
+							</Popover.Content>
+						</Popover.Root>
+						<input type="hidden" bind:value={selectedCategory} name="category" />
+					</div>
 					<div class="mb-8 grid h-96 grid-cols-4 items-center gap-4">
 						<Label for="description" class="text-right">Description*</Label>
 						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
@@ -226,19 +295,7 @@
 							class="col-span-3"
 						/>
 					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="Category" class="text-right">Category</Label>
-						<Select.Root name="category" type="single" bind:value={selectedCategory}>
-							<Select.Trigger class="col-span-3 w-full"
-								>{selectedCategory ? selectedCategory : 'Select a category'}</Select.Trigger
-							>
-							<Select.Content>
-								{#each data?.categories || [] as category}
-									<Select.Item value={category}>{category}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
+
 					<div class="items-center gap-4">
 						<TagInput name="tags" placeholder="add tags" />
 					</div>

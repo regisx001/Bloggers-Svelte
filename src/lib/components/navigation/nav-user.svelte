@@ -56,7 +56,7 @@
 				</DropdownMenu.Label>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
-					<a href="{base}/dashboard/account">
+					<a href="{base}/admin/account">
 						<DropdownMenu.Item>
 							<UserCircleIcon />
 							Account
