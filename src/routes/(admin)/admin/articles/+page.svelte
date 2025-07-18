@@ -173,7 +173,7 @@
 			} else if (form?.action === 'delete') {
 				toast.error(form?.message);
 			} else {
-				toast.success(form?.message);
+				toast.info(form?.message);
 			}
 		}
 	});

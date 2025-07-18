@@ -50,7 +50,25 @@
 {#snippet publishConfirm()}
 	<AlertDialog.Root bind:open={publishAlertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
-			<Send size="16" class=" text-success " />
+			<svg
+				width="20"
+				height="20"
+				viewBox="0 0 20 20"
+				fill="none"
+				class="fill-green"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<!-- Upload arrow -->
+				<path d="M12 3L8 7h3v8h2V7h3l-4-4z" fill="currentColor" />
+
+				<!-- Base platform -->
+				<rect x="4" y="19" width="16" height="2" fill="currentColor" />
+
+				<!-- Cloud/publish indicators -->
+				<circle cx="6" cy="16" r="1" fill="currentColor" opacity="0.6" />
+				<circle cx="18" cy="16" r="1" fill="currentColor" opacity="0.6" />
+				<circle cx="12" cy="16" r="1" fill="currentColor" opacity="0.6" />
+			</svg>
 		</AlertDialog.Trigger>
 		<AlertDialog.Content>
 			<AlertDialog.Header>
@@ -63,7 +81,7 @@
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 				<form
-					action="?/deleteArticle"
+					action="?/publishArticle"
 					method="post"
 					use:enhance={() => {
 						return async ({ result, update }) => {

@@ -1,4 +1,4 @@
-import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
+import { ADMIN_ARTICLES_URL, ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
 import { asAny } from 'layerchart';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -67,7 +67,30 @@ export const actions: Actions = {
 		}
 	},
 
-	publishArticle: async ({ request, locals }) => {},
+	publishArticle: async ({ request, locals }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+
+		// TODO : THERE IS A BUG HERE, THE INTERCEPTOR NOT WORKING
+		const publishResponse = await fetch(ADMIN_ARTICLES_URL + '/publish/' + id, {
+			method: 'post',
+			headers: {
+				Authorization: 'Bearer ' + locals.user.accessToken
+			}
+		});
+
+		if (publishResponse.status === 200) {
+			return {
+				action: 'publish',
+				success: true,
+				message: 'Article Published successfully'
+			};
+		}
+	},
 
 	deleteArticle: async ({ request, fetch, locals }) => {
 		const id = (await request.formData()).get('articleId');
