@@ -40,6 +40,9 @@
 	let className: string = '';
 	export { className as class };
 
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
 	let editor: HTMLDivElement;
 	let linkDialogOpen = false;
 	let imageDialogOpen = false;
@@ -47,6 +50,9 @@
 	let linkText = '';
 	let imageUrl = '';
 	let imageAlt = '';
+	let imageFile: File | null = null;
+	let imageUploadMethod: 'url' | 'file' = 'url';
+	let isUploadingImage = false;
 
 	// Active states for toolbar buttons
 	let activeBold = false;
@@ -98,15 +104,123 @@
 		if (htmlData && htmlData.trim()) {
 			// Clean and sanitize HTML content
 			const cleanedHtml = sanitizeHtml(htmlData);
-			document.execCommand('insertHTML', false, cleanedHtml);
+			insertHtmlAtCursor(cleanedHtml);
 		} else if (plainTextData) {
-			// Fallback to plain text
-			document.execCommand('insertText', false, plainTextData);
+			// For plain text, preserve line breaks and handle code blocks
+			const processedText = processPlainTextForPaste(plainTextData);
+			insertHtmlAtCursor(processedText);
 		}
 
 		// Update content and toolbar state
 		content = editor.innerHTML;
 		updateToolbarState();
+	}
+
+	function processPlainTextForPaste(text: string): string {
+		// Split text into lines and process each line
+		const lines = text.split('\n');
+		let processedHtml = '';
+		let inCodeBlock = false;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			// Check if this line looks like code (starts with spaces/tabs or contains code patterns)
+			const isCodeLine =
+				/^\s{4,}/.test(line) ||
+				/^[\t]+/.test(line) ||
+				line.includes('function') ||
+				line.includes('const') ||
+				line.includes('let') ||
+				line.includes('var') ||
+				line.includes('import') ||
+				line.includes('export') ||
+				line.includes('class') ||
+				line.includes('interface') ||
+				line.includes('type');
+
+			if (isCodeLine && !inCodeBlock) {
+				// Start code block
+				processedHtml += '<pre><code>';
+				inCodeBlock = true;
+			} else if (!isCodeLine && inCodeBlock) {
+				// End code block
+				processedHtml += '</code></pre>';
+				inCodeBlock = false;
+			}
+
+			if (inCodeBlock) {
+				// Preserve formatting in code blocks
+				processedHtml += line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				if (i < lines.length - 1) processedHtml += '\n';
+			} else {
+				// Regular text with line breaks
+				processedHtml += line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+				if (i < lines.length - 1) processedHtml += '<br>';
+			}
+		}
+
+		// Close code block if still open
+		if (inCodeBlock) {
+			processedHtml += '</code></pre>';
+		}
+
+		return processedHtml;
+	}
+
+	function insertHtmlAtCursor(html: string) {
+		if (typeof window === 'undefined' || !editor) return;
+
+		// Ensure editor is focused
+		editor.focus();
+
+		const selection = window.getSelection();
+		
+		// If no selection exists, create one at the end of the editor
+		if (!selection || selection.rangeCount === 0) {
+			// Create a range at the end of the editor
+			const range = document.createRange();
+			range.selectNodeContents(editor);
+			range.collapse(false); // Collapse to end
+			if (selection) {
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}
+
+		if (!selection || selection.rangeCount === 0) return;
+
+		const range = selection.getRangeAt(0);
+
+		// Ensure we're inserting within the editor
+		if (!editor.contains(range.commonAncestorContainer)) {
+			// If the range is not within the editor, create a new range at the end
+			const newRange = document.createRange();
+			newRange.selectNodeContents(editor);
+			newRange.collapse(false);
+			selection.removeAllRanges();
+			selection.addRange(newRange);
+		}
+
+		// Delete selected content if any
+		range.deleteContents();
+
+		// Create a document fragment from the HTML
+		const fragment = range.createContextualFragment(html);
+		
+		// Insert the fragment
+		range.insertNode(fragment);
+
+		// Move cursor to end of inserted content
+		range.setStartAfter(fragment.lastChild || fragment);
+		range.collapse(true);
+		
+		// Update the selection
+		selection.removeAllRanges();
+		selection.addRange(range);
+
+		// Ensure the editor maintains focus
+		editor.focus();
 	}
 
 	function sanitizeHtml(html: string): string {
@@ -219,13 +333,20 @@
 	}
 
 	function execCommand(command: string, value?: string) {
-		if (typeof document === 'undefined') return;
-		document.execCommand(command, false, value);
-		if (editor) {
-			editor.focus();
-			// Update toolbar state after command execution
-			setTimeout(updateToolbarState, 10);
+		if (typeof document === 'undefined' || !editor) return;
+
+		// For better cross-browser compatibility and cursor positioning
+		editor.focus();
+
+		if (command === 'insertHTML' && value) {
+			insertHtmlAtCursor(value);
+		} else {
+			document.execCommand(command, false, value);
 		}
+
+		// Update content and toolbar state
+		content = editor.innerHTML;
+		setTimeout(updateToolbarState, 10);
 	}
 
 	function formatBlock(tag: string) {
@@ -251,10 +372,13 @@
 		if (linkUrl && typeof document !== 'undefined') {
 			if (linkText) {
 				const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
-				document.execCommand('insertHTML', false, html);
+				insertHtmlAtCursor(html);
 			} else {
-				document.execCommand('createLink', false, linkUrl);
+				const html = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${linkUrl}</a>`;
+				insertHtmlAtCursor(html);
 			}
+			// Update content
+			content = editor.innerHTML;
 		}
 		linkDialogOpen = false;
 		linkUrl = '';
@@ -271,66 +395,74 @@
 			imageAlt = selection.toString().trim();
 		}
 
+		// Reset dialog state
+		imageUrl = '';
+		imageFile = null;
+		imageUploadMethod = 'url';
+		isUploadingImage = false;
 		imageDialogOpen = true;
 	}
 
-	function applyImage() {
-		// Validate inputs
-		if (!imageUrl.trim() || typeof document === 'undefined' || !editor) {
-			return;
-		}
+	async function applyImage() {
+		if (typeof document === 'undefined' || !editor) return;
 
-		// Focus the editor first to ensure we have an active selection
-		editor.focus();
+		let finalImageUrl = '';
 
-		// Create the image HTML with better styling
-		const cleanImageUrl = imageUrl.trim();
-		const cleanImageAlt = imageAlt.trim() || 'Image';
-		const html = `<img src="${cleanImageUrl}" alt="${cleanImageAlt}" style="max-width: 100%; height: auto; margin: 10px 0; display: block;" />`;
-
-		// Use insertHTML to insert the image
-		const success = document.execCommand('insertHTML', false, html);
-
-		// Fallback method if insertHTML doesn't work
-		if (!success) {
+		if (imageUploadMethod === 'file' && imageFile) {
+			// Handle file upload
 			try {
-				const selection = window.getSelection();
-				if (selection && selection.rangeCount > 0) {
-					const range = selection.getRangeAt(0);
-					range.deleteContents();
+				isUploadingImage = true;
 
-					const img = document.createElement('img');
-					img.src = cleanImageUrl;
-					img.alt = cleanImageAlt;
-					img.style.maxWidth = '100%';
-					img.style.height = 'auto';
-					img.style.margin = '10px 0';
-					img.style.display = 'block';
+				// Dispatch event for parent to handle upload
+				dispatch('imageUpload', {
+					file: imageFile,
+					alt: imageAlt.trim() || 'Image',
+					callback: (uploadedUrl: string) => {
+						if (uploadedUrl) {
+							insertImageAtCursor(uploadedUrl, imageAlt.trim() || 'Image');
+						}
+						resetImageDialog();
+					}
+				});
 
-					range.insertNode(img);
-
-					// Move cursor after the image
-					const newRange = document.createRange();
-					newRange.setStartAfter(img);
-					newRange.collapse(true);
-					selection.removeAllRanges();
-					selection.addRange(newRange);
-				}
+				// Don't continue with the rest of the function
+				return;
 			} catch (error) {
-				console.error('Error inserting image:', error);
+				console.error('Error uploading image:', error);
+				isUploadingImage = false;
+				return;
 			}
+		} else if (imageUploadMethod === 'url' && imageUrl.trim()) {
+			finalImageUrl = imageUrl.trim();
 		}
 
-		// Update content and trigger input event
+		if (finalImageUrl) {
+			insertImageAtCursor(finalImageUrl, imageAlt.trim() || 'Image');
+			resetImageDialog();
+		}
+	}
+
+	function insertImageAtCursor(url: string, alt: string) {
+		if (!editor) return;
+
+		// Create the image HTML
+		const html = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; margin: 10px 0; display: block; border-radius: 0.5rem;" />`;
+
+		// Insert at cursor position using our improved function
+		insertHtmlAtCursor(html);
+
+		// Update content
 		content = editor.innerHTML;
 		editor.dispatchEvent(new Event('input', { bubbles: true }));
+	}
 
-		// Close dialog and reset values
+	function resetImageDialog() {
 		imageDialogOpen = false;
 		imageUrl = '';
 		imageAlt = '';
-
-		// Ensure editor stays focused
+		imageFile = null;
+		imageUploadMethod = 'url';
+		isUploadingImage = false;
 		if (editor) {
 			editor.focus();
 		}
@@ -651,7 +783,11 @@
 				<Button
 					variant="ghost"
 					size="sm"
-					onclick={() => execCommand('insertHTML', '<hr>')}
+					onclick={() => {
+						const html = '<hr style="border: none; border-top: 2px solid hsl(var(--border)); margin: 2rem 0; width: 100%;" />';
+						insertHtmlAtCursor(html);
+						content = editor.innerHTML;
+					}}
 					disabled={readonly}
 					title="Insert Horizontal Rule"
 				>
@@ -666,7 +802,12 @@
 				<Button
 					variant="ghost"
 					size="sm"
-					onclick={() => execCommand('insertHTML', '<code></code>')}
+					onclick={() => {
+						const selectedText = window.getSelection()?.toString() || 'code';
+						const html = `<code style="background: hsl(var(--muted)); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875rem; font-family: ui-monospace, SFMono-Regular, monospace;">${selectedText}</code>`;
+						insertHtmlAtCursor(html);
+						content = editor.innerHTML;
+					}}
 					disabled={readonly}
 					title="Inline Code"
 				>
@@ -675,7 +816,12 @@
 				<Button
 					variant="ghost"
 					size="sm"
-					onclick={() => execCommand('insertHTML', '<pre><code></code></pre>')}
+					onclick={() => {
+						const selectedText = window.getSelection()?.toString() || 'code block';
+						const html = `<pre style="background: hsl(var(--muted)); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; font-family: ui-monospace, SFMono-Regular, monospace;"><code>${selectedText}</code></pre>`;
+						insertHtmlAtCursor(html);
+						content = editor.innerHTML;
+					}}
 					disabled={readonly}
 					title="Code Block"
 				>
@@ -753,23 +899,82 @@
 			<Dialog.Description>Add an image to your content</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid gap-4 py-4">
+			<!-- Upload Method Selection -->
 			<div class="grid gap-2">
-				<Label for="image-url">Image URL</Label>
-				<Input
-					id="image-url"
-					bind:value={imageUrl}
-					placeholder="https://example.com/image.jpg"
-					type="url"
-				/>
+				<Label>Upload Method</Label>
+				<div class="flex gap-2">
+					<Button
+						variant={imageUploadMethod === 'url' ? 'default' : 'outline'}
+						size="sm"
+						onclick={() => (imageUploadMethod = 'url')}
+						type="button"
+					>
+						URL
+					</Button>
+					<Button
+						variant={imageUploadMethod === 'file' ? 'default' : 'outline'}
+						size="sm"
+						onclick={() => (imageUploadMethod = 'file')}
+						type="button"
+					>
+						Upload File
+					</Button>
+				</div>
 			</div>
+
+			{#if imageUploadMethod === 'url'}
+				<!-- URL Input -->
+				<div class="grid gap-2">
+					<Label for="image-url">Image URL</Label>
+					<Input
+						id="image-url"
+						bind:value={imageUrl}
+						placeholder="https://example.com/image.jpg"
+						type="url"
+					/>
+				</div>
+			{:else}
+				<!-- File Input -->
+				<div class="grid gap-2">
+					<Label for="image-file">Image File</Label>
+					<Input
+						id="image-file"
+						type="file"
+						accept="image/*"
+						onchange={(e) => {
+							const target = e.target as HTMLInputElement;
+							const file = target.files?.[0];
+							imageFile = file || null;
+						}}
+					/>
+					{#if imageFile}
+						<p class="text-muted-foreground text-sm">
+							Selected: {imageFile.name} ({(imageFile.size / 1024).toFixed(1)}KB)
+						</p>
+					{/if}
+				</div>
+			{/if}
+
+			<!-- Alt Text -->
 			<div class="grid gap-2">
 				<Label for="image-alt">Alt Text</Label>
 				<Input id="image-alt" bind:value={imageAlt} placeholder="Description of the image" />
 			</div>
 		</div>
 		<Dialog.Footer>
-			<Button variant="outline" onclick={() => (imageDialogOpen = false)}>Cancel</Button>
-			<Button onclick={applyImage} disabled={!imageUrl.trim()}>Insert Image</Button>
+			<Button variant="outline" onclick={() => resetImageDialog()}>Cancel</Button>
+			<Button
+				onclick={applyImage}
+				disabled={isUploadingImage ||
+					(imageUploadMethod === 'url' && !imageUrl.trim()) ||
+					(imageUploadMethod === 'file' && !imageFile)}
+			>
+				{#if isUploadingImage}
+					Uploading...
+				{:else}
+					Insert Image
+				{/if}
+			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
@@ -890,6 +1095,16 @@
 		border-radius: 0.25rem;
 		font-size: 0.875rem;
 		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+		color: hsl(var(--foreground));
+	}
+
+	.rich-text-editor :global(.editor-content code) {
+		background: hsl(var(--muted)) !important;
+		padding: 0.125rem 0.25rem !important;
+		border-radius: 0.25rem !important;
+		font-size: 0.875rem !important;
+		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+		color: hsl(var(--foreground)) !important;
 	}
 
 	.rich-text-editor :global(.prose pre) {
@@ -898,6 +1113,18 @@
 		border-radius: 0.5rem;
 		overflow-x: auto;
 		margin: 1rem 0;
+		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+		color: hsl(var(--foreground));
+	}
+
+	.rich-text-editor :global(.editor-content pre) {
+		background: hsl(var(--muted)) !important;
+		padding: 1rem !important;
+		border-radius: 0.5rem !important;
+		overflow-x: auto !important;
+		margin: 1rem 0 !important;
+		font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace !important;
+		color: hsl(var(--foreground)) !important;
 	}
 
 	.rich-text-editor :global(.prose pre code) {
@@ -916,8 +1143,20 @@
 
 	.rich-text-editor :global(.prose hr) {
 		border: none;
-		border-top: 1px solid hsl(var(--border));
+		border-top: 2px solid hsl(var(--border));
 		margin: 2rem 0;
+		width: 100%;
+		height: 0;
+		display: block;
+	}
+
+	.rich-text-editor :global(.editor-content hr) {
+		border: none !important;
+		border-top: 2px solid hsl(var(--border)) !important;
+		margin: 2rem 0 !important;
+		width: 100% !important;
+		height: 0 !important;
+		display: block !important;
 	}
 
 	.rich-text-editor :global(.prose img),
