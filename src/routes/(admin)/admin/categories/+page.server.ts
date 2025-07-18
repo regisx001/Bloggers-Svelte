@@ -1,3 +1,5 @@
+//  DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+
 import { CATEGORIES_URL } from '$lib/urls';
 import { success } from 'zod/v4';
 import type { Actions, PageServerLoad } from './$types';

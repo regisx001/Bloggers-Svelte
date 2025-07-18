@@ -10,6 +10,7 @@
 	import { Card } from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
 	import { PenTool, Upload, FileText, Tag } from '@lucide/svelte';
+	import TagInput from '$lib/components/ui/tag-input';
 
 	let { data, form } = $props();
 	let title = $state('');
@@ -37,30 +38,29 @@
 	// Handle image upload for rich text editor
 	async function handleImageUpload(event: CustomEvent) {
 		const { file, alt, callback } = event.detail;
-		
+
 		try {
 			toast.loading('Uploading image...');
-			
+
 			const formData = new FormData();
 			formData.append('image', file);
 			formData.append('alt', alt);
-			
+
 			// Replace '/api/upload-image' with your actual upload endpoint
 			const response = await fetch('/api/upload-image', {
 				method: 'POST',
 				body: formData
 			});
-			
+
 			if (!response.ok) {
 				throw new Error('Upload failed');
 			}
-			
+
 			const result = await response.json();
-			
+
 			// Success - call callback with the URL
 			callback(result.url);
 			toast.success('Image uploaded successfully!');
-			
 		} catch (error) {
 			console.error('Upload error:', error);
 			callback(''); // Signal failure
@@ -109,7 +109,8 @@
 
 			<!-- Category and Image Section -->
 			<div class="grid gap-6 md:grid-cols-2">
-				<div class="space-y-2">
+				<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
+				<!-- <div class="space-y-2">
 					<div class="flex items-center gap-2">
 						<Tag class="h-4 w-4" />
 						<Label class="text-sm font-medium">Category</Label>
@@ -124,7 +125,7 @@
 							<option value={category.value}>{category.label}</option>
 						{/each}
 					</select>
-				</div>
+				</div> -->
 
 				<div class="space-y-2">
 					<div class="flex items-center gap-2">
@@ -156,13 +157,16 @@
 					<Label class="text-sm font-medium">Content</Label>
 				</div>
 				<div class="min-h-[400px] rounded-lg border">
-					<RichTextEditor 
-						bind:content 
+					<RichTextEditor
+						bind:content
 						on:imageUpload={handleImageUpload}
 						placeholder="Start writing your article..."
 					/>
 				</div>
 				<textarea name="content" class="hidden" value={content}></textarea>
+			</div>
+			<div class="space-y-2">
+				<TagInput name="tags" placeholder="add tags" />
 			</div>
 
 			<Separator />

@@ -124,6 +124,8 @@
 <!-- {JSON.stringify(createDialogOpen, null, 2)}
 {JSON.stringify(form, null, 2)} -->
 
+<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
+
 {#snippet addCategory()}
 	<AlertDialog.Root bind:open={createDialogOpen}>
 		<AlertDialog.Trigger class={buttonVariants({ variant: 'outline' })}>

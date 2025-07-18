@@ -40,8 +40,9 @@
 	const navigationItems = [
 		{ href: `${base}/`, label: 'Home', icon: Home },
 		{ href: `${base}/articles`, label: 'Articles', icon: BookOpen },
-		{ href: `${base}/trending`, label: 'Trending', icon: TrendingUp },
-		{ href: `${base}/categories`, label: 'Categories', icon: Bookmark }
+		{ href: `${base}/trending`, label: 'Trending', icon: TrendingUp }
+		//  DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+		// { href: `${base}/categories`, label: 'Categories', icon: Bookmark }
 	];
 </script>
 

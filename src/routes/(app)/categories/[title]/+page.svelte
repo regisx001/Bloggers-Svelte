@@ -1,4 +1,6 @@
 <script lang="ts">
+	//  DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';

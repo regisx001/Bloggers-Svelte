@@ -1,5 +1,6 @@
 import { CATEGORIES_URL } from '$lib/urls';
 import type { PageServerLoad } from './$types';
+//  DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
 
 export const load: PageServerLoad = async ({ fetch }) => {
 	try {

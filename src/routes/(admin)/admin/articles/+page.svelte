@@ -231,7 +231,10 @@
 						<Label for="title" class="text-right">Title*</Label>
 						<Input id="title" name="title" value="" placeholder="title" class="col-span-3" />
 					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
+
+					<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
+
+					<!-- <div class="grid grid-cols-4 items-center gap-4">
 						<Label for="Category" class="text-right">Category</Label>
 
 						<Popover.Root bind:open={selectCategoryOpen}>
@@ -276,11 +279,9 @@
 							</Popover.Content>
 						</Popover.Root>
 						<input type="hidden" bind:value={selectedCategory} name="category" />
-					</div>
+					</div> -->
 					<div class="mb-8 grid h-96 grid-cols-4 items-center gap-4">
-						<Label for="description" class="text-right">Description*</Label>
-						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
-						<!-- <Input id="content" name="content" value="" placeholder="content" class="col-span-3" /> -->
+						<Label for="description" class="text-right">Content*</Label>
 						<div class="relative col-span-4">
 							<RichTextEditor name="content" class="col-span-4 max-h-96" />
 						</div>

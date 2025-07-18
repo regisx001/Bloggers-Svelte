@@ -16,23 +16,28 @@ export const actions: Actions = {
 		const title = formData.get('title');
 		const content = formData.get('content');
 		const category = formData.get('category');
-		const image = formData.get('featuredImage');
+		const image = formData.get('featuredImage') as File;
 
 		if (!title || typeof title !== 'string' || !title.trim()) {
 			return { success: false, message: 'Title is required' };
 		}
+
 		if (!content || typeof content !== 'string' || !content.trim()) {
 			return { success: false, message: 'Content is required' };
 		}
+
 		if (!category || typeof category !== 'string' || !category.trim()) {
 			formData.delete('category');
 		}
-		if (image instanceof File) {
-			if (!image.type.startsWith('image/')) {
-				return { success: false, message: 'Invalid image file' };
-			}
-		} else {
+
+		if (!image || image.size === 0 || image.name === '') {
+			// Remove image field if no file is provided
 			formData.delete('featuredImage');
+		} else if (!image.type.startsWith('image/')) {
+			return {
+				success: false,
+				message: 'Please upload a valid image file'
+			};
 		}
 
 		const createRes = await fetch(ARTICLES_URL, {
