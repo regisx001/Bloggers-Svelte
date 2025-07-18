@@ -178,7 +178,7 @@
 			<!-- Logo Section -->
 			<div class="flex shrink-0 items-center space-x-3">
 				<img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App Logo" />
-				<div class="hidden sm:block">
+				<div class="tinos hidden sm:block">
 					<h1 class="text-xl font-bold tracking-tight">Blog App</h1>
 					<p class="text-muted-foreground hidden text-xs md:block">Discover amazing stories</p>
 				</div>

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-
+@import url('https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import 'tw-animate-css';
 
 @import './claude-theme.css';
@@ -67,3 +67,14 @@ button {
 		color: var(--foreground);
 	}
 }
+
+.tinos {
+	font-family: 'Tinos', serif;
+}
+
+/* h1,
+h2,
+h3,
+h4 {
+	font-family: 'Tinos', serif;
+} */
