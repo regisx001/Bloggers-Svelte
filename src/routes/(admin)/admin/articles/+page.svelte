@@ -98,13 +98,14 @@
 				return renderSnippet(TagsCellSnippet, { row });
 			}
 		},
-		{
-			accessorKey: 'category',
-			header: 'Category',
-			cell: ({ row }) => {
-				return renderSnippet(CategoryCellSnippet, { row });
-			}
-		},
+		// DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+		// {
+		// 	accessorKey: 'category',
+		// 	header: 'Category',
+		// 	cell: ({ row }) => {
+		// 		return renderSnippet(CategoryCellSnippet, { row });
+		// 	}
+		// },
 		{
 			accessorKey: 'status',
 			header: 'Status',

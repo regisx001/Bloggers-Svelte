@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	try {
 		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
 		const categories: string[] = await categoriesResponse.json();
-		const articlesResponse = await fetch(ARTICLES_URL + '/admin' + '?sort=createdAt,desc');
+		const articlesResponse = await fetch(ADMIN_ARTICLES_URL + '?sort=createdAt,desc');
 		const articles: Page<Article> = await articlesResponse.json();
 		return { articles, categories };
 	} catch (error) {}
@@ -67,7 +67,7 @@ export const actions: Actions = {
 		}
 	},
 
-	publishArticle: async ({ request, locals }) => {
+	publishArticle: async ({ request, fetch, locals }) => {
 		const id = (await request.formData()).get('articleId');
 		if (!id) {
 			return {
@@ -75,12 +75,8 @@ export const actions: Actions = {
 			};
 		}
 
-		// TODO : THERE IS A BUG HERE, THE INTERCEPTOR NOT WORKING
 		const publishResponse = await fetch(ADMIN_ARTICLES_URL + '/publish/' + id, {
-			method: 'post',
-			headers: {
-				Authorization: 'Bearer ' + locals.user.accessToken
-			}
+			method: 'post'
 		});
 
 		if (publishResponse.status === 200) {

@@ -90,6 +90,14 @@
 	function handleInput() {
 		content = editor.innerHTML;
 		updateToolbarState();
+		
+		// Update hidden input and trigger form events
+		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+		if (hiddenInputElement) {
+			hiddenInputElement.value = content;
+			hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+			hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+		}
 	}
 
 	function handlePaste(e: ClipboardEvent) {
@@ -104,16 +112,24 @@
 		if (htmlData && htmlData.trim()) {
 			// Clean and sanitize HTML content
 			const cleanedHtml = sanitizeHtml(htmlData);
-			insertHtmlAtCursor(cleanedHtml);
+			insertHtmlAtCursorNonSelecting(cleanedHtml);
 		} else if (plainTextData) {
 			// For plain text, preserve line breaks and handle code blocks
 			const processedText = processPlainTextForPaste(plainTextData);
-			insertHtmlAtCursor(processedText);
+			insertHtmlAtCursorNonSelecting(processedText);
 		}
 
 		// Update content and toolbar state
 		content = editor.innerHTML;
 		updateToolbarState();
+		
+		// Update hidden input and trigger form events
+		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+		if (hiddenInputElement) {
+			hiddenInputElement.value = content;
+			hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+			hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+		}
 	}
 
 	function processPlainTextForPaste(text: string): string {
@@ -175,7 +191,7 @@
 		editor.focus();
 
 		const selection = window.getSelection();
-		
+
 		// If no selection exists, create one at the end of the editor
 		if (!selection || selection.rangeCount === 0) {
 			// Create a range at the end of the editor
@@ -207,15 +223,72 @@
 
 		// Create a document fragment from the HTML
 		const fragment = range.createContextualFragment(html);
-		
+
 		// Insert the fragment
 		range.insertNode(fragment);
 
 		// Move cursor to end of inserted content
 		range.setStartAfter(fragment.lastChild || fragment);
 		range.collapse(true);
-		
+
 		// Update the selection
+		selection.removeAllRanges();
+		selection.addRange(range);
+
+		// Ensure the editor maintains focus
+		editor.focus();
+	}
+
+	function insertHtmlAtCursorNonSelecting(html: string) {
+		if (typeof window === 'undefined' || !editor) return;
+
+		// Ensure editor is focused
+		editor.focus();
+
+		const selection = window.getSelection();
+
+		// If no selection exists, create one at the end of the editor
+		if (!selection || selection.rangeCount === 0) {
+			// Create a range at the end of the editor
+			const range = document.createRange();
+			range.selectNodeContents(editor);
+			range.collapse(false); // Collapse to end
+			if (selection) {
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}
+
+		if (!selection || selection.rangeCount === 0) return;
+
+		const range = selection.getRangeAt(0);
+
+		// Ensure we're inserting within the editor
+		if (!editor.contains(range.commonAncestorContainer)) {
+			// If the range is not within the editor, create a new range at the end
+			const newRange = document.createRange();
+			newRange.selectNodeContents(editor);
+			newRange.collapse(false);
+			selection.removeAllRanges();
+			selection.addRange(newRange);
+		}
+
+		// Delete selected content if any
+		range.deleteContents();
+
+		// Create a document fragment from the HTML
+		const fragment = range.createContextualFragment(html);
+
+		// Insert the fragment
+		range.insertNode(fragment);
+
+		// Move cursor to end of inserted content WITHOUT selecting the content
+		if (fragment.lastChild) {
+			range.setStartAfter(fragment.lastChild);
+		}
+		range.collapse(true);
+
+		// Clear selection and place cursor at the end
 		selection.removeAllRanges();
 		selection.addRange(range);
 
@@ -318,15 +391,29 @@
 			}
 		}
 
-		// Handle Enter key for better list formatting
+		// Handle Enter key for better list formatting and prevent content deletion
 		if (e.key === 'Enter') {
 			const selection = window.getSelection();
 			if (selection && selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0);
 				const listItem = range.startContainer.parentElement?.closest('li');
+				
 				if (listItem && listItem.textContent?.trim() === '') {
+					// If we're in an empty list item, outdent
 					e.preventDefault();
 					execCommand('outdent');
+				} else {
+					// For normal Enter behavior, ensure we don't interfere
+					// Let the browser handle it naturally
+					setTimeout(() => {
+						content = editor.innerHTML;
+						// Update hidden input
+						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						if (hiddenInputElement) {
+							hiddenInputElement.value = content;
+							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+						}
+					}, 10);
 				}
 			}
 		}
@@ -347,6 +434,14 @@
 		// Update content and toolbar state
 		content = editor.innerHTML;
 		setTimeout(updateToolbarState, 10);
+		
+		// Update hidden input and trigger form events
+		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+		if (hiddenInputElement) {
+			hiddenInputElement.value = content;
+			hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+			hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+		}
 	}
 
 	function formatBlock(tag: string) {
@@ -379,6 +474,14 @@
 			}
 			// Update content
 			content = editor.innerHTML;
+			
+			// Update hidden input and trigger form events
+			const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+			if (hiddenInputElement) {
+				hiddenInputElement.value = content;
+				hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+				hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+			}
 		}
 		linkDialogOpen = false;
 		linkUrl = '';
@@ -453,7 +556,14 @@
 
 		// Update content
 		content = editor.innerHTML;
-		editor.dispatchEvent(new Event('input', { bubbles: true }));
+		
+		// Update hidden input and trigger form events
+		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+		if (hiddenInputElement) {
+			hiddenInputElement.value = content;
+			hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+			hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+		}
 	}
 
 	function resetImageDialog() {
@@ -557,6 +667,14 @@
 
 	$: if (editor && content !== editor.innerHTML) {
 		editor.innerHTML = content;
+	}
+
+	// Reactive statement to ensure form data is always up to date
+	$: if (typeof document !== 'undefined' && name && content) {
+		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+		if (hiddenInputElement && hiddenInputElement.value !== content) {
+			hiddenInputElement.value = content;
+		}
 	}
 </script>
 
@@ -784,9 +902,17 @@
 					variant="ghost"
 					size="sm"
 					onclick={() => {
-						const html = '<hr style="border: none; border-top: 2px solid hsl(var(--border)); margin: 2rem 0; width: 100%;" />';
+						const html =
+							'<hr style="border: none; border-top: 2px solid hsl(var(--border)); margin: 2rem 0; width: 100%;" />';
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
+						// Update hidden input
+						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						if (hiddenInputElement) {
+							hiddenInputElement.value = content;
+							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+							hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+						}
 					}}
 					disabled={readonly}
 					title="Insert Horizontal Rule"
@@ -807,6 +933,13 @@
 						const html = `<code style="background: hsl(var(--muted)); padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875rem; font-family: ui-monospace, SFMono-Regular, monospace;">${selectedText}</code>`;
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
+						// Update hidden input
+						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						if (hiddenInputElement) {
+							hiddenInputElement.value = content;
+							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+							hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+						}
 					}}
 					disabled={readonly}
 					title="Inline Code"
@@ -821,6 +954,13 @@
 						const html = `<pre style="background: hsl(var(--muted)); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; font-family: ui-monospace, SFMono-Regular, monospace;"><code>${selectedText}</code></pre>`;
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
+						// Update hidden input
+						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						if (hiddenInputElement) {
+							hiddenInputElement.value = content;
+							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+							hiddenInputElement.dispatchEvent(new Event('change', { bubbles: true }));
+						}
 					}}
 					disabled={readonly}
 					title="Code Block"

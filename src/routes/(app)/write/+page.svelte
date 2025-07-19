@@ -159,9 +159,11 @@
 				<div class="min-h-[400px] rounded-lg border">
 					<RichTextEditor
 						bind:content
+						name="content"
 						on:imageUpload={handleImageUpload}
 						placeholder="Start writing your article..."
 					/>
+					<!-- <Input type="text" name="content" /> -->
 				</div>
 				<textarea name="content" class="hidden" value={content}></textarea>
 			</div>
