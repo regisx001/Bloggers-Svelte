@@ -29,10 +29,26 @@
 	import type { PageProps } from './$types';
 	import { base } from '$app/paths';
 	import { enhance } from '$app/forms';
+	import { toast } from 'svelte-sonner';
 	let publishAlertDialogOpen = $state(false);
 	let deleteAlertDialogOpen = $state(false);
 	let sendForReviewAlertDialogOpen = $state(false);
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
+
+	$effect(() => {
+		if (form?.success) {
+			if (form?.action === 'publish') {
+				publishAlertDialogOpen = false;
+				toast.success(form?.message || 'Article Published successfully');
+			} else if (form?.action === 'delete') {
+				toast.error(form?.message);
+			} else if (form?.action === 'sendForReview') {
+				toast.success(form?.message || 'Article Published successfully');
+			} else {
+				toast.info(form?.message);
+			}
+		}
+	});
 </script>
 
 <div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -154,7 +170,7 @@
 						</div> -->
 
 						<!-- Title -->
-						<a href="{base}/articles/{article.id}">
+						<a href="{base}/dashboard/my-articles/{article.id}">
 							<h2
 								class="group-hover:text-primary mb-3 line-clamp-2 text-xl font-semibold transition-colors"
 							>
@@ -228,16 +244,6 @@
 									</Badge>
 								{/if}
 							</div>
-
-							<!-- Read More Button -->
-							<Button
-								variant="ghost"
-								size="sm"
-								class="text-primary hover:text-primary/80"
-								href="{base}/dashboard/my-articles/{article.id}"
-							>
-								Read More →
-							</Button>
 						</div>
 					</Card.Content>
 					<Card.Footer class="mt-auto">
