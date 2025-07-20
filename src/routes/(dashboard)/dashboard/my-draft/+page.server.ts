@@ -11,11 +11,23 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 };
 
 export const actions: Actions = {
-	sendForApproval: async ({ request, fetch }) => {
+	sendForReview: async ({ request, fetch }) => {
 		const id = (await request.formData()).get('articleId');
 		if (!id) {
 			return {
 				message: 'Id Not provided'
+			};
+		}
+
+		const reviewResponse = await fetch(ARTICLES_URL + '/send-review/' + id, {
+			method: 'post'
+		});
+
+		if (reviewResponse.ok) {
+			return {
+				action: 'sendForReview',
+				success: true,
+				message: 'Article awaiting review'
 			};
 		}
 	},
