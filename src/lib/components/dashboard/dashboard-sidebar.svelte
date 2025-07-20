@@ -28,8 +28,39 @@
 				icon: DashboardIcon
 			},
 			{
+				title: 'My Draft',
+				url: '/dashboard/my-draft',
+				icon: ArticleFilled
+			},
+			{
 				title: 'My articles',
 				url: '/dashboard/my-articles',
+				icon: ArticleFilled
+			},
+			{
+				title: 'Activities',
+				url: '/dashboard/activity',
+				icon: ArticleFilled
+			},
+			{
+				title: 'Tags management',
+				url: '/dashboard/tags-manage',
+				icon: ArticleFilled
+			},
+			{
+				title: 'Notification Center',
+				url: '/dashboard/notification-center',
+				icon: ArticleFilled
+			},
+
+			{
+				title: 'Profile',
+				url: '/dashboard/profile',
+				icon: ArticleFilled
+			},
+			{
+				title: 'Settings',
+				url: '/dashboard/settings',
 				icon: ArticleFilled
 			}
 			// {

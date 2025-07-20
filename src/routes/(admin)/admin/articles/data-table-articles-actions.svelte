@@ -5,11 +5,13 @@
 	import { enhance } from '$app/forms';
 	import { Trash } from '@lucide/svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { Input } from '$lib/components/ui/input';
 	import Send from '@tabler/icons-svelte/icons/send';
 	import type { Row } from '@tanstack/table-core';
 	let { id, row }: { id: string; row: Row<Article> } = $props();
 	let deleteAlertDialogOpen = $state(false);
 	let publishAlertDialogOpen = $state(false);
+	let feedback = $state('');
 </script>
 
 {#snippet deleteConfirm()}
@@ -76,10 +78,13 @@
 				<AlertDialog.Description>
 					This action cannot be undone. This will publish the article and will be visible by all the
 					users !
+					<div class="my-4">
+						<Input bind:value={feedback} placeholder="feedback" />
+					</div>
 				</AlertDialog.Description>
 			</AlertDialog.Header>
+
 			<AlertDialog.Footer>
-				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 				<form
 					action="?/publishArticle"
 					method="post"
@@ -93,6 +98,10 @@
 					}}
 				>
 					<input type="hidden" name="articleId" value={id} />
+					<!-- TODO: HANDLE THE FEEDBACK FROM THE BACKEND -->
+					<input type="hidden" name="feedback" value={feedback} />
+					<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+
 					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
 				</form>
 			</AlertDialog.Footer>
