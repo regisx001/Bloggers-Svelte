@@ -1,11 +1,10 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import * as Select from '$lib/components/ui/select';
-	import * as Avatar from '$lib/components/ui/avatar';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import * as Popover from '$lib/components/ui/popover';
 	import CircleCheckFilledIcon from '@tabler/icons-svelte/icons/circle-check-filled';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
 	import {
 		Eye,
@@ -24,11 +23,15 @@
 		CheckIcon,
 		XIcon,
 		Clock,
-		LoaderIcon
+		LoaderIcon,
+		Trash
 	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import { base } from '$app/paths';
-
+	import { enhance } from '$app/forms';
+	let publishAlertDialogOpen = $state(false);
+	let deleteAlertDialogOpen = $state(false);
+	let sendForReviewAlertDialogOpen = $state(false);
 	let { data }: PageProps = $props();
 </script>
 
@@ -237,6 +240,20 @@
 							</Button>
 						</div>
 					</Card.Content>
+					<Card.Footer class="mt-auto">
+						<Popover.Root>
+							<Popover.Trigger class="w-full {buttonVariants({ variant: 'outline' })}">
+								Actions
+								<MoreHorizontal />
+							</Popover.Trigger>
+							<Popover.Content class="flex w-80 flex-col gap-2">
+								{@render publishConfirm(article.id)}
+								{@render sendForReview(article.id)}
+								<Button size="sm" variant="outline" class="w-full">Edit</Button>
+								{@render deleteConfirm(article.id)}
+							</Popover.Content>
+						</Popover.Root>
+					</Card.Footer>
 				</Card.Root>
 			{/each}
 		</section>
@@ -262,3 +279,114 @@
 		{/if}
 	</div>
 </div>
+
+{#snippet sendForReview(id: string)}
+	<AlertDialog.Root bind:open={sendForReviewAlertDialogOpen}>
+		<!-- <AlertDialog.Root> -->
+		<AlertDialog.Trigger class="hover:bg-muted  flex w-full flex-row gap-2 hover:cursor-pointer">
+			<Button size="sm" variant="outline" class="w-full">Send for Approval</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This Article will be send for reviwing by our admins ?.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/sendForReview"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								sendForReviewAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
+
+{#snippet publishConfirm(id: string)}
+	<AlertDialog.Root bind:open={publishAlertDialogOpen}>
+		<!-- <AlertDialog.Root> -->
+		<AlertDialog.Trigger class="hover:bg-muted  flex w-full flex-row gap-2 hover:cursor-pointer">
+			<Button size="sm" variant="outline" class="w-full">Publish</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This Article will be send for reviwing by our admins ?.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/publishArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								publishAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
+
+{#snippet deleteConfirm(id: string)}
+	<AlertDialog.Root bind:open={deleteAlertDialogOpen}>
+		<!-- <AlertDialog.Root> -->
+		<AlertDialog.Trigger
+			class="hover:bg-muted text-destructive flex w-full flex-row gap-2 hover:cursor-pointer"
+		>
+			<Button variant="outline" class="w-full">
+				<Trash size="16" class="text-destructive" />
+				Delete
+			</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This will permanently delete the article and remove the data
+					from our servers.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/deleteArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								deleteAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
