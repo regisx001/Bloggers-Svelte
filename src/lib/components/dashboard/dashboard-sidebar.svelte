@@ -28,6 +28,11 @@
 				icon: DashboardIcon
 			},
 			{
+				title: 'My Draft',
+				url: '/dashboard/my-draft',
+				icon: ArticleFilled
+			},
+			{
 				title: 'My articles',
 				url: '/dashboard/my-articles',
 				icon: ArticleFilled

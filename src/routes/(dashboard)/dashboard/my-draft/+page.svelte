@@ -339,8 +339,8 @@
 			{/each}
 		</section>
 
-		{#if data.myArticles?.content.length === 0}
-			<!-- <Card.Root>
+		<!-- {#if data.myArticles?.content.length === 0}
+			<Card.Root>
 				<Card.Content class="p-12 text-center">
 					<div class="text-muted-foreground">
 						{#if searchQuery || statusFilter.value !== 'all'}
@@ -356,7 +356,7 @@
 						</Button>
 					{/if}
 				<Card.Content/>
-			</Card.Root> -->
-		{/if}
+			</Card.Root>
+		{/if} -->
 	</div>
 </div>
