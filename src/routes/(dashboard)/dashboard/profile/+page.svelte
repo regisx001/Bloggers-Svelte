@@ -384,7 +384,7 @@
 									<span>•</span>
 									<span>{article.views} views</span>
 									<span>•</span>
-									<span>{formatDate(article.publishedAt)}</span>
+									<!-- <span>{formatDate(article.publishedAt)}</span> -->
 								{/if}
 							</div>
 						</div>

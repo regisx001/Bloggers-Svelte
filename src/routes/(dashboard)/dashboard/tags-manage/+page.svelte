@@ -231,7 +231,7 @@
 
 	function handleEditTag() {
 		if (selectedTag) {
-			const index = tags.findIndex((t) => t.id === selectedTag.id);
+			const index = tags.findIndex((t) => t.id === selectedTag?.id);
 			if (index !== -1) {
 				tags[index] = { ...selectedTag };
 				tags = [...tags];
