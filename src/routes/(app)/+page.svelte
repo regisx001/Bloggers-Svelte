@@ -126,20 +126,20 @@
 			<div class="mx-auto max-w-3xl text-center">
 				<!-- Welcome Badge -->
 				<div
-					class="bg-primary/10 text-primary mb-8 inline-flex items-center rounded-full px-4 py-2 text-sm"
+					class="tinos bg-primary/10 text-primary mb-8 inline-flex items-center rounded-full px-4 py-2"
 				>
 					<Sparkles class="mr-2 h-4 w-4" />
 					Welcome to our blog community
 				</div>
 
 				<!-- Main Heading -->
-				<h1 class="mb-6 text-6xl font-bold tracking-tight lg:text-8xl">
+				<h1 class="tinos mb-6 text-6xl font-bold tracking-tight lg:text-8xl">
 					Discover Amazing
 					<span class="text-primary">Stories</span>
 				</h1>
 
 				<!-- Subtitle -->
-				<p class="text-muted-foreground mb-12 text-xl lg:text-2xl">
+				<p class="text-muted-foreground tinos mb-12 text-xl lg:text-2xl">
 					Explore insightful articles, tutorials, and thoughts from passionate writers and
 					developers around the world.
 				</p>

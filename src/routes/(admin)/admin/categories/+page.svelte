@@ -88,20 +88,6 @@
 		},
 
 		{
-			accessorKey: 'updatedAt',
-			header: () => {
-				const updatedAtHeaderSnippet = createRawSnippet(() => ({
-					render: () => `<div class="">Updated At</div>`
-				}));
-				return renderSnippet(updatedAtHeaderSnippet, '');
-			},
-			cell: ({ row }) => {
-				return renderComponent(TimeStamp, {
-					date: row.original.updatedAt
-				});
-			}
-		},
-		{
 			id: 'actions',
 			cell: ({ row }) => {
 				return renderComponent(GenericDataTableActions, {
@@ -137,6 +123,8 @@
 
 <!-- {JSON.stringify(createDialogOpen, null, 2)}
 {JSON.stringify(form, null, 2)} -->
+
+<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
 
 {#snippet addCategory()}
 	<AlertDialog.Root bind:open={createDialogOpen}>

@@ -40,8 +40,9 @@
 	const navigationItems = [
 		{ href: `${base}/`, label: 'Home', icon: Home },
 		{ href: `${base}/articles`, label: 'Articles', icon: BookOpen },
-		{ href: `${base}/trending`, label: 'Trending', icon: TrendingUp },
-		{ href: `${base}/categories`, label: 'Categories', icon: Bookmark }
+		{ href: `${base}/trending`, label: 'Trending', icon: TrendingUp }
+		//  DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+		// { href: `${base}/categories`, label: 'Categories', icon: Bookmark }
 	];
 </script>
 
@@ -109,6 +110,16 @@
 							<UserIcon class="h-4 w-4" />
 							<span>Dashboard</span>
 						</a>
+
+						<a
+							href="{base}/admin"
+							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							<UserIcon class="h-4 w-4" />
+							<span>Admin</span>
+						</a>
+
 						<a
 							href="{base}/write"
 							class="hover:bg-accent hover:text-accent-foreground flex items-center space-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors"
@@ -168,7 +179,7 @@
 			<!-- Logo Section -->
 			<div class="flex shrink-0 items-center space-x-3">
 				<img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App Logo" />
-				<div class="hidden sm:block">
+				<div class="tinos hidden sm:block">
 					<h1 class="text-xl font-bold tracking-tight">Blog App</h1>
 					<p class="text-muted-foreground hidden text-xs md:block">Discover amazing stories</p>
 				</div>
@@ -235,9 +246,15 @@
 							</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>
-								<a href="{base}/admin" class="flex w-full items-center">
+								<a href="{base}/dashboard" class="flex w-full items-center">
 									<UserIcon class="mr-2 h-4 w-4" />
 									<span>Dashboard</span>
+								</a>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								<a href="{base}/admin" class="flex w-full items-center">
+									<UserIcon class="mr-2 h-4 w-4" />
+									<span>Admin</span>
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Item>

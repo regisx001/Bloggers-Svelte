@@ -11,6 +11,8 @@
 	let alertDialogOpen = $state(false);
 </script>
 
+<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
+
 {#snippet DeleteConfirm()}
 	<AlertDialog.Root bind:open={alertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">

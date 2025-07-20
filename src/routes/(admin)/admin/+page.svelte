@@ -2,8 +2,8 @@
 	import data from './data.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/admin/admin-sidebar.svelte';
-	import SiteHeader from '$lib/components/admin/site-header.svelte';
-	import SectionCards from '$lib/components/admin/section-cards.svelte';
+	import SiteHeader from '$lib/components/navigation/site-header.svelte';
+	import SectionCards from '$lib/components/navigation/section-cards.svelte';
 </script>
 
 <SiteHeader />

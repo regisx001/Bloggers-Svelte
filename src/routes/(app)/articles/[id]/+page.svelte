@@ -61,7 +61,7 @@
 		</div>
 
 		<!-- Title -->
-		<h1 class="mb-6 text-4xl leading-tight font-bold md:text-5xl">
+		<h1 class="tinos mb-6 text-4xl leading-tight font-bold md:text-5xl">
 			{article.title}
 		</h1>
 

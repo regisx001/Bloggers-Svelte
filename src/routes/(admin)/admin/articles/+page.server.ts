@@ -1,11 +1,12 @@
-import { ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
+import { ADMIN_ARTICLES_URL, ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
+import { asAny } from 'layerchart';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
 	try {
 		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
 		const categories: string[] = await categoriesResponse.json();
-		const articlesResponse = await fetch(ARTICLES_URL + '/admin' + '?sort=createdAt,desc');
+		const articlesResponse = await fetch(ADMIN_ARTICLES_URL + '?sort=createdAt,desc');
 		const articles: Page<Article> = await articlesResponse.json();
 		return { articles, categories };
 	} catch (error) {}
@@ -62,6 +63,27 @@ export const actions: Actions = {
 				action: 'create',
 				success: true,
 				message: 'Article Created successfully'
+			};
+		}
+	},
+
+	publishArticle: async ({ request, fetch, locals }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+
+		const publishResponse = await fetch(ADMIN_ARTICLES_URL + '/publish/' + id, {
+			method: 'post'
+		});
+
+		if (publishResponse.status === 200) {
+			return {
+				action: 'publish',
+				success: true,
+				message: 'Article Published successfully'
 			};
 		}
 	},

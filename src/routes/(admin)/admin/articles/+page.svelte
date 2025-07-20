@@ -25,6 +25,14 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	import DataTableArticlesActions from './data-table-articles-actions.svelte';
+
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import { tick } from 'svelte';
+	import * as Command from '$lib/components/ui/command/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { cn } from '$lib/utils.js';
 
 	const columns: ColumnDef<Article>[] = [
 		{
@@ -67,7 +75,14 @@
 		},
 		{
 			accessorKey: 'title',
-			header: 'Title'
+			header: 'Title',
+
+			cell: ({ row }) => {
+				// TODO: add tooltip Later
+				return row.original.title.length > 20
+					? row.original.title.slice(0, 20) + '...'
+					: row.original.title;
+			}
 		},
 		{
 			accessorKey: 'author',
@@ -83,13 +98,14 @@
 				return renderSnippet(TagsCellSnippet, { row });
 			}
 		},
-		{
-			accessorKey: 'category',
-			header: 'Category',
-			cell: ({ row }) => {
-				return renderSnippet(CategoryCellSnippet, { row });
-			}
-		},
+		// DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
+		// {
+		// 	accessorKey: 'category',
+		// 	header: 'Category',
+		// 	cell: ({ row }) => {
+		// 		return renderSnippet(CategoryCellSnippet, { row });
+		// 	}
+		// },
 		{
 			accessorKey: 'status',
 			header: 'Status',
@@ -145,11 +161,7 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				return renderComponent(GenericDataTableActions, {
-					entityId: row.original.id,
-					entityName: 'article',
-					deleteAction: '?/deleteArticle'
-				});
+				return renderComponent(DataTableArticlesActions, { row, id: row.original.id });
 			}
 		}
 	];
@@ -162,13 +174,29 @@
 			} else if (form?.action === 'delete') {
 				toast.error(form?.message);
 			} else {
-				toast.success(form?.message);
+				toast.info(form?.message);
 			}
 		}
 	});
 
 	let createDialogOpen = $state(false);
-	let selectedCategory: string | undefined = $state(undefined);
+
+	let selectCategoryOpen = $state(false);
+	let selectedCategory = $state('');
+	let triggerRef = $state<HTMLButtonElement>(null!);
+
+	// @ts-ignore
+	const selectedValue = $derived(data?.categories.find((f) => f === selectedCategory));
+
+	// We want to refocus the trigger button when the user selects
+	// an item from the list so users can continue navigating the
+	// rest of the form with the keyboard.
+	function closeAndFocusTrigger() {
+		selectCategoryOpen = false;
+		tick().then(() => {
+			triggerRef.focus();
+		});
+	}
 </script>
 
 <!-- <pre>
@@ -204,10 +232,57 @@
 						<Label for="title" class="text-right">Title*</Label>
 						<Input id="title" name="title" value="" placeholder="title" class="col-span-3" />
 					</div>
+
+					<!-- DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES -->
+
+					<!-- <div class="grid grid-cols-4 items-center gap-4">
+						<Label for="Category" class="text-right">Category</Label>
+
+						<Popover.Root bind:open={selectCategoryOpen}>
+							<Popover.Trigger bind:ref={triggerRef}>
+								{#snippet child({ props })}
+									<Button
+										{...props}
+										variant="outline"
+										class="col-span-3 w-full justify-between"
+										role="combobox"
+										aria-expanded={selectCategoryOpen}
+									>
+										{selectedValue || 'Select a Category...'}
+										<ChevronsUpDownIcon class="opacity-50" />
+									</Button>
+								{/snippet}
+							</Popover.Trigger>
+							<Popover.Content class="col-span-3 w-[500px] p-0">
+								<Command.Root>
+									<Command.Input placeholder="Search Category..." />
+									<Command.List>
+										<Command.Empty>No Category found.</Command.Empty>
+										<Command.Group value="category">
+											{#each data.categories || [] as category}
+												<Command.Item
+													class="cursor-pointer"
+													value={category}
+													onSelect={() => {
+														selectedCategory = category;
+														closeAndFocusTrigger();
+													}}
+												>
+													<CheckIcon
+														class={cn(selectedCategory !== category && 'text-transparent')}
+													/>
+													{category}
+												</Command.Item>
+											{/each}
+										</Command.Group>
+									</Command.List>
+								</Command.Root>
+							</Popover.Content>
+						</Popover.Root>
+						<input type="hidden" bind:value={selectedCategory} name="category" />
+					</div> -->
 					<div class="mb-8 grid h-96 grid-cols-4 items-center gap-4">
-						<Label for="description" class="text-right">Description*</Label>
-						<!-- <Textarea name="description" placeholder="description" class="col-span-3" /> -->
-						<!-- <Input id="content" name="content" value="" placeholder="content" class="col-span-3" /> -->
+						<Label for="description" class="text-right">Content*</Label>
 						<div class="relative col-span-4">
 							<RichTextEditor name="content" class="col-span-4 max-h-96" />
 						</div>
@@ -222,19 +297,7 @@
 							class="col-span-3"
 						/>
 					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="Category" class="text-right">Category</Label>
-						<Select.Root name="category" type="single" bind:value={selectedCategory}>
-							<Select.Trigger class="col-span-3 w-full"
-								>{selectedCategory ? selectedCategory : 'Select a category'}</Select.Trigger
-							>
-							<Select.Content>
-								{#each data?.categories || [] as category}
-									<Select.Item value={category}>{category}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
+
 					<div class="items-center gap-4">
 						<TagInput name="tags" placeholder="add tags" />
 					</div>
