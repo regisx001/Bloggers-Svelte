@@ -14,6 +14,7 @@
 			{#each items as item (item.title)}
 				<Sidebar.MenuItem>
 					<a href={base + item.url}>
+						<!-- TODO: ACTIVE EVEN IF A PART OF THE URL IS IN THE ITEM.URL -->
 						<Sidebar.MenuButton
 							isActive={page.url.pathname === item.url}
 							tooltipContent={item.title}

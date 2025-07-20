@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	try {
-		const articleResponse = await fetch(`${ARTICLES_URL}/id-user/${params.id}`);
+		const articleResponse = await fetch(`${ARTICLES_URL}/${params.id}`);
 
 		// if (!articleResponse.ok) {
 		// 	throw error(404, 'Article not found');
