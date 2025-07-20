@@ -11,6 +11,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { PenTool, Upload, FileText, Tag } from '@lucide/svelte';
 	import TagInput from '$lib/components/ui/tag-input';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 
 	let { data, form } = $props();
 	let title = $state('');
@@ -171,6 +172,10 @@
 				<TagInput name="tags" placeholder="add tags" />
 			</div>
 
+			<div class="flex flex-row gap-2">
+				<Label>Draft</Label>
+				<Checkbox id="draft" name="draft" />
+			</div>
 			<Separator />
 
 			<!-- Actions -->
@@ -190,13 +195,8 @@
 						Clear All
 					</Button>
 				</div>
-				<Button type="submit" disabled={isSubmitting} class="min-w-[120px]">
-					{#if isSubmitting}
-						Publishing...
-					{:else}
-						Publish Article
-					{/if}
-				</Button>
+
+				<Button type="submit" disabled={isSubmitting} class="min-w-[120px]">Publish Article</Button>
 			</div>
 		</form>
 	</Card>
