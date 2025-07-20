@@ -34,5 +34,17 @@ export const actions: Actions = {
 				message: 'Id Not provided'
 			};
 		}
+
+		const deleteArticleResponse = await fetch(ARTICLES_URL + '/' + id, {
+			method: 'delete'
+		});
+
+		if (deleteArticleResponse.status == 204) {
+			return {
+				action: 'delete',
+				success: true,
+				message: 'Article Deleted successfully'
+			};
+		}
 	}
 };

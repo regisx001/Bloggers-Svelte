@@ -8,6 +8,8 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
 	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { toast } from 'svelte-sonner';
+
 	import {
 		Eye,
 		Heart,
@@ -161,7 +163,20 @@
 	}
 
 	let deleteAlertDialogOpen = $state(false);
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
+
+	$effect(() => {
+		if (form?.success) {
+			if (form?.action === 'createArticle') {
+				// createDialogOpen = false;
+				toast.success(form?.message || 'Article created successfully');
+			} else if (form?.action === 'delete') {
+				toast.error(form?.message);
+			} else {
+				toast.info(form?.message);
+			}
+		}
+	});
 </script>
 
 <div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
