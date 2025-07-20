@@ -1,5 +1,4 @@
 import { ADMIN_ARTICLES_URL, ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
-import { asAny } from 'layerchart';
 import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
