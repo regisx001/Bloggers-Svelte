@@ -90,7 +90,7 @@
 	function handleInput() {
 		content = editor.innerHTML;
 		updateToolbarState();
-		
+
 		// Update hidden input and trigger form events
 		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
 		if (hiddenInputElement) {
@@ -122,7 +122,7 @@
 		// Update content and toolbar state
 		content = editor.innerHTML;
 		updateToolbarState();
-		
+
 		// Update hidden input and trigger form events
 		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
 		if (hiddenInputElement) {
@@ -397,7 +397,7 @@
 			if (selection && selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0);
 				const listItem = range.startContainer.parentElement?.closest('li');
-				
+
 				if (listItem && listItem.textContent?.trim() === '') {
 					// If we're in an empty list item, outdent
 					e.preventDefault();
@@ -408,7 +408,9 @@
 					setTimeout(() => {
 						content = editor.innerHTML;
 						// Update hidden input
-						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						const hiddenInputElement = document.querySelector(
+							`input[name="${name}"]`
+						) as HTMLInputElement;
 						if (hiddenInputElement) {
 							hiddenInputElement.value = content;
 							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -434,7 +436,7 @@
 		// Update content and toolbar state
 		content = editor.innerHTML;
 		setTimeout(updateToolbarState, 10);
-		
+
 		// Update hidden input and trigger form events
 		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
 		if (hiddenInputElement) {
@@ -474,9 +476,11 @@
 			}
 			// Update content
 			content = editor.innerHTML;
-			
+
 			// Update hidden input and trigger form events
-			const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+			const hiddenInputElement = document.querySelector(
+				`input[name="${name}"]`
+			) as HTMLInputElement;
 			if (hiddenInputElement) {
 				hiddenInputElement.value = content;
 				hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -556,7 +560,7 @@
 
 		// Update content
 		content = editor.innerHTML;
-		
+
 		// Update hidden input and trigger form events
 		const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
 		if (hiddenInputElement) {
@@ -907,7 +911,9 @@
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
 						// Update hidden input
-						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						const hiddenInputElement = document.querySelector(
+							`input[name="${name}"]`
+						) as HTMLInputElement;
 						if (hiddenInputElement) {
 							hiddenInputElement.value = content;
 							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -934,7 +940,9 @@
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
 						// Update hidden input
-						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						const hiddenInputElement = document.querySelector(
+							`input[name="${name}"]`
+						) as HTMLInputElement;
 						if (hiddenInputElement) {
 							hiddenInputElement.value = content;
 							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
@@ -955,7 +963,9 @@
 						insertHtmlAtCursor(html);
 						content = editor.innerHTML;
 						// Update hidden input
-						const hiddenInputElement = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+						const hiddenInputElement = document.querySelector(
+							`input[name="${name}"]`
+						) as HTMLInputElement;
 						if (hiddenInputElement) {
 							hiddenInputElement.value = content;
 							hiddenInputElement.dispatchEvent(new Event('input', { bubbles: true }));
