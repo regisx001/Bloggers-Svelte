@@ -1,4 +1,5 @@
 import { ARTICLES_URL } from '$lib/urls';
+import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch }) => {
@@ -7,4 +8,31 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 		const myArticles: Page<Article> = await myArticlesResponse.json();
 		return { myArticles };
 	} catch (error) {}
+};
+
+export const actions: Actions = {
+	sendForApproval: async ({ request, fetch }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+	},
+	publishArticle: async ({ request, fetch }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+	},
+	deleteArticle: async ({ request, fetch }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+	}
 };

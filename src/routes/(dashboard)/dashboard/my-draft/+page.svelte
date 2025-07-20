@@ -1,11 +1,13 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import * as Select from '$lib/components/ui/select';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
+	import * as Popover from '$lib/components/ui/popover/index.js';
 	import {
 		Eye,
 		Heart,
@@ -19,10 +21,13 @@
 		Filter,
 		Plus,
 		EyeIcon,
-		CalendarIcon
+		CalendarIcon,
+		Trash
 	} from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import { base } from '$app/paths';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { enhance } from '$app/forms';
 
 	// Static data for demonstration
 	let searchQuery = '';
@@ -155,6 +160,7 @@
 		});
 	}
 
+	let deleteAlertDialogOpen = $state(false);
 	let { data }: PageProps = $props();
 </script>
 
@@ -313,28 +319,35 @@
 								<TimeStamp date={article.createdAt} />
 							</div>
 						</div>
-
-						<!-- Status Indicator -->
-						<div class="flex items-center justify-between">
-							<div class="flex items-center">
-								{#if article.isPublished}
-									<Badge variant="default" class="text-xs">Published</Badge>
-								{:else}
-									<Badge variant="secondary" class="text-xs">Draft</Badge>
-								{/if}
-							</div>
-
-							<!-- Read More Button -->
-							<Button
-								variant="ghost"
-								size="sm"
-								class="text-primary hover:text-primary/80"
-								onclick={() => (window.location.href = `/articles/${article.id}`)}
-							>
-								Read More →
-							</Button>
-						</div>
 					</Card.Content>
+					<Card.Footer>
+						<!-- <DropdownMenu.Root>
+							<DropdownMenu.Trigger class="w-full {buttonVariants({ variant: 'outline' })}">
+								Actions
+								<MoreHorizontal />
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content class=" w-80">
+								<DropdownMenu.Item>Publish</DropdownMenu.Item>
+								<DropdownMenu.Item>Send for Approval</DropdownMenu.Item>
+								<DropdownMenu.Item>Edit</DropdownMenu.Item>
+								<DropdownMenu.Item>{@render deleteConfirm(article.id)}</DropdownMenu.Item>
+								<DropdownMenu.Item>View Submission Status</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root> -->
+
+						<Popover.Root>
+							<Popover.Trigger class="w-full {buttonVariants({ variant: 'outline' })}">
+								Actions
+								<MoreHorizontal />
+							</Popover.Trigger>
+							<Popover.Content class="flex w-80 flex-col gap-2">
+								<Button size="sm" variant="outline" class="w-full">Publish</Button>
+								<Button size="sm" variant="outline" class="w-full">Send for Approval</Button>
+								<Button size="sm" variant="outline" class="w-full">Edit</Button>
+								{@render deleteConfirm(article.id)}
+							</Popover.Content>
+						</Popover.Root>
+					</Card.Footer>
 				</Card.Root>
 			{/each}
 		</section>
@@ -360,3 +373,44 @@
 		{/if} -->
 	</div>
 </div>
+
+{#snippet deleteConfirm(id: string)}
+	<!-- <AlertDialog.Root bind:open={deleteAlertDialogOpen}> -->
+	<AlertDialog.Root>
+		<AlertDialog.Trigger
+			class="hover:bg-muted text-destructive flex w-full flex-row gap-2 hover:cursor-pointer"
+		>
+			<Button variant="outline" class="w-full">
+				<Trash size="16" class="text-destructive" />
+				Delete
+			</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This will permanently delete the article and remove the data
+					from our servers.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/deleteArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								deleteAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
