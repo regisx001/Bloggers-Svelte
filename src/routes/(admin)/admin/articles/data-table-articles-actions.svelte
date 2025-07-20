@@ -4,8 +4,10 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { enhance } from '$app/forms';
 	import { Trash } from '@lucide/svelte';
+	import CircleDashedX from '@tabler/icons-svelte/icons/circle-dashed-x';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
+	import ThumbUp from '@tabler/icons-svelte/icons/thumb-up';
 	import Send from '@tabler/icons-svelte/icons/send';
 	import type { Row } from '@tanstack/table-core';
 	let { id, row }: { id: string; row: Row<Article> } = $props();
@@ -49,28 +51,52 @@
 	</AlertDialog.Root>
 {/snippet}
 
-{#snippet publishConfirm()}
+{#snippet approveConfirm()}
 	<AlertDialog.Root bind:open={publishAlertDialogOpen}>
 		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
-			<svg
-				width="20"
-				height="20"
-				viewBox="0 0 20 20"
-				fill="none"
-				class="fill-green"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<!-- Upload arrow -->
-				<path d="M12 3L8 7h3v8h2V7h3l-4-4z" fill="currentColor" />
+			<ThumbUp class="text-green-600" />
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This will approve the article and will ready to be visible
+					by all the users !
+					<div class="my-4">
+						<Input bind:value={feedback} placeholder="feedback" />
+					</div>
+				</AlertDialog.Description>
+			</AlertDialog.Header>
 
-				<!-- Base platform -->
-				<rect x="4" y="19" width="16" height="2" fill="currentColor" />
+			<AlertDialog.Footer>
+				<form
+					action="?/approveArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								publishAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<!-- TODO: HANDLE THE FEEDBACK FROM THE BACKEND -->
+					<input type="hidden" name="feedback" value={feedback} />
+					<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 
-				<!-- Cloud/publish indicators -->
-				<circle cx="6" cy="16" r="1" fill="currentColor" opacity="0.6" />
-				<circle cx="18" cy="16" r="1" fill="currentColor" opacity="0.6" />
-				<circle cx="12" cy="16" r="1" fill="currentColor" opacity="0.6" />
-			</svg>
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
+
+{#snippet rejectConfirm()}
+	<AlertDialog.Root bind:open={publishAlertDialogOpen}>
+		<AlertDialog.Trigger class="hover:bg-muted hover:cursor-pointer">
+			<CircleDashedX />
 		</AlertDialog.Trigger>
 		<AlertDialog.Content>
 			<AlertDialog.Header>
@@ -86,7 +112,7 @@
 
 			<AlertDialog.Footer>
 				<form
-					action="?/publishArticle"
+					action="?/rejectArticle"
 					method="post"
 					use:enhance={() => {
 						return async ({ result, update }) => {
@@ -111,13 +137,20 @@
 
 <div class="ml-2 flex justify-around gap-4">
 	<div class="flex w-6 items-center justify-center">
-		{#if !row.original.isPublished}
-			{@render publishConfirm()}
+		{#if row.original.status !== 'APPROVED' && row.original.status !== 'PUBLISHED'}
+			{@render approveConfirm()}
+		{/if}
+	</div>
+
+	<div class="flex w-6 items-center justify-center">
+		{#if !(row.original.status !== 'APPROVED' && row.original.status !== 'PUBLISHED')}
+			{@render rejectConfirm()}
 		{/if}
 	</div>
 	<div class="flex w-6 items-center justify-center">
 		{@render deleteConfirm()}
 	</div>
+
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
 			{#snippet child({ props })}

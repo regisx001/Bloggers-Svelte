@@ -67,19 +67,46 @@ export const actions: Actions = {
 		}
 	},
 
-	publishArticle: async ({ request, fetch, locals }) => {
-		const id = (await request.formData()).get('articleId');
+	approveArticle: async ({ request, fetch, locals }) => {
+		const formData = await request.formData();
+		const id = formData.get('articleId');
 		if (!id) {
 			return {
 				message: 'Id Not provided'
 			};
 		}
+		formData.delete('articleId');
 
-		const publishResponse = await fetch(ADMIN_ARTICLES_URL + '/publish/' + id, {
-			method: 'post'
+		const publishResponse = await fetch(ADMIN_ARTICLES_URL + '/approve/' + id, {
+			method: 'post',
+			body: formData
 		});
 
 		if (publishResponse.status === 200) {
+			return {
+				action: 'publish',
+				success: true,
+				message: 'Article Published successfully'
+			};
+		}
+	},
+
+	rejectArticle: async ({ request, fetch, locals }) => {
+		const formData = await request.formData();
+		const id = formData.get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+		formData.delete('articleId');
+
+		const rejectResponse = await fetch(ADMIN_ARTICLES_URL + '/reject/' + id, {
+			method: 'post',
+			body: formData
+		});
+
+		if (rejectResponse.status === 200) {
 			return {
 				action: 'publish',
 				success: true,

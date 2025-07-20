@@ -15,7 +15,7 @@
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
-
+	import { XIcon, Clock } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
@@ -329,14 +329,37 @@
 </section>
 
 {#snippet statusCellSnippet({ row }: { row: Row<Article> })}
-	<Badge variant="outline" class="text-muted-foreground px-1.5">
-		{#if row.original.status === 'PUBLISHED'}
-			<CircleCheckFilledIcon class="fill-green-500 dark:fill-green-400" />
-		{:else}
-			<LoaderIcon />
-		{/if}
-		{row.original.status}
-	</Badge>
+	{#if row.original.status === 'PUBLISHED'}
+		<Badge variant="outline" class="px-1.5 text-green-600 dark:text-green-400">
+			<CircleCheckFilledIcon class="mr-1 fill-green-500 dark:fill-green-400" />
+			Published
+		</Badge>
+	{:else if row.original.status === 'DRAFT'}
+		<Badge variant="secondary" class="px-1.5 text-gray-500">Draft</Badge>
+	{:else if row.original.status === 'APPROVED'}
+		<Badge variant="outline" class="px-1.5 text-blue-600 dark:text-blue-400">
+			<CheckIcon class="mr-1" />
+			Approved
+		</Badge>
+	{:else if row.original.status === 'REJECTED'}
+		<Badge variant="destructive" class="px-1.5"><XIcon /> Rejected</Badge>
+	{:else if row.original.status === 'ARCHIVED'}
+		<Badge variant="outline" class="text-muted-foreground px-1.5">Archived</Badge>
+	{:else if row.original.status === 'DELETED'}
+		<Badge variant="destructive" class="px-1.5">Deleted</Badge>
+	{:else if row.original.status === 'PENDING_REVIEW'}
+		<Badge variant="outline" class="px-1.5 text-yellow-600 dark:text-yellow-400">
+			<Clock />
+			Pending Review
+		</Badge>
+	{:else if row.original.status === 'SCHEDULED'}
+		<Badge variant="outline" class="px-1.5 text-blue-600 dark:text-blue-400">Scheduled</Badge>
+	{:else}
+		<Badge variant="outline" class="text-muted-foreground px-1.5">
+			<LoaderIcon class="mr-1" />
+			{row.original.status}
+		</Badge>
+	{/if}
 {/snippet}
 
 {#snippet AuthorCellSnippet({ row }: { row: Row<Article> })}
