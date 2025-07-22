@@ -254,7 +254,9 @@
 							</Popover.Trigger>
 							<Popover.Content class="flex w-80 flex-col gap-2">
 								{@render publishConfirm(article.id)}
-								{@render sendForReview(article.id)}
+								{#if article.status !== 'PUBLISHED'}
+									{@render sendForReview(article.id)}
+								{/if}
 								<Button size="sm" variant="outline" class="w-full">Edit</Button>
 								{@render deleteConfirm(article.id)}
 							</Popover.Content>

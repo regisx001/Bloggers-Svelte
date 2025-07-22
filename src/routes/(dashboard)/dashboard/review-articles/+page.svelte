@@ -314,56 +314,6 @@
 		</div>
 	</div>
 
-	<!-- Summary Stats -->
-	<div class="grid gap-4 md:grid-cols-4">
-		<Card>
-			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Total Articles</CardTitle>
-				<FileText class="text-muted-foreground h-4 w-4" />
-			</CardHeader>
-			<CardContent>
-				<div class="text-2xl font-bold">{articles.length}</div>
-				<p class="text-muted-foreground text-xs">Submitted for review</p>
-			</CardContent>
-		</Card>
-		<Card>
-			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Pending</CardTitle>
-				<Clock class="h-4 w-4 text-yellow-600" />
-			</CardHeader>
-			<CardContent>
-				<div class="text-2xl font-bold text-yellow-600">
-					{articles.filter((a) => a.status === 'pending').length}
-				</div>
-				<p class="text-muted-foreground text-xs">Under review</p>
-			</CardContent>
-		</Card>
-		<Card>
-			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Approved</CardTitle>
-				<CheckCircle class="h-4 w-4 text-green-600" />
-			</CardHeader>
-			<CardContent>
-				<div class="text-2xl font-bold text-green-600">
-					{articles.filter((a) => a.status === 'approved').length}
-				</div>
-				<p class="text-muted-foreground text-xs">Ready to publish</p>
-			</CardContent>
-		</Card>
-		<Card>
-			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle class="text-sm font-medium">Rejected</CardTitle>
-				<XCircle class="h-4 w-4 text-red-600" />
-			</CardHeader>
-			<CardContent>
-				<div class="text-2xl font-bold text-red-600">
-					{articles.filter((a) => a.status === 'rejected').length}
-				</div>
-				<p class="text-muted-foreground text-xs">Needs revision</p>
-			</CardContent>
-		</Card>
-	</div>
-
 	<!-- Articles List -->
 	<div class="space-y-6">
 		{#each articles as article}

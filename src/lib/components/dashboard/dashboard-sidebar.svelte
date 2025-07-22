@@ -28,15 +28,21 @@
 				icon: DashboardIcon
 			},
 			{
+				title: 'My articles',
+				url: '/dashboard/my-articles',
+				icon: ArticleFilled
+			},
+			{
 				title: 'My Draft',
 				url: '/dashboard/my-draft',
 				icon: ArticleFilled
 			},
 			{
-				title: 'My articles',
-				url: '/dashboard/my-articles',
+				title: 'Review Articles',
+				url: '/dashboard/review-articles',
 				icon: ArticleFilled
 			},
+
 			{
 				title: 'Activities',
 				url: '/dashboard/activity',
