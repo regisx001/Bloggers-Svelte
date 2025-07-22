@@ -65,6 +65,11 @@ type Article = {
 	publishedAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+	feedback: string;
+	rejectedAt: string;
+	rejectedBy: string;
+	approvedAt: string;
+	approvedBy: string;
 	author: {
 		id: string;
 		username: string;
