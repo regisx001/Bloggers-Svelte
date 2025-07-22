@@ -33,16 +33,12 @@
 				url: '/admin',
 				icon: DashboardIcon
 			},
-			{
-				title: 'Insight',
-				url: '/admin/insight',
-				icon: DashboardIcon
-			},
-			{
-				title: 'Categories',
-				url: '/admin/categories',
-				icon: Category
-			},
+			// {
+			// 	title: 'Insight',
+			// 	url: '/admin/insight',
+			// 	icon: DashboardIcon
+			// },
+
 			{
 				title: 'Articles',
 				url: '/admin/articles',
@@ -52,6 +48,11 @@
 				title: 'Tags',
 				url: '/admin/tags',
 				icon: Article
+			},
+			{
+				title: 'Categories',
+				url: '/admin/categories',
+				icon: Category
 			}
 			// {
 			// 	title: 'Lifecycle',
