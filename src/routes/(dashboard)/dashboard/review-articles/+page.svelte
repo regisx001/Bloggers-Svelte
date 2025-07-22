@@ -13,6 +13,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Select from '$lib/components/ui/select';
 	import {
 		Edit,
 		Trash2,
@@ -31,160 +32,39 @@
 		Bot,
 		UserCheck,
 		ExternalLink,
-		Download
+		Download,
+		Filter
 	} from '@lucide/svelte';
+	import type { PageProps } from './$types';
 
-	// Static data for demonstration
-	let articles = [
-		{
-			id: 1,
-			title: 'Understanding SvelteKit 5: A Comprehensive Guide',
-			author: 'John Doe',
-			submissionDate: '2025-07-15T09:30:00Z',
-			coverImage:
-				'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=300&h=200&fit=crop',
-			status: 'pending',
-			progress: 60, // Progress percentage
-			estimatedCompletion: '2025-07-22',
-			wordCount: 2847,
-			readTime: '12 min',
-			category: 'Web Development',
-			tags: ['SvelteKit', 'JavaScript', 'Framework'],
-			feedback: [
-				{
-					id: 1,
-					role: 'admin',
-					name: 'Sarah Wilson',
-					avatar:
-						'https://images.unsplash.com/photo-1494790108755-2616b2bc7ab7?w=40&h=40&fit=crop&crop=face',
-					message:
-						'Great article overall! However, the section on routing could use more detailed examples. Consider adding code snippets for nested routes and dynamic parameters.',
-					timestamp: '2025-07-16T10:00:00Z',
-					type: 'feedback'
-				},
-				{
-					id: 2,
-					role: 'ai',
-					name: 'AI Reviewer',
-					avatar: null,
-					message:
-						'The article structure is well-organized. I suggest adding a table of contents and improving the introduction to better capture reader attention. The technical explanations are clear and accurate.',
-					timestamp: '2025-07-16T12:00:00Z',
-					type: 'suggestion'
-				},
-				{
-					id: 3,
-					role: 'system',
-					name: 'System',
-					avatar: null,
-					message: 'Article submitted for review. Initial AI scan completed successfully.',
-					timestamp: '2025-07-15T09:35:00Z',
-					type: 'status'
-				}
-			],
-			reviewSteps: [
-				{ name: 'Submitted', completed: true },
-				{ name: 'AI Review', completed: true },
-				{ name: 'Admin Review', completed: false },
-				{ name: 'Final Approval', completed: false }
-			]
-		},
-		{
-			id: 2,
-			title: 'Mastering TypeScript: Advanced Patterns and Best Practices',
-			author: 'Jane Smith',
-			submissionDate: '2025-07-10T14:20:00Z',
-			coverImage:
-				'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=300&h=200&fit=crop',
-			status: 'approved',
-			progress: 100,
-			publishedDate: '2025-07-18T10:00:00Z',
-			wordCount: 3542,
-			readTime: '15 min',
-			category: 'Programming',
-			tags: ['TypeScript', 'JavaScript', 'Best Practices'],
-			feedback: [
-				{
-					id: 1,
-					role: 'admin',
-					name: 'Mike Johnson',
-					avatar:
-						'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
-					message:
-						'Excellent article! The examples are clear and the explanations are thorough. Approved for publication.',
-					timestamp: '2025-07-17T16:30:00Z',
-					type: 'approval'
-				},
-				{
-					id: 2,
-					role: 'ai',
-					name: 'AI Reviewer',
-					avatar: null,
-					message:
-						'High-quality content with excellent code examples. SEO optimization suggestions have been applied.',
-					timestamp: '2025-07-11T09:15:00Z',
-					type: 'suggestion'
-				}
-			],
-			reviewSteps: [
-				{ name: 'Submitted', completed: true },
-				{ name: 'AI Review', completed: true },
-				{ name: 'Admin Review', completed: true },
-				{ name: 'Published', completed: true }
-			]
-		},
-		{
-			id: 3,
-			title: 'CSS Grid vs Flexbox: When to Use Which',
-			author: 'Alice Johnson',
-			submissionDate: '2025-07-12T11:45:00Z',
-			coverImage:
-				'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
-			status: 'rejected',
-			progress: 25,
-			wordCount: 1456,
-			readTime: '6 min',
-			category: 'Web Design',
-			tags: ['CSS', 'Layout', 'Frontend'],
-			feedback: [
-				{
-					id: 1,
-					role: 'admin',
-					name: 'Sarah Wilson',
-					avatar:
-						'https://images.unsplash.com/photo-1494790108755-2616b2bc7ab7?w=40&h=40&fit=crop&crop=face',
-					message:
-						'The comparison lacks depth and practical examples. Please provide more real-world use cases, interactive demos, and detailed explanations of when to choose each layout method. The article needs significant expansion.',
-					timestamp: '2025-07-13T09:00:00Z',
-					type: 'rejection'
-				},
-				{
-					id: 2,
-					role: 'ai',
-					name: 'AI Reviewer',
-					avatar: null,
-					message:
-						'Content structure is basic. Recommend adding more code examples, visual demonstrations, and expanding the comparison criteria.',
-					timestamp: '2025-07-12T14:20:00Z',
-					type: 'feedback'
-				}
-			],
-			reviewSteps: [
-				{ name: 'Submitted', completed: true },
-				{ name: 'AI Review', completed: true },
-				{ name: 'Admin Review', completed: true },
-				{ name: 'Rejected', completed: true }
-			]
-		}
+	let { data, form }: PageProps = $props();
+
+	// Reactive state using Svelte 5 runes
+	let selectedArticle: (typeof data.articles.content)[0] | null = $state(null);
+	let showPreviewDialog = $state(false);
+	let showWithdrawDialog = $state(false);
+	let withdrawReason = $state('');
+	let selectedStatusFilter = $state('all');
+
+	// Filter options
+	const statusFilterOptions = [
+		{ value: 'all', label: 'All Status' },
+		{ value: 'pending', label: 'Pending' },
+		{ value: 'approved', label: 'Approved' },
+		{ value: 'rejected', label: 'Rejected' }
 	];
 
-	let selectedArticle: (typeof articles)[0] | null = null;
-	let showPreviewDialog = false;
-	let showWithdrawDialog = false;
-	let withdrawReason = '';
+	// Derived state for articles
+	const articles = $derived(data.articles.content || []);
+	const filteredArticles = $derived(
+		selectedStatusFilter === 'all'
+			? articles
+			: articles.filter((article) => article.status.toLowerCase() === selectedStatusFilter)
+	);
 
 	function getStatusColor(status: string) {
-		switch (status) {
+		const normalizedStatus = status.toLowerCase();
+		switch (normalizedStatus) {
 			case 'pending':
 				return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 			case 'approved':
@@ -197,7 +77,8 @@
 	}
 
 	function getStatusIcon(status: string) {
-		switch (status) {
+		const normalizedStatus = status.toLowerCase();
+		switch (normalizedStatus) {
 			case 'pending':
 				return Clock;
 			case 'approved':
@@ -207,6 +88,35 @@
 			default:
 				return Clock;
 		}
+	}
+
+	function getProgress(article: (typeof articles)[0]) {
+		const status = article.status.toLowerCase();
+		switch (status) {
+			case 'pending':
+				return 50;
+			case 'approved':
+				return 100;
+			case 'rejected':
+				return 25;
+			default:
+				return 0;
+		}
+	}
+
+	function getReviewSteps(article: (typeof articles)[0]) {
+		const status = article.status.toLowerCase();
+		const steps = [
+			{ name: 'Submitted', completed: true },
+			{ name: 'Under Review', completed: status !== 'pending' },
+			{ name: 'Decision Made', completed: status === 'approved' || status === 'rejected' }
+		];
+
+		if (status === 'approved') {
+			steps.push({ name: 'Published', completed: article.isPublished });
+		}
+
+		return steps;
 	}
 
 	function getFeedbackIcon(type: string) {
@@ -274,8 +184,8 @@
 
 	function confirmWithdraw() {
 		if (selectedArticle) {
-			// Remove article from list or update status
-			articles = articles.filter((a) => a.id !== selectedArticle!.id);
+			// In a real app, you would make an API call here
+			// For now, we'll just close the dialog
 			showWithdrawDialog = false;
 			withdrawReason = '';
 			selectedArticle = null;
@@ -298,15 +208,15 @@
 	}
 </script>
 
-<div class="flex-1 space-y-6 p-4 pt-6 md:p-8">
-	<div class="flex items-center justify-between">
+<div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
+	<div class="flex items-center justify-between space-y-2">
 		<div>
 			<h2 class="text-3xl font-bold tracking-tight">Article Review Status</h2>
 			<p class="text-muted-foreground">
 				Track the progress and feedback of your submitted articles
 			</p>
 		</div>
-		<div class="flex items-center gap-2">
+		<div class="flex items-center space-x-2">
 			<Button variant="outline">
 				<Download class="mr-2 h-4 w-4" />
 				Export Report
@@ -314,14 +224,93 @@
 		</div>
 	</div>
 
+	<!-- Summary Stats -->
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Total Articles</CardTitle>
+				<FileText class="text-muted-foreground h-4 w-4" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold">{data.articles.totalElements}</div>
+				<p class="text-muted-foreground text-xs">Submitted for review</p>
+			</CardContent>
+		</Card>
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Pending</CardTitle>
+				<Clock class="h-4 w-4 text-yellow-600" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold text-yellow-600">
+					{articles.filter((a) => a.status.toLowerCase() === 'pending').length}
+				</div>
+				<p class="text-muted-foreground text-xs">Under review</p>
+			</CardContent>
+		</Card>
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Approved</CardTitle>
+				<CheckCircle class="h-4 w-4 text-green-600" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold text-green-600">
+					{articles.filter((a) => a.status.toLowerCase() === 'approved').length}
+				</div>
+				<p class="text-muted-foreground text-xs">Ready to publish</p>
+			</CardContent>
+		</Card>
+		<Card>
+			<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+				<CardTitle class="text-sm font-medium">Rejected</CardTitle>
+				<XCircle class="h-4 w-4 text-red-600" />
+			</CardHeader>
+			<CardContent>
+				<div class="text-2xl font-bold text-red-600">
+					{articles.filter((a) => a.status.toLowerCase() === 'rejected').length}
+				</div>
+				<p class="text-muted-foreground text-xs">Needs revision</p>
+			</CardContent>
+		</Card>
+	</div>
+
+	<!-- Filters -->
+	<Card>
+		<CardHeader>
+			<div class="flex items-center justify-between">
+				<CardTitle>Article Reviews</CardTitle>
+				<div class="flex items-center gap-2">
+					{#each statusFilterOptions as option}
+						<Button
+							variant={selectedStatusFilter === option.value ? 'default' : 'outline'}
+							size="sm"
+							onclick={() => (selectedStatusFilter = option.value)}
+						>
+							{option.label}
+						</Button>
+					{/each}
+				</div>
+			</div>
+			{#if selectedStatusFilter !== 'all'}
+				<CardDescription>
+					Showing {filteredArticles.length}
+					{statusFilterOptions.find((o) => o.value === selectedStatusFilter)?.label.toLowerCase()} article{filteredArticles.length !==
+					1
+						? 's'
+						: ''}
+				</CardDescription>
+			{/if}
+		</CardHeader>
+	</Card>
+
 	<!-- Articles List -->
-	<div class="space-y-6">
-		{#each articles as article}
+	<div class="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+		{#each filteredArticles as article}
 			<Card class="overflow-hidden">
 				<CardHeader class="pb-4">
 					<div class="flex items-start gap-4">
 						<img
-							src={article.coverImage}
+							src={article.featuredImage}
 							alt={article.title}
 							class="h-20 w-20 rounded-lg border object-cover"
 						/>
@@ -332,34 +321,38 @@
 									<CardDescription class="mt-1 flex items-center gap-4">
 										<span class="flex items-center gap-1">
 											<User class="h-3 w-3" />
-											{article.author}
+											{article.author.username}
 										</span>
 										<span class="flex items-center gap-1">
 											<Calendar class="h-3 w-3" />
-											{formatDateShort(article.submissionDate)}
+											{formatDateShort(article.createdAt)}
 										</span>
-										<span class="flex items-center gap-1">
-											<FileText class="h-3 w-3" />
-											{article.wordCount} words • {article.readTime}
-										</span>
+										{#if article.updatedAt !== article.createdAt}
+											<span class="flex items-center gap-1 text-orange-600">
+												<RefreshCw class="h-3 w-3" />
+												Updated {formatDateShort(article.updatedAt)}
+											</span>
+										{/if}
 									</CardDescription>
 								</div>
 								<div class="flex items-center gap-2">
-									<!-- {@const StatusIcon = getStatusIcon(article.status)} -->
 									<Badge class="{getStatusColor(article.status)} border">
-										<!-- <StatusIcon class="mr-1 h-3 w-3" /> -->
-										{article.status.charAt(0).toUpperCase() + article.status.slice(1)}
+										{article.status.charAt(0).toUpperCase() + article.status.toLowerCase().slice(1)}
 									</Badge>
 								</div>
 							</div>
 
-							<!-- Tags and Category -->
-							<div class="flex flex-wrap items-center gap-2">
-								<Badge variant="secondary">{article.category}</Badge>
-								{#each article.tags as tag}
-									<Badge variant="outline" class="text-xs">{tag}</Badge>
-								{/each}
-							</div>
+							<!-- Tags -->
+							{#if article.tags && article.tags.length > 0}
+								<div class="flex flex-wrap items-center gap-2">
+									{#if article.category}
+										<Badge variant="secondary">{article.category}</Badge>
+									{/if}
+									{#each article.tags as tag}
+										<Badge variant="outline" class="text-xs">#{tag}</Badge>
+									{/each}
+								</div>
+							{/if}
 						</div>
 					</div>
 				</CardHeader>
@@ -369,11 +362,11 @@
 					<div class="space-y-2">
 						<div class="flex items-center justify-between text-sm">
 							<span class="font-medium">Review Progress</span>
-							<span class="text-muted-foreground">{article.progress}%</span>
+							<span class="text-muted-foreground">{getProgress(article)}%</span>
 						</div>
-						<Progress value={article.progress} class="h-2" />
+						<Progress value={getProgress(article)} class="h-2" />
 						<div class="text-muted-foreground flex justify-between text-xs">
-							{#each article.reviewSteps as step, index}
+							{#each getReviewSteps(article) as step, index}
 								<div class="flex flex-col items-center gap-1">
 									<div
 										class="flex h-6 w-6 items-center justify-center rounded-full border-2 {step.completed
@@ -392,79 +385,44 @@
 						</div>
 					</div>
 
-					<!-- Estimated Completion (for pending articles) -->
-					{#if article.status === 'pending' && article.estimatedCompletion}
-						<div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
-							<div class="flex items-center gap-2 text-sm text-blue-800">
-								<Clock class="h-4 w-4" />
-								<span class="font-medium"
-									>Estimated completion: {formatDateShort(article.estimatedCompletion)}</span
-								>
+					<!-- Status-specific Information -->
+					{#if article.status.toLowerCase() === 'rejected' && article.rejectedAt}
+						<div class="rounded-lg border border-red-200 bg-red-50 p-3">
+							<div class="flex items-center gap-2 text-sm text-red-800">
+								<XCircle class="h-4 w-4" />
+								<span class="font-medium">
+									Rejected on {formatDate(article.rejectedAt)}
+									{#if article.rejectedBy}
+										by {article.rejectedBy}
+									{/if}
+								</span>
 							</div>
+							{#if article.feedback}
+								<p class="mt-2 text-sm text-red-700">{article.feedback}</p>
+							{/if}
 						</div>
-					{/if}
-
-					<!-- Published Date (for approved articles) -->
-					{#if article.status === 'approved' && article.publishedDate}
+					{:else if article.status.toLowerCase() === 'approved' && article.approvedAt}
 						<div class="rounded-lg border border-green-200 bg-green-50 p-3">
 							<div class="flex items-center gap-2 text-sm text-green-800">
 								<CheckCircle class="h-4 w-4" />
-								<span class="font-medium">Published on {formatDate(article.publishedDate)}</span>
+								<span class="font-medium">
+									Approved on {formatDate(article.approvedAt)}
+									{#if article.approvedBy}
+										by {article.approvedBy}
+									{/if}
+								</span>
 							</div>
+							{#if article.isPublished && article.publishedAt}
+								<p class="mt-1 text-sm text-green-700">
+									Published on {formatDate(article.publishedAt)}
+								</p>
+							{/if}
 						</div>
-					{/if}
-
-					<!-- Feedback Timeline -->
-					{#if article.feedback.length > 0}
-						<div class="space-y-3">
-							<h4 class="flex items-center gap-2 text-sm font-semibold">
-								<MessageCircle class="h-4 w-4" />
-								Feedback Timeline
-							</h4>
-							<div class="max-h-64 space-y-3 overflow-y-auto">
-								{#each article.feedback.slice().reverse() as feedback}
-									<div class="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
-										<div class="flex-shrink-0">
-											{#if feedback.avatar}
-												<Avatar class="h-8 w-8">
-													<AvatarImage src={feedback.avatar} alt={feedback.name} />
-													<AvatarFallback
-														>{feedback.name
-															.split(' ')
-															.map((n) => n[0])
-															.join('')}</AvatarFallback
-													>
-												</Avatar>
-											{:else}
-												{@const FeedbackIcon = getFeedbackIcon(feedback.type)}
-												<div
-													class="flex h-8 w-8 items-center justify-center rounded-full border bg-white"
-												>
-													{#if feedback.role === 'ai'}
-														<Bot class="h-4 w-4 text-blue-600" />
-													{:else if feedback.role === 'system'}
-														<RefreshCw class="h-4 w-4 text-gray-600" />
-													{:else}
-														<FeedbackIcon class="h-4 w-4 {getFeedbackColor(feedback.type)}" />
-													{/if}
-												</div>
-											{/if}
-										</div>
-										<div class="flex-1 space-y-1">
-											<div class="flex items-center gap-2">
-												<span class="text-sm font-medium">{feedback.name}</span>
-												<span class="text-muted-foreground text-xs">
-													{formatDate(feedback.timestamp)}
-												</span>
-												{#if feedback.type !== 'status'}
-													{@const TypeIcon = getFeedbackIcon(feedback.type)}
-													<TypeIcon class="h-3 w-3 {getFeedbackColor(feedback.type)}" />
-												{/if}
-											</div>
-											<p class="text-sm text-gray-700">{feedback.message}</p>
-										</div>
-									</div>
-								{/each}
+					{:else if article.status.toLowerCase() === 'pending'}
+						<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+							<div class="flex items-center gap-2 text-sm text-yellow-800">
+								<Clock class="h-4 w-4" />
+								<span class="font-medium">Under review since {formatDate(article.createdAt)}</span>
 							</div>
 						</div>
 					{/if}
@@ -476,7 +434,7 @@
 							Preview
 						</Button>
 
-						{#if article.status === 'pending'}
+						{#if article.status.toLowerCase() === 'pending'}
 							<Button variant="outline" onclick={() => handleEdit(article)}>
 								<Edit class="mr-2 h-4 w-4" />
 								Edit
@@ -485,12 +443,19 @@
 								<Trash2 class="mr-2 h-4 w-4" />
 								Withdraw
 							</Button>
-						{:else if article.status === 'approved'}
-							<Button variant="default" onclick={() => handleViewPublished(article)}>
-								<ExternalLink class="mr-2 h-4 w-4" />
-								View Published
-							</Button>
-						{:else if article.status === 'rejected'}
+						{:else if article.status.toLowerCase() === 'approved'}
+							{#if article.isPublished}
+								<Button variant="default" onclick={() => handleViewPublished(article)}>
+									<ExternalLink class="mr-2 h-4 w-4" />
+									View Published
+								</Button>
+							{:else}
+								<Button variant="outline" disabled>
+									<Clock class="mr-2 h-4 w-4" />
+									Awaiting Publication
+								</Button>
+							{/if}
+						{:else if article.status.toLowerCase() === 'rejected'}
 							<Button variant="default" onclick={() => handleResubmit(article)}>
 								<ArrowRightCircle class="mr-2 h-4 w-4" />
 								Resubmit
@@ -506,18 +471,29 @@
 		{/each}
 	</div>
 
-	{#if articles.length === 0}
+	{#if filteredArticles.length === 0}
 		<Card class="py-12 text-center">
 			<CardContent>
 				<FileText class="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-				<h3 class="mb-2 text-lg font-semibold">No articles submitted yet</h3>
-				<p class="text-muted-foreground mb-4">
-					Start writing and submit your first article for review
-				</p>
-				<Button>
-					<Edit class="mr-2 h-4 w-4" />
-					Write Article
-				</Button>
+				{#if selectedStatusFilter !== 'all'}
+					<h3 class="mb-2 text-lg font-semibold">
+						No {statusFilterOptions
+							.find((o) => o.value === selectedStatusFilter)
+							?.label.toLowerCase()} articles
+					</h3>
+					<p class="text-muted-foreground mb-4">
+						No articles found with the selected status filter
+					</p>
+				{:else}
+					<h3 class="mb-2 text-lg font-semibold">No articles submitted yet</h3>
+					<p class="text-muted-foreground mb-4">
+						Start writing and submit your first article for review
+					</p>
+					<Button href="/write">
+						<Edit class="mr-2 h-4 w-4" />
+						Write Article
+					</Button>
+				{/if}
 			</CardContent>
 		</Card>
 	{/if}
@@ -537,20 +513,45 @@
 		{#if selectedArticle}
 			<div class="space-y-4">
 				<img
-					src={selectedArticle.coverImage}
+					src={selectedArticle.featuredImage}
 					alt={selectedArticle.title}
 					class="h-48 w-full rounded-lg object-cover"
 				/>
+				<div class="space-y-2">
+					<h1 class="text-2xl font-bold">{selectedArticle.title}</h1>
+					<div class="text-muted-foreground flex items-center gap-4 text-sm">
+						<div class="flex items-center gap-1">
+							<Avatar class="h-6 w-6">
+								<AvatarImage
+									src={selectedArticle.author.avatar}
+									alt={selectedArticle.author.username}
+								/>
+								<AvatarFallback>{selectedArticle.author.username[0].toUpperCase()}</AvatarFallback>
+							</Avatar>
+							<span>By {selectedArticle.author.username}</span>
+						</div>
+						<span>•</span>
+						<span>{formatDate(selectedArticle.createdAt)}</span>
+					</div>
+					{#if selectedArticle.tags && selectedArticle.tags.length > 0}
+						<div class="flex flex-wrap gap-2">
+							{#each selectedArticle.tags as tag}
+								<Badge variant="outline" class="text-xs">#{tag}</Badge>
+							{/each}
+						</div>
+					{/if}
+				</div>
 				<div class="prose max-w-none">
-					<h1>{selectedArticle.title}</h1>
 					<p class="lead">
 						This is a preview of the article content. In a real application, this would show the
 						actual article content with proper formatting, images, and styling.
 					</p>
 					<p>
-						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-						incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-						exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+						The article "{selectedArticle.title}" is currently in {selectedArticle.status.toLowerCase()}
+						status.
+						{#if selectedArticle.feedback}
+							Current feedback: {selectedArticle.feedback}
+						{/if}
 					</p>
 				</div>
 			</div>
