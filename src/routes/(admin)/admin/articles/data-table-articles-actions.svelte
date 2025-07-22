@@ -4,12 +4,14 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { enhance } from '$app/forms';
 	import { Trash } from '@lucide/svelte';
+	import Eye from '@tabler/icons-svelte/icons/eye';
 	import CircleDashedX from '@tabler/icons-svelte/icons/circle-dashed-x';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import ThumbUp from '@tabler/icons-svelte/icons/thumb-up';
 	import Send from '@tabler/icons-svelte/icons/send';
 	import type { Row } from '@tanstack/table-core';
+	import { base } from '$app/paths';
 	let { id, row }: { id: string; row: Row<Article> } = $props();
 	let deleteAlertDialogOpen = $state(false);
 	let publishAlertDialogOpen = $state(false);
@@ -136,18 +138,23 @@
 {/snippet}
 
 <div class="ml-2 flex justify-around gap-4">
-	<div class="flex w-6 items-center justify-center">
+	<div class="flex w-4 items-center justify-center">
+		<a href="{base}/admin/articles/{id}">
+			<Eye />
+		</a>
+	</div>
+	<div class="flex w-4 items-center justify-center">
 		{#if row.original.status !== 'APPROVED' && row.original.status !== 'PUBLISHED'}
 			{@render approveConfirm()}
 		{/if}
 	</div>
 
-	<div class="flex w-6 items-center justify-center">
+	<div class="flex w-4 items-center justify-center">
 		{#if !(row.original.status !== 'APPROVED' && row.original.status !== 'PUBLISHED')}
 			{@render rejectConfirm()}
 		{/if}
 	</div>
-	<div class="flex w-6 items-center justify-center">
+	<div class="flex w-4 items-center justify-center">
 		{@render deleteConfirm()}
 	</div>
 
