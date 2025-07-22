@@ -41,34 +41,34 @@
 				title: 'Review Articles',
 				url: '/dashboard/review-articles',
 				icon: ArticleFilled
-			},
-
-			{
-				title: 'Activities',
-				url: '/dashboard/activity',
-				icon: ArticleFilled
-			},
-			{
-				title: 'Tags management',
-				url: '/dashboard/tags-manage',
-				icon: ArticleFilled
-			},
-			{
-				title: 'Notification Center',
-				url: '/dashboard/notification-center',
-				icon: ArticleFilled
-			},
-
-			{
-				title: 'Profile',
-				url: '/dashboard/profile',
-				icon: ArticleFilled
-			},
-			{
-				title: 'Settings',
-				url: '/dashboard/settings',
-				icon: ArticleFilled
 			}
+
+			// {
+			// 	title: 'Activities',
+			// 	url: '/dashboard/activity',
+			// 	icon: ArticleFilled
+			// },
+			// {
+			// 	title: 'Tags management',
+			// 	url: '/dashboard/tags-manage',
+			// 	icon: ArticleFilled
+			// },
+			// {
+			// 	title: 'Notification Center',
+			// 	url: '/dashboard/notification-center',
+			// 	icon: ArticleFilled
+			// },
+
+			// {
+			// 	title: 'Profile',
+			// 	url: '/dashboard/profile',
+			// 	icon: ArticleFilled
+			// },
+			// {
+			// 	title: 'Settings',
+			// 	url: '/dashboard/settings',
+			// 	icon: ArticleFilled
+			// }
 			// {
 			// 	title: 'Lifecycle',
 			// 	url: '#',
