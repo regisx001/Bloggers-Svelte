@@ -178,7 +178,73 @@
 		<div class="flex h-16 items-center justify-between gap-4">
 			<!-- Logo Section -->
 			<div class="flex shrink-0 items-center space-x-3">
-				<img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App Logo" />
+				<!-- <img src="{base}/favicon.png" class="h-8 w-8" alt="Blog App Logo" /> -->
+
+				<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<!-- Subtle inner shadow effect -->
+						<filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+							<feOffset in="SourceAlpha" dx="0" dy="1" />
+							<feGaussianBlur stdDeviation="1" result="offset-blur" />
+							<feComposite in="SourceGraphic" in2="offset-blur" operator="out" />
+						</filter>
+					</defs>
+
+					<!-- Background with subtle border -->
+					<rect
+						x="0"
+						y="0"
+						width="40"
+						height="40"
+						rx="10"
+						fill="var(--primary)"
+						stroke="var(--accent)"
+						stroke-width="0.5"
+						opacity="0.95"
+					/>
+
+					<!-- Enhanced "B" symbol -->
+					<g transform="translate(7, 6)">
+						<!-- Main vertical stroke with rounded end -->
+						<rect
+							x="0"
+							y="0"
+							width="4"
+							height="28"
+							rx="2"
+							fill="var(--primary-foreground)"
+							filter="url(#innerShadow)"
+						/>
+
+						<!-- Top bowl - more refined curve -->
+						<path
+							d="M 4 2 L 16 2 Q 22 2 22 8 Q 22 14 16 14 L 4 14"
+							fill="var(--primary-foreground)"
+							stroke="var(--secondary)"
+							stroke-width="0.5"
+							opacity="0.95"
+						/>
+
+						<!-- Bottom bowl - slightly larger for better proportion -->
+						<path
+							d="M 4 14 L 18 14 Q 26 14 26 20 Q 26 26 18 26 L 4 26"
+							fill="var(--primary-foreground)"
+							stroke="var(--secondary)"
+							stroke-width="0.5"
+							opacity="0.95"
+						/>
+
+						<!-- Inner cuts with smoother curves -->
+						<path d="M 7 5 L 16 5 Q 19 5 19 8 Q 19 11 16 11 L 7 11 Z" fill="var(--primary)" />
+						<path d="M 7 17 L 18 17 Q 23 17 23 20 Q 23 23 18 23 L 7 23 Z" fill="var(--primary)" />
+
+						<!-- Subtle highlight on top -->
+						<rect x="1" y="1" width="2" height="12" rx="1" fill="var(--accent)" opacity="0.3" />
+					</g>
+
+					<!-- Small accent dot for modern touch -->
+					<circle cx="32" cy="8" r="2" fill="var(--accent-foreground)" opacity="0.7" />
+				</svg>
 				<div class="tinos hidden sm:block">
 					<h1 class="text-xl font-bold tracking-tight">Blog App</h1>
 					<p class="text-muted-foreground hidden text-xs md:block">Discover amazing stories</p>
