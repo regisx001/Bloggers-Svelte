@@ -38,7 +38,11 @@
 			// 	url: '/admin/insight',
 			// 	icon: DashboardIcon
 			// },
-
+			{
+				title: 'Users',
+				url: '/admin/users',
+				icon: Article
+			},
 			{
 				title: 'Articles',
 				url: '/admin/articles',

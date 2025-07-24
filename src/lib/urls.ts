@@ -12,3 +12,4 @@ export const ARTICLES_URL = PRIVATE_BACKEND_URL + '/articles';
 export const TAGS_URL = PRIVATE_BACKEND_URL + '/tags';
 
 export const ADMIN_ARTICLES_URL = PRIVATE_BACKEND_URL + '/admin/articles';
+export const ADMIN_USERS_URL = PRIVATE_BACKEND_URL + '/admin/users';
