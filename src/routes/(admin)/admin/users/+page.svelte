@@ -1,18 +1,44 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import GenericDataTable from '$lib/components/data-tables/generic-data-table.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import EnhancedDataTable from '$lib/components/data-tables/enhanced-data-table.svelte';
+	import EnhancedDataTableActions from '$lib/components/data-tables/enhanced-data-table-actions.svelte';
+	import type { ColumnDef, Row } from '@tanstack/table-core';
+	import type {
+		ActionItem,
+		QuickAction,
+		TableAction,
+		FilterOption
+	} from '$lib/components/data-tables/types';
 	import { createRawSnippet } from 'svelte';
 	import { renderSnippet, renderComponent } from '$lib/components/ui/data-table/index.js';
 	import DataTableCheckbox from '$lib/components/data-tables/data-table-checkbox.svelte';
-	import GenericDataTableActions from '$lib/components/data-tables/generic-data-table-actions.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Plus, Shield, Users, UserCheck, UserX, Crown, User } from '@lucide/svelte';
+	import {
+		Plus,
+		Shield,
+		Users,
+		UserCheck,
+		UserX,
+		Crown,
+		User,
+		Edit,
+		Lock,
+		Unlock,
+		Mail,
+		MessageSquare,
+		Settings,
+		Download,
+		Upload,
+		FileText,
+		Eye,
+		Ban,
+		CheckCircle
+	} from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
@@ -156,13 +182,161 @@
 			id: 'actions',
 			header: 'Actions',
 			cell: ({ row }) => {
-				return renderComponent(GenericDataTableActions, {
+				// Define quick actions for each user row
+				const quickActions: QuickAction[] = [
+					{
+						id: 'edit',
+						icon: Edit,
+						label: 'Edit User',
+						variant: 'ghost',
+						action: (entityId, entityData) => {
+							console.log('Edit user:', entityId, entityData);
+							// Open edit dialog or navigate to edit page
+						}
+					}
+				];
+
+				// Define dropdown actions
+				const dropdownActions: ActionItem[] = [
+					{
+						id: 'send-message',
+						label: 'Send Message',
+						icon: MessageSquare,
+						action: (entityId, entityData) => {
+							console.log('Send message to user:', entityId);
+							// Open message dialog
+						}
+					},
+					{
+						id: 'toggle-status',
+						label: row.original.enabled ? 'Disable User' : 'Enable User',
+						icon: row.original.enabled ? Lock : Unlock,
+						variant: row.original.enabled ? 'destructive' : 'default',
+						action: (entityId, entityData) => {
+							console.log('Toggle user status:', entityId);
+							// Call API to toggle user status
+						},
+						separator: true
+					},
+					{
+						id: 'view-profile',
+						label: 'View Profile',
+						icon: Eye,
+						href: `/admin/users/${row.original.id}`,
+						action: () => {}
+					},
+					{
+						id: 'view-activity',
+						label: 'View Activity',
+						icon: FileText,
+						action: (entityId) => {
+							console.log('View user activity:', entityId);
+							// Navigate to user activity page
+						}
+					}
+				];
+
+				return renderComponent(EnhancedDataTableActions, {
 					entityId: row.original.id,
 					entityName: 'user',
-					deleteAction: '?/deleteUser'
+					entityData: row.original,
+					deleteAction: '?/deleteUser',
+					quickActions,
+					dropdownActions,
+					viewDetailsRoute: `/admin/users/${row.original.id}`,
+					layout: 'horizontal'
 				});
 			},
 			enableSorting: false
+		}
+	];
+
+	// Define header actions
+	const headerActions: TableAction[] = [
+		{
+			id: 'export-users',
+			label: 'Export',
+			icon: Download,
+			variant: 'outline',
+			action: (selectedRows: Row<any>[], allData: any[]) => {
+				console.log('Export users:', selectedRows.length > 0 ? selectedRows : allData);
+				toast.success('Export functionality would be implemented here');
+			}
+		},
+		{
+			id: 'import-users',
+			label: 'Import',
+			icon: Upload,
+			variant: 'outline',
+			action: () => {
+				console.log('Import users');
+				// Open import dialog
+			}
+		}
+	];
+
+	// Define bulk actions for selected rows
+	const bulkActions: TableAction[] = [
+		{
+			id: 'enable-users',
+			label: 'Enable',
+			icon: CheckCircle,
+			variant: 'default',
+			requiresSelection: true,
+			action: (selectedRows: Row<any>[]) => {
+				const userIds = selectedRows.map((row: Row<any>) => row.original.id);
+				console.log('Enable users:', userIds);
+				toast.success(`Enabled ${userIds.length} users`);
+			}
+		},
+		{
+			id: 'disable-users',
+			label: 'Disable',
+			icon: Ban,
+			variant: 'destructive',
+			requiresSelection: true,
+			action: (selectedRows: Row<any>[]) => {
+				const userIds = selectedRows.map((row: Row<any>) => row.original.id);
+				console.log('Disable users:', userIds);
+				toast.success(`Disabled ${userIds.length} users`);
+			}
+		},
+		{
+			id: 'send-notification',
+			label: 'Send Notification',
+			icon: Mail,
+			variant: 'outline',
+			requiresSelection: true,
+			action: (selectedRows: Row<any>[]) => {
+				console.log(
+					'Send notification to users:',
+					selectedRows.map((row: Row<any>) => row.original.id)
+				);
+				// Open notification dialog
+			}
+		}
+	];
+
+	// Define additional filters
+	const additionalFilters: FilterOption[] = [
+		{
+			column: 'roles',
+			placeholder: 'Filter by role',
+			type: 'select',
+			options: [
+				{ value: 'ROLE_ADMIN', label: 'Admin' },
+				{ value: 'ROLE_MODERATOR', label: 'Moderator' },
+				{ value: 'ROLE_USER', label: 'User' }
+			]
+		},
+		{
+			column: 'enabled',
+			placeholder: 'Filter by status',
+			type: 'select',
+			options: [
+				{ value: 'true', label: 'Active' },
+				{ value: 'false', label: 'Disabled' }
+			]
 		}
 	];
 
@@ -174,21 +348,25 @@
 		role: 'ROLE_USER'
 	});
 
-	// Handle form effects (temporarily disabled for type safety)
-	// $effect(() => {
-	// 	if (form?.success) {
-	// 		toast.success(form.message);
-	// 		if (form.action === 'createUser') {
-	// 			isCreateDialogOpen = false;
-	// 			newUserForm = { username: '', email: '', role: 'ROLE_USER' };
-	// 		}
-	// 	} else if (form?.success === false) {
-	// 		toast.error(form.message || 'An error occurred');
-	// 	}
-	// });
-
 	function handleCreateUser() {
 		isCreateDialogOpen = true;
+	}
+
+	function handleRefresh() {
+		console.log('Refreshing users data...');
+		// Implement refresh logic
+		toast.success('Data refreshed');
+	}
+
+	function handleExport(allData: any[], selectedData: any[]) {
+		const dataToExport = selectedData.length > 0 ? selectedData : allData;
+		console.log('Exporting data:', dataToExport);
+		// Implement export logic
+		toast.success(`Exported ${dataToExport.length} users`);
+	}
+
+	function handleSelectionChange(selectedRows: any[]) {
+		console.log('Selection changed:', selectedRows.length, 'users selected');
 	}
 </script>
 
@@ -211,16 +389,6 @@
 </svelte:head>
 
 <div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
-	<!-- Header Section -->
-	<div class="flex items-center justify-between space-y-2">
-		<div>
-			<h2 class="text-3xl font-bold tracking-tight">Users Management</h2>
-			<p class="text-muted-foreground">
-				Manage user accounts, roles, and permissions across the platform
-			</p>
-		</div>
-	</div>
-
 	<!-- Stats Cards -->
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
@@ -274,22 +442,36 @@
 		</div>
 	</div>
 
-	<!-- Data Table -->
-	<div class="rounded-md border">
-		<GenericDataTable
-			columns={columns as any}
-			data={data.users?.content || []}
-			entityName="user"
-			deleteBatchAction="?/deleteBatchUsers"
-		>
-			{#snippet triggerAdd()}
-				<Button onclick={handleCreateUser} class="flex items-center gap-2">
-					<Plus class="h-4 w-4" />
-					Add New User
-				</Button>
-			{/snippet}
-		</GenericDataTable>
-	</div>
+	<!-- Enhanced Data Table -->
+	<EnhancedDataTable
+		columns={columns as any}
+		data={data.users?.content || []}
+		entityName="user"
+		deleteBatchAction="?/deleteBatchUsers"
+		title="Users Management"
+		description="Manage user accounts, roles, and permissions across the platform"
+		{headerActions}
+		{bulkActions}
+		{additionalFilters}
+		enableSearch={true}
+		searchPlaceholder="Search users..."
+		primarySearchColumn="username"
+		enableExport={true}
+		enableRefresh={true}
+		enableColumnVisibility={true}
+		showRowNumbers={true}
+		stripedRows={true}
+		onRefresh={handleRefresh}
+		onExport={handleExport}
+		onSelectionChange={handleSelectionChange}
+	>
+		{#snippet triggerAdd()}
+			<Button onclick={handleCreateUser} class="flex items-center gap-2">
+				<Plus class="h-4 w-4" />
+				Add New User
+			</Button>
+		{/snippet}
+	</EnhancedDataTable>
 </div>
 
 <!-- Create User Dialog -->
