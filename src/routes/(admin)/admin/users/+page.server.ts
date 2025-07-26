@@ -7,10 +7,11 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	// Extract filter parameters from URL
 	const role = url.searchParams.get('role');
 	const enabled = url.searchParams.get('enabled');
+	const searchTerms = url.searchParams.get('searchTerms');
 
 	// Build query parameters
 	const queryParams = new URLSearchParams();
-	queryParams.set('sort', 'createdAt,desc');
+	// queryParams.set('sort', 'createdAt,desc');
 
 	if (role) {
 		queryParams.set('role', role);
@@ -20,12 +21,16 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		queryParams.set('enabled', enabled);
 	}
 
+	if (searchTerms) {
+		queryParams.set('searchTerm', searchTerms);
+	}
+
 	const usersResponse = await fetch(`${ADMIN_USERS_URL}?${queryParams.toString()}`);
 	const users: Page<User> = await usersResponse.json();
 
 	return {
 		users,
-		appliedFilters: { role, enabled }
+		appliedFilters: { role, enabled, searchTerms }
 	};
 };
 

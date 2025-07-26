@@ -313,17 +313,17 @@
 
 	// Define header actions
 	const headerActions: TableAction[] = [
-		// {
-		// 	id: 'export-users',
-		// 	label: 'Export',
-		// 	icon: Download,
-		// 	variant: 'outline',
-		// 	action: (selectedRows: Row<any>[], allData: any[]) => {
-		// 		const dataToExport =
-		// 			selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
-		// 		handleExport(allData, dataToExport);
-		// 	}
-		// }
+		{
+			id: 'export-users',
+			label: 'Export',
+			icon: Download,
+			variant: 'outline',
+			action: (selectedRows: Row<any>[], allData: any[]) => {
+				const dataToExport =
+					selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
+				handleExport(allData, dataToExport);
+			}
+		}
 	];
 
 	// Define bulk actions for selected rows
@@ -365,13 +365,10 @@
 
 	// Define additional filters
 	const additionalFilters: FilterOption[] = [
-		// Server-side filters
 		{
 			column: 'roles',
 			placeholder: 'Filter by role',
 			type: 'select',
-			mode: 'server',
-			serverParam: 'role',
 			options: [
 				{ value: 'ROLE_ADMIN', label: 'Admin' },
 				{ value: 'ROLE_MODERATOR', label: 'Moderator' },
@@ -379,11 +376,9 @@
 			]
 		},
 		{
-			column: 'enabled',
-			placeholder: 'Filter by status ',
+			column: 'status',
+			placeholder: 'Filter by status',
 			type: 'select',
-			mode: 'server',
-			serverParam: 'enabled',
 			options: [
 				{ value: 'true', label: 'Active' },
 				{ value: 'false', label: 'Disabled' }
@@ -587,8 +582,9 @@
 			{bulkActions}
 			{additionalFilters}
 			enableSearch={true}
+			enableServerSearch={true}
+			searchParam="searchTerms"
 			searchPlaceholder="Search users..."
-			primarySearchColumn="username"
 			enableExport={true}
 			enableRefresh={true}
 			enableColumnVisibility={true}

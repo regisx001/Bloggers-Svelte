@@ -45,7 +45,9 @@
 		// Search and filtering
 		enableSearch?: boolean;
 		searchPlaceholder?: string;
-		primarySearchColumn?: string;
+		enableServerSearch?: boolean; // New: enable server-side search
+		searchParam?: string; // New: parameter name for server search (default: 'searchTerms')
+		primarySearchColumn?: string; // Deprecated: use enableServerSearch instead
 		additionalFilters?: FilterOption[];
 
 		// Actions and controls
@@ -97,7 +99,9 @@
 
 		enableSearch = true,
 		searchPlaceholder = 'Search...',
-		primarySearchColumn = 'title',
+		enableServerSearch = false,
+		searchParam = 'searchTerms',
+		primarySearchColumn = 'title', // Deprecated
 		additionalFilters = [],
 
 		headerActions = [],
@@ -206,6 +210,47 @@
 
 	// Server-side filter state
 	let serverFilters = $state<Record<string, string>>({});
+
+	// Server-side search state
+	let searchQuery = $state('');
+	let searchInput = $state(''); // Separate input value from search query
+
+	// Handle server-side search with button trigger
+	const handleServerSearch = async () => {
+		const url = new URL($page.url);
+
+		if (searchInput.trim()) {
+			url.searchParams.set(searchParam, searchInput.trim());
+		} else {
+			url.searchParams.delete(searchParam);
+		}
+
+		// Navigate to new URL (this will trigger load function re-run)
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+	};
+
+	// Handle search input changes (for local state only)
+	const handleSearchInput = (value: string) => {
+		searchInput = value;
+	};
+
+	// Handle Enter key press in search input
+	const handleSearchKeydown = (event: KeyboardEvent) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			handleServerSearch();
+		}
+	};
+
+	// Initialize search query from URL params
+	$effect(() => {
+		const params = $page.url.searchParams;
+		const currentSearch = params.get(searchParam) || '';
+		if (currentSearch !== searchQuery) {
+			searchQuery = currentSearch;
+			searchInput = currentSearch; // Keep input in sync with URL
+		}
+	});
 
 	// Handle server-side filter changes
 	const handleServerFilterChange = async (filterKey: string, value: string, paramName?: string) => {
@@ -343,18 +388,44 @@
 				<!-- Search and Filters -->
 				<div class="flex flex-1 items-center gap-2">
 					{#if enableSearch}
-						<div class="relative">
-							<Search class="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-							<Input
-								placeholder={searchPlaceholder}
-								value={table.getColumn(primarySearchColumn)?.getFilterValue() as string}
-								onchange={(e) =>
-									table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
-								oninput={(e) =>
-									table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
-								class="max-w-sm pl-8"
-							/>
-						</div>
+						{#if enableServerSearch}
+							<!-- Server-side search with button trigger -->
+							<div class="flex items-center gap-2">
+								<div class="relative">
+									<Search class="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+									<Input
+										placeholder={searchPlaceholder}
+										value={searchInput}
+										oninput={(e) => handleSearchInput(e.currentTarget.value)}
+										onkeydown={handleSearchKeydown}
+										class="max-w-sm pl-8"
+									/>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={handleServerSearch}
+									class="flex items-center gap-1"
+								>
+									<Search class="h-4 w-4" />
+									Search
+								</Button>
+							</div>
+						{:else}
+							<!-- Client-side search (deprecated) -->
+							<div class="relative">
+								<Search class="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+								<Input
+									placeholder={searchPlaceholder}
+									value={table.getColumn(primarySearchColumn)?.getFilterValue() as string}
+									onchange={(e) =>
+										table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
+									oninput={(e) =>
+										table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
+									class="max-w-sm pl-8"
+								/>
+							</div>
+						{/if}
 					{/if}
 
 					<!-- Additional Filters -->
