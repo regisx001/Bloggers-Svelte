@@ -22,57 +22,58 @@
 	import { enhance } from '$app/forms';
 	import DeleteConfirmation from '$lib/components/dialogs/delete-confirmation-dialog.svelte';
 	import { Search, Filter, Download, RefreshCw, Settings } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 	import type { TableAction, FilterOption } from './types.js';
 
 	interface EnhancedDataTableProps {
 		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
-		
+
 		// Basic config
 		entityName: string;
 		deleteBatchAction?: string;
 		pageSize?: number;
 		emptyMessage?: string;
-		
+
 		// Header customization
 		showHeader?: boolean;
 		title?: string;
 		description?: string;
-		
+
 		// Search and filtering
 		enableSearch?: boolean;
 		searchPlaceholder?: string;
 		primarySearchColumn?: string;
 		additionalFilters?: FilterOption[];
-		
+
 		// Actions and controls
 		headerActions?: TableAction[];
 		bulkActions?: TableAction[];
 		enableColumnVisibility?: boolean;
 		enableExport?: boolean;
 		enableRefresh?: boolean;
-		
+
 		// Selection
 		enableRowSelection?: boolean;
 		enableSelectAll?: boolean;
-		
+
 		// Layout and styling
 		stickyHeader?: boolean;
 		compactMode?: boolean;
 		showRowNumbers?: boolean;
 		stripedRows?: boolean;
-		
+
 		// Custom snippets
 		customHeader?: Snippet<[{ table: any; selectedCount: number }]>;
 		customToolbar?: Snippet<[{ table: any; selectedCount: number }]>;
 		customEmptyState?: Snippet;
 		customRowActions?: Snippet<[{ row: Row<TData>; rowIndex: number }]>;
 		triggerAdd?: Snippet;
-		
+
 		// Pagination
 		showPagination?: boolean;
 		paginationInfo?: boolean;
-		
+
 		// Events
 		onRowClick?: (row: Row<TData>, event: MouseEvent) => void;
 		onSelectionChange?: (selectedRows: Row<TData>[]) => void;
@@ -87,39 +88,39 @@
 		deleteBatchAction,
 		pageSize = 10,
 		emptyMessage = 'No results.',
-		
+
 		showHeader = true,
 		title,
 		description,
-		
+
 		enableSearch = true,
 		searchPlaceholder = 'Search...',
 		primarySearchColumn = 'title',
 		additionalFilters = [],
-		
+
 		headerActions = [],
 		bulkActions = [],
 		enableColumnVisibility = true,
 		enableExport = false,
 		enableRefresh = false,
-		
+
 		enableRowSelection = true,
 		enableSelectAll = true,
-		
+
 		stickyHeader = true,
 		compactMode = false,
 		showRowNumbers = false,
 		stripedRows = false,
-		
+
 		customHeader,
 		customToolbar,
 		customEmptyState,
 		customRowActions,
 		triggerAdd,
-		
+
 		showPagination = true,
 		paginationInfo = true,
-		
+
 		onRowClick,
 		onSelectionChange,
 		onRefresh,
@@ -223,7 +224,7 @@
 
 	const handleExport = () => {
 		if (onExport) {
-			const selectedData = selectedRows.map(row => row.original);
+			const selectedData = selectedRows.map((row) => row.original);
 			onExport(data, selectedData);
 		}
 	};
@@ -232,11 +233,39 @@
 		if (action.requiresSelection && selectedCount === 0) {
 			return;
 		}
+
+		// Handle form action for bulk operations with progressive enhancement
+		if (action.formAction) {
+			const formId = `bulk-action-form-${action.id}`;
+			const form = document.getElementById(formId) as HTMLFormElement;
+			if (form) {
+				// Update the form with current selection
+				updateBulkFormData(form, selectedRows);
+				form.requestSubmit();
+			}
+			return;
+		}
+
+		// Handle client-side action
 		action.action(selectedRows, data);
 	};
 
-	const visibleHeaderActions = $derived(headerActions.filter(action => action.show !== false));
-	const visibleBulkActions = $derived(bulkActions.filter(action => action.show !== false));
+	const updateBulkFormData = (form: HTMLFormElement, rows: Row<TData>[]) => {
+		// Remove existing selection inputs
+		const existingInputs = form.querySelectorAll('input[name^="selectedIds"]');
+		existingInputs.forEach((input) => input.remove());
+
+		// Add current selection
+		rows.forEach((row, index) => {
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = `selectedIds[${index}]`;
+			input.value = (row.original as any).id || (row as any).id;
+			form.appendChild(input);
+		});
+	};
+	const visibleHeaderActions = $derived(headerActions.filter((action) => action.show !== false));
+	const visibleBulkActions = $derived(bulkActions.filter((action) => action.show !== false));
 </script>
 
 <div class="space-y-4">
@@ -263,13 +292,15 @@
 				<div class="flex flex-1 items-center gap-2">
 					{#if enableSearch}
 						<div class="relative">
-							<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Search class="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
 							<Input
 								placeholder={searchPlaceholder}
 								value={table.getColumn(primarySearchColumn)?.getFilterValue() as string}
-								onchange={(e) => table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
-								oninput={(e) => table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
-								class="pl-8 max-w-sm"
+								onchange={(e) =>
+									table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
+								oninput={(e) =>
+									table.getColumn(primarySearchColumn)?.setFilterValue(e.currentTarget.value)}
+								class="max-w-sm pl-8"
 							/>
 						</div>
 					{/if}
@@ -279,8 +310,9 @@
 						<div class="flex flex-col gap-1">
 							{#if filter.type === 'select'}
 								<select
-									class="border-input bg-background text-sm rounded-md border px-3 py-2"
-									onchange={(e) => table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
+									class="border-input bg-background rounded-md border px-3 py-2 text-sm"
+									onchange={(e) =>
+										table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
 								>
 									<option value="">{filter.placeholder}</option>
 									{#each filter.options || [] as option}
@@ -291,7 +323,8 @@
 								<Input
 									placeholder={filter.placeholder}
 									value={table.getColumn(filter.column)?.getFilterValue() as string}
-									onchange={(e) => table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
+									onchange={(e) =>
+										table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
 									class="max-w-sm"
 								/>
 							{/if}
@@ -328,8 +361,8 @@
 
 					<!-- Default Bulk Delete -->
 					{#if selectedCount > 0 && deleteBatchAction}
-						<Button 
-							variant="outline" 
+						<Button
+							variant="outline"
 							size="sm"
 							onclick={() => (deleteDialogOpen = true)}
 							class="flex items-center gap-2"
@@ -381,7 +414,9 @@
 							<DropdownMenu.Content align="end">
 								<DropdownMenu.Label>Toggle Columns</DropdownMenu.Label>
 								<DropdownMenu.Separator />
-								{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
+								{#each table
+									.getAllColumns()
+									.filter((col) => col.getCanHide()) as column (column.id)}
 									<DropdownMenu.CheckboxItem
 										class="capitalize"
 										bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
@@ -434,13 +469,15 @@
 			</Table.Header>
 			<Table.Body>
 				{#each table.getRowModel().rows as row, index (row.id)}
-					<Table.Row 
+					<Table.Row
 						data-state={row.getIsSelected() && 'selected'}
-						class="{stripedRows && index % 2 === 1 ? 'bg-muted/50' : ''} {compactMode ? 'h-10' : ''} {onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}"
+						class="{stripedRows && index % 2 === 1 ? 'bg-muted/50' : ''} {compactMode
+							? 'h-10'
+							: ''} {onRowClick ? 'hover:bg-muted/50 cursor-pointer' : ''}"
 						onclick={(e) => onRowClick && onRowClick(row, e)}
 					>
 						{#if showRowNumbers}
-							<Table.Cell class="text-center text-sm text-muted-foreground">
+							<Table.Cell class="text-muted-foreground text-center text-sm">
 								{pagination.pageIndex * pagination.pageSize + index + 1}
 							</Table.Cell>
 						{/if}
@@ -457,7 +494,10 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={columns.length + (showRowNumbers ? 1 : 0) + (customRowActions ? 1 : 0)} class="h-24 text-center">
+						<Table.Cell
+							colspan={columns.length + (showRowNumbers ? 1 : 0) + (customRowActions ? 1 : 0)}
+							class="h-24 text-center"
+						>
 							{#if customEmptyState}
 								{@render customEmptyState()}
 							{:else}
@@ -524,3 +564,46 @@
 		onSuccess={handleDeleteSuccess}
 	/>
 {/if}
+
+<!-- Hidden Forms for Bulk Actions with Progressive Enhancement -->
+{#each [...visibleBulkActions, ...visibleHeaderActions] as action}
+	{#if action.formAction}
+		<form
+			id="bulk-action-form-{action.id}"
+			method="POST"
+			action={action.formAction}
+			use:enhance={() => {
+				const currentSelection = selectedRows.length;
+				toast.loading(`Processing ${currentSelection} items...`);
+				return ({ result, update }) => {
+					toast.dismiss();
+					if (result.type === 'success') {
+						if (
+							result.data &&
+							typeof result.data === 'object' &&
+							'message' in result.data &&
+							typeof result.data.message === 'string'
+						) {
+							toast.success(result.data.message);
+						}
+						// Clear selection after successful bulk action
+						table.resetRowSelection();
+					} else if (result.type === 'failure') {
+						if (
+							result.data &&
+							typeof result.data === 'object' &&
+							'message' in result.data &&
+							typeof result.data.message === 'string'
+						) {
+							toast.error(result.data.message);
+						}
+					}
+					update();
+				};
+			}}
+			style="display: none;"
+		>
+			<!-- Selected IDs will be dynamically added before submission -->
+		</form>
+	{/if}
+{/each}
