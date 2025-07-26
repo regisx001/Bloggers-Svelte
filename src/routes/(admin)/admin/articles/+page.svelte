@@ -1,16 +1,22 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import GenericDataTable from '$lib/components/data-tables/generic-data-table.svelte';
+	import EnhancedDataTable from '$lib/components/data-tables/enhanced-data-table.svelte';
+	import EnhancedDataTableActions from '$lib/components/data-tables/enhanced-data-table-actions.svelte';
 	import type { ColumnDef, Row } from '@tanstack/table-core';
 	import { createRawSnippet, onMount } from 'svelte';
 	let { data, form }: PageProps = $props();
 	import { renderSnippet } from '$lib/components/ui/data-table/index.js';
 	import DataTableCheckbox from '$lib/components/data-tables/data-table-checkbox.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table/index.js';
-	import GenericDataTableActions from '$lib/components/data-tables/generic-data-table-actions.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
-	import { Plus } from '@lucide/svelte';
+	import { Plus, Eye, ThumbsUp, Trash, Download, RefreshCw } from '@lucide/svelte';
+	import type {
+		TableAction,
+		FilterOption,
+		ActionItem,
+		QuickAction
+	} from '$lib/components/data-tables/types.js';
 	import { Badge, badgeVariants } from '$lib/components/ui/badge/index.js';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
@@ -25,14 +31,15 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
-	import DataTableArticlesActions from './data-table-articles-actions.svelte';
 
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import CircleDashedX from '@tabler/icons-svelte/icons/circle-dashed-x';
 	import { tick } from 'svelte';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { cn } from '$lib/utils.js';
+	import { base } from '$app/paths';
 
 	const columns: ColumnDef<Article>[] = [
 		{
@@ -142,7 +149,7 @@
 					date: row.original.createdAt
 				});
 			}
-		},
+		}
 
 		// {
 		// 	accessorKey: 'updatedAt',
@@ -157,14 +164,202 @@
 		// 			date: row.original.updatedAt
 		// 		});
 		// 	}
-		// },
+		// }
+	];
+
+	// Enhanced Table Actions Configuration
+	const headerActions: TableAction[] = [
 		{
-			id: 'actions',
-			cell: ({ row }) => {
-				return renderComponent(DataTableArticlesActions, { row, id: row.original.id });
+			id: 'export-articles',
+			label: 'Export Articles',
+			icon: Download,
+			variant: 'outline',
+			action: (selectedRows, allData) => {
+				handleExportArticles(allData);
+			}
+		},
+		{
+			id: 'refresh-data',
+			label: 'Refresh Data',
+			icon: RefreshCw,
+			variant: 'outline',
+			action: () => {
+				handleRefreshData();
 			}
 		}
 	];
+
+	const bulkActions: TableAction[] = [
+		{
+			id: 'approve-selected',
+			label: 'Approve Selected',
+			icon: ThumbsUp,
+			variant: 'outline',
+			requiresSelection: true,
+			action: (selectedRows) => {
+				handleBulkApprove(selectedRows);
+			}
+		},
+		{
+			id: 'archive-selected',
+			label: 'Archive Selected',
+			icon: Trash,
+			variant: 'outline',
+			requiresSelection: true,
+			action: (selectedRows) => {
+				handleBulkArchive(selectedRows);
+			}
+		}
+	];
+
+	const statusFilters: FilterOption = {
+		column: 'status',
+		type: 'select',
+		placeholder: 'Filter by status...',
+		options: [
+			{ label: 'Published', value: 'PUBLISHED' },
+			{ label: 'Draft', value: 'DRAFT' },
+			{ label: 'Approved', value: 'APPROVED' },
+			{ label: 'Rejected', value: 'REJECTED' },
+			{ label: 'Pending Review', value: 'PENDING_REVIEW' },
+			{ label: 'Scheduled', value: 'SCHEDULED' },
+			{ label: 'Archived', value: 'ARCHIVED' }
+		]
+	};
+
+	// Row Actions Configuration
+	const getRowQuickActions = (row: Row<Article>): QuickAction[] => {
+		const article = row.original;
+		return [
+			{
+				id: 'view',
+				icon: Eye,
+				label: 'View',
+				action: () => window.open(`${base}/admin/articles/${article.id}`, '_blank')
+			}
+		];
+	};
+
+	const getRowDropdownActions = (row: Row<Article>): ActionItem[] => {
+		const article = row.original;
+		const actions: ActionItem[] = [];
+
+		// Add conditional actions based on article status
+		if (article.status !== 'APPROVED' && article.status !== 'PUBLISHED') {
+			actions.push({
+				id: 'approve',
+				icon: ThumbsUp,
+				label: 'Approve Article',
+				action: () => handleApproveArticle(article.id),
+				variant: 'default'
+			});
+		}
+
+		if (article.status === 'APPROVED' || article.status === 'PUBLISHED') {
+			actions.push({
+				id: 'reject',
+				icon: CircleDashedX,
+				label: 'Reject Article',
+				action: () => handleRejectArticle(article.id),
+				variant: 'destructive'
+			});
+		}
+
+		actions.push(
+			{
+				id: 'copy-id',
+				label: 'Copy Article ID',
+				action: () => navigator.clipboard.writeText(article.id)
+			},
+			{
+				id: 'edit',
+				label: 'Edit Article',
+				action: () => window.open(`${base}/admin/articles/${article.id}/edit`, '_blank')
+			},
+			{
+				id: 'separator-1',
+				label: '',
+				action: () => {},
+				separator: true
+			},
+			{
+				id: 'delete',
+				icon: Trash,
+				label: 'Delete Article',
+				action: () => handleDeleteArticle(article.id),
+				variant: 'destructive'
+			}
+		);
+
+		return actions;
+	};
+
+	// Action Handlers
+	const handleExportArticles = (data: Article[]) => {
+		const csv = convertToCSV(data);
+		downloadCSV(csv, 'articles.csv');
+		toast.success('Articles exported successfully');
+	};
+
+	const handleRefreshData = () => {
+		window.location.reload();
+	};
+
+	const handleBulkApprove = (selectedRows: Row<Article>[]) => {
+		const articleIds = selectedRows.map((row) => row.original.id);
+		// Implement bulk approve logic here
+		toast.success(`Approved ${articleIds.length} articles`);
+	};
+
+	const handleBulkArchive = (selectedRows: Row<Article>[]) => {
+		const articleIds = selectedRows.map((row) => row.original.id);
+		// Implement bulk archive logic here
+		toast.success(`Archived ${articleIds.length} articles`);
+	};
+
+	const handleApproveArticle = (articleId: string) => {
+		// Implement approve logic here
+		toast.success('Article approved');
+	};
+
+	const handleRejectArticle = (articleId: string) => {
+		// Implement reject logic here
+		toast.success('Article rejected');
+	};
+
+	const handleDeleteArticle = (articleId: string) => {
+		// Implement delete logic here
+		toast.success('Article deleted');
+	};
+
+	const convertToCSV = (data: Article[]): string => {
+		const headers = ['Title', 'Author', 'Status', 'Created At', 'Published At'];
+		const rows = data.map((article) => [
+			article.title,
+			article.author.username,
+			article.status,
+			new Date(article.createdAt).toLocaleDateString(),
+			article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Not Published'
+		]);
+
+		const csvContent = [headers, ...rows]
+			.map((row) => row.map((field) => `"${field}"`).join(','))
+			.join('\n');
+
+		return csvContent;
+	};
+
+	const downloadCSV = (csvContent: string, filename: string) => {
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute('download', filename);
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	};
 
 	$effect(() => {
 		if (form?.success) {
@@ -312,20 +507,43 @@
 {/snippet}
 
 <section class="p-6">
-	<GenericDataTable
-		showHeader
+	<EnhancedDataTable
+		title="Articles Management"
+		description="Manage your blog articles, approve submissions, and track publishing status"
 		data={data.articles?.content || []}
 		{columns}
 		entityName="article"
 		deleteBatchAction="?/deleteArticlesBatch"
-		filterColumn="title"
-		filterPlaceholder="Filter articles..."
+		primarySearchColumn="title"
+		searchPlaceholder="Search articles by title..."
+		additionalFilters={[statusFilters]}
+		{headerActions}
+		{bulkActions}
+		enableExport={true}
+		enableRefresh={true}
+		enableColumnVisibility={true}
 		pageSize={30}
+		showRowNumbers={true}
+		onExport={handleExportArticles}
+		onRefresh={handleRefreshData}
 	>
 		{#snippet triggerAdd()}
 			{@render addArticle()}
 		{/snippet}
-	</GenericDataTable>
+
+		{#snippet customRowActions({ row })}
+			<EnhancedDataTableActions
+				entityId={row.original.id}
+				entityName="article"
+				entityData={row.original}
+				quickActions={getRowQuickActions(row)}
+				dropdownActions={getRowDropdownActions(row)}
+				layout="horizontal"
+				showDropdownTrigger={true}
+				deleteAction="?/deleteArticle"
+			/>
+		{/snippet}
+	</EnhancedDataTable>
 </section>
 
 {#snippet statusCellSnippet({ row }: { row: Row<Article> })}

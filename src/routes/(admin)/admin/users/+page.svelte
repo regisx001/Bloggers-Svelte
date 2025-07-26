@@ -42,8 +42,18 @@
 	import { enhance } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
+	import { invalidate, invalidateAll } from '$app/navigation';
 
 	let { data, form }: PageProps = $props();
+
+	// Handle form action results
+	// $effect(() => {
+	// 	if (form?.success) {
+	// 		toast.success(form.message || 'Action completed successfully');
+	// 	} else if (form?.message) {
+	// 		toast.error(form.message);
+	// 	}
+	// });
 
 	// Define columns for the users data table
 	const columns: ColumnDef<any, any>[] = [
@@ -90,6 +100,13 @@
 			enableSorting: false
 		},
 		{
+			accessorKey: 'username',
+			header: 'Username',
+			cell: ({ row }) => {
+				return row.original.username;
+			}
+		},
+		{
 			accessorKey: 'email',
 			header: 'Email Address',
 			cell: ({ row }) => {
@@ -126,6 +143,12 @@
 				});
 				return renderSnippet(rolesCellSnippet, '');
 			},
+			filterFn: (row, id, value) => {
+				// Custom filter function for array-based roles
+				if (!value) return true;
+				const roles = row.original.roles || [];
+				return roles.includes(value);
+			},
 			enableSorting: false
 		},
 		{
@@ -147,6 +170,12 @@
 					};
 				});
 				return renderSnippet(statusCellSnippet, '');
+			},
+			filterFn: (row, id, value) => {
+				// Custom filter function for boolean enabled status
+				if (!value) return true;
+				const isEnabled = row.original.enabled;
+				return String(isEnabled) === value;
 			},
 			enableSorting: false
 		},
@@ -189,10 +218,7 @@
 						icon: Edit,
 						label: 'Edit User',
 						variant: 'ghost',
-						action: (entityId, entityData) => {
-							console.log('Edit user:', entityId, entityData);
-							// Open edit dialog or navigate to edit page
-						}
+						href: `/admin/users/${row.original.id}/edit`
 					}
 				];
 
@@ -202,19 +228,19 @@
 						id: 'send-message',
 						label: 'Send Message',
 						icon: MessageSquare,
-						action: (entityId, entityData) => {
-							console.log('Send message to user:', entityId);
-							// Open message dialog
-						}
+						formAction: '?/sendMessage',
+						formData: { userId: row.original.id, email: row.original.email }
 					},
 					{
 						id: 'toggle-status',
 						label: row.original.enabled ? 'Disable User' : 'Enable User',
 						icon: row.original.enabled ? Lock : Unlock,
 						variant: row.original.enabled ? 'destructive' : 'default',
-						action: (entityId, entityData) => {
-							console.log('Toggle user status:', entityId);
-							// Call API to toggle user status
+						formAction: row.original.enabled ? '?/disableUser' : '?/enableUser',
+						formData: { userId: row.original.id },
+						confirmDialog: {
+							title: row.original.enabled ? 'Disable User' : 'Enable User',
+							description: `Are you sure you want to ${row.original.enabled ? 'disable' : 'enable'} ${row.original.username}?`
 						},
 						separator: true
 					},
@@ -222,17 +248,51 @@
 						id: 'view-profile',
 						label: 'View Profile',
 						icon: Eye,
-						href: `/admin/users/${row.original.id}`,
-						action: () => {}
+						href: `/admin/users/${row.original.id}`
 					},
 					{
 						id: 'view-activity',
 						label: 'View Activity',
 						icon: FileText,
-						action: (entityId) => {
-							console.log('View user activity:', entityId);
-							// Navigate to user activity page
+						href: `/admin/users/${row.original.id}/activity`
+					},
+					{
+						id: 'reset-password',
+						label: 'Reset Password',
+						icon: Lock,
+						formAction: '?/resetPassword',
+						formData: { userId: row.original.id },
+						confirmDialog: {
+							title: 'Reset Password',
+							description: `Send password reset email to ${row.original.email}?`
 						}
+					},
+					{
+						id: 'promote-to-admin',
+						label: 'Promote to Admin',
+						icon: Crown,
+						formAction: '?/promoteToAdmin',
+						formData: { userId: row.original.id },
+						hidden: row.original.roles?.includes('ROLE_ADMIN'),
+						confirmDialog: {
+							title: 'Promote User',
+							description: `Grant administrator privileges to ${row.original.username}?`
+						},
+						variant: 'default'
+					},
+
+					{
+						id: 'downgrade-to-user',
+						label: 'Downgrade to User',
+						icon: Crown,
+						formAction: '?/downgradToUser',
+						formData: { userId: row.original.id },
+						hidden: row.original.roles?.includes('ROLE_USER'),
+						confirmDialog: {
+							title: 'Downgrade to User',
+							description: `Downgrade to User privileges to ${row.original.username}?`
+						},
+						variant: 'default'
 					}
 				];
 
@@ -253,26 +313,17 @@
 
 	// Define header actions
 	const headerActions: TableAction[] = [
-		{
-			id: 'export-users',
-			label: 'Export',
-			icon: Download,
-			variant: 'outline',
-			action: (selectedRows: Row<any>[], allData: any[]) => {
-				console.log('Export users:', selectedRows.length > 0 ? selectedRows : allData);
-				toast.success('Export functionality would be implemented here');
-			}
-		},
-		{
-			id: 'import-users',
-			label: 'Import',
-			icon: Upload,
-			variant: 'outline',
-			action: () => {
-				console.log('Import users');
-				// Open import dialog
-			}
-		}
+		// {
+		// 	id: 'export-users',
+		// 	label: 'Export',
+		// 	icon: Download,
+		// 	variant: 'outline',
+		// 	action: (selectedRows: Row<any>[], allData: any[]) => {
+		// 		const dataToExport =
+		// 			selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
+		// 		handleExport(allData, dataToExport);
+		// 	}
+		// }
 	];
 
 	// Define bulk actions for selected rows
@@ -283,10 +334,9 @@
 			icon: CheckCircle,
 			variant: 'default',
 			requiresSelection: true,
+			formAction: '?/enableUsers',
 			action: (selectedRows: Row<any>[]) => {
-				const userIds = selectedRows.map((row: Row<any>) => row.original.id);
-				console.log('Enable users:', userIds);
-				toast.success(`Enabled ${userIds.length} users`);
+				// This will be handled by the form action instead
 			}
 		},
 		{
@@ -295,10 +345,9 @@
 			icon: Ban,
 			variant: 'destructive',
 			requiresSelection: true,
+			formAction: '?/disableUsers',
 			action: (selectedRows: Row<any>[]) => {
-				const userIds = selectedRows.map((row: Row<any>) => row.original.id);
-				console.log('Disable users:', userIds);
-				toast.success(`Disabled ${userIds.length} users`);
+				// This will be handled by the form action instead
 			}
 		},
 		{
@@ -307,22 +356,22 @@
 			icon: Mail,
 			variant: 'outline',
 			requiresSelection: true,
+			formAction: '?/sendNotification',
 			action: (selectedRows: Row<any>[]) => {
-				console.log(
-					'Send notification to users:',
-					selectedRows.map((row: Row<any>) => row.original.id)
-				);
-				// Open notification dialog
+				// This will be handled by the form action instead
 			}
 		}
 	];
 
 	// Define additional filters
 	const additionalFilters: FilterOption[] = [
+		// Server-side filters
 		{
 			column: 'roles',
 			placeholder: 'Filter by role',
 			type: 'select',
+			mode: 'server',
+			serverParam: 'role',
 			options: [
 				{ value: 'ROLE_ADMIN', label: 'Admin' },
 				{ value: 'ROLE_MODERATOR', label: 'Moderator' },
@@ -331,8 +380,10 @@
 		},
 		{
 			column: 'enabled',
-			placeholder: 'Filter by status',
+			placeholder: 'Filter by status ',
 			type: 'select',
+			mode: 'server',
+			serverParam: 'enabled',
 			options: [
 				{ value: 'true', label: 'Active' },
 				{ value: 'false', label: 'Disabled' }
@@ -352,17 +403,98 @@
 		isCreateDialogOpen = true;
 	}
 
-	function handleRefresh() {
-		console.log('Refreshing users data...');
-		// Implement refresh logic
-		toast.success('Data refreshed');
+	async function handleRefresh() {
+		toast.info('Refreshing users data...');
+		try {
+			await invalidateAll();
+			toast.success('Data refreshed successfully');
+		} catch (error) {
+			toast.error('Failed to refresh data');
+		}
 	}
 
 	function handleExport(allData: any[], selectedData: any[]) {
 		const dataToExport = selectedData.length > 0 ? selectedData : allData;
-		console.log('Exporting data:', dataToExport);
-		// Implement export logic
-		toast.success(`Exported ${dataToExport.length} users`);
+
+		if (dataToExport.length === 0) {
+			toast.error('No data to export');
+			return;
+		}
+
+		try {
+			// Define CSV headers
+			const headers = [
+				'ID',
+				'Username',
+				'Email',
+				'Roles',
+				'Status',
+				'Enabled',
+				'Created At',
+				'Updated At'
+			];
+
+			// Convert data to CSV format
+			const csvRows = dataToExport.map((user) => [
+				user.id || '',
+				user.username || '',
+				user.email || '',
+				(user.roles || []).join('; ') || '',
+				user.enabled ? 'Active' : 'Disabled',
+				user.enabled ? 'true' : 'false',
+				user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
+				user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : ''
+			]);
+
+			// Create CSV content
+			const csvContent = [
+				headers.join(','),
+				...csvRows.map((row) =>
+					row
+						.map((field) => {
+							// Escape fields that contain commas, quotes, or newlines
+							if (
+								typeof field === 'string' &&
+								(field.includes(',') || field.includes('"') || field.includes('\n'))
+							) {
+								return `"${field.replace(/"/g, '""')}"`;
+							}
+							return field;
+						})
+						.join(',')
+				)
+			].join('\n');
+
+			// Create blob and download
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const link = document.createElement('a');
+
+			if (link.download !== undefined) {
+				const url = URL.createObjectURL(blob);
+				link.setAttribute('href', url);
+
+				// Generate filename with timestamp
+				const timestamp = new Date().toISOString().split('T')[0];
+				const filename =
+					selectedData.length > 0
+						? `users_selected_${timestamp}.csv`
+						: `users_all_${timestamp}.csv`;
+
+				link.setAttribute('download', filename);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+
+				// Clean up the URL object
+				URL.revokeObjectURL(url);
+			}
+
+			toast.success(`Successfully exported ${dataToExport.length} users to CSV`);
+		} catch (error) {
+			console.error('Export error:', error);
+			toast.error('Failed to export users data');
+		}
 	}
 
 	function handleSelectionChange(selectedRows: any[]) {
@@ -443,35 +575,37 @@
 	</div>
 
 	<!-- Enhanced Data Table -->
-	<EnhancedDataTable
-		columns={columns as any}
-		data={data.users?.content || []}
-		entityName="user"
-		deleteBatchAction="?/deleteBatchUsers"
-		title="Users Management"
-		description="Manage user accounts, roles, and permissions across the platform"
-		{headerActions}
-		{bulkActions}
-		{additionalFilters}
-		enableSearch={true}
-		searchPlaceholder="Search users..."
-		primarySearchColumn="username"
-		enableExport={true}
-		enableRefresh={true}
-		enableColumnVisibility={true}
-		showRowNumbers={true}
-		stripedRows={true}
-		onRefresh={handleRefresh}
-		onExport={handleExport}
-		onSelectionChange={handleSelectionChange}
-	>
-		{#snippet triggerAdd()}
-			<Button onclick={handleCreateUser} class="flex items-center gap-2">
-				<Plus class="h-4 w-4" />
-				Add New User
-			</Button>
-		{/snippet}
-	</EnhancedDataTable>
+	<div class="space-y-4">
+		<EnhancedDataTable
+			columns={columns as any}
+			data={data.users?.content || []}
+			entityName="user"
+			deleteBatchAction="?/deleteBatchUsers"
+			title="Users Management"
+			description="Manage user accounts, roles, and permissions across the platform"
+			{headerActions}
+			{bulkActions}
+			{additionalFilters}
+			enableSearch={true}
+			searchPlaceholder="Search users..."
+			primarySearchColumn="username"
+			enableExport={true}
+			enableRefresh={true}
+			enableColumnVisibility={true}
+			showRowNumbers={true}
+			stripedRows={true}
+			onRefresh={handleRefresh}
+			onExport={handleExport}
+			onSelectionChange={handleSelectionChange}
+		>
+			{#snippet triggerAdd()}
+				<Button onclick={handleCreateUser} class="flex items-center gap-2">
+					<Plus class="h-4 w-4" />
+					Add New User
+				</Button>
+			{/snippet}
+		</EnhancedDataTable>
+	</div>
 </div>
 
 <!-- Create User Dialog -->
@@ -484,7 +618,24 @@
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 
-		<form method="POST" action="?/createUser" use:enhance class="space-y-4">
+		<form
+			method="POST"
+			action="?/createUser"
+			use:enhance={({ formElement, formData, action, cancel, submitter }) => {
+				return async ({ result, update }) => {
+					if (result.type === 'success') {
+						isCreateDialogOpen = false;
+						newUserForm = {
+							username: '',
+							email: '',
+							role: 'ROLE_USER'
+						};
+					}
+					await update();
+				};
+			}}
+			class="space-y-4"
+		>
 			<div class="space-y-2">
 				<Label for="username">Username</Label>
 				<Input

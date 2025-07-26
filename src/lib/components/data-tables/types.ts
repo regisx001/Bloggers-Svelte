@@ -8,8 +8,13 @@ export interface TableAction {
 	icon?: any; // ComponentType or Lucide icon component
 	variant?: 'default' | 'destructive' | 'secondary' | 'outline';
 	action: (selectedRows: Row<any>[], allData: any[]) => void;
+	formAction?: string; // SvelteKit form action for bulk operations
 	requiresSelection?: boolean;
 	show?: boolean;
+	confirmDialog?: {
+		title: string;
+		description: string;
+	};
 }
 
 export interface FilterOption {
@@ -17,6 +22,8 @@ export interface FilterOption {
 	placeholder: string;
 	type?: 'text' | 'select' | 'date';
 	options?: Array<{ value: string; label: string }>;
+	mode?: 'client' | 'server'; // New: specify filtering mode
+	serverParam?: string; // New: custom parameter name for server-side filtering
 }
 
 export interface EnhancedDataTableConfig {
@@ -25,35 +32,35 @@ export interface EnhancedDataTableConfig {
 	deleteBatchAction?: string;
 	pageSize?: number;
 	emptyMessage?: string;
-	
+
 	// Header customization
 	showHeader?: boolean;
 	title?: string;
 	description?: string;
-	
+
 	// Search and filtering
 	enableSearch?: boolean;
 	searchPlaceholder?: string;
 	primarySearchColumn?: string;
 	additionalFilters?: FilterOption[];
-	
+
 	// Actions and controls
 	headerActions?: TableAction[];
 	bulkActions?: TableAction[];
 	enableColumnVisibility?: boolean;
 	enableExport?: boolean;
 	enableRefresh?: boolean;
-	
+
 	// Selection
 	enableRowSelection?: boolean;
 	enableSelectAll?: boolean;
-	
+
 	// Layout and styling
 	stickyHeader?: boolean;
 	compactMode?: boolean;
 	showRowNumbers?: boolean;
 	stripedRows?: boolean;
-	
+
 	// Pagination
 	showPagination?: boolean;
 	paginationInfo?: boolean;
@@ -65,11 +72,18 @@ export interface ActionItem {
 	label: string;
 	icon?: any; // ComponentType or Lucide icon component
 	variant?: 'default' | 'destructive' | 'secondary' | 'outline';
-	action: (entityId: string, entityData?: any) => void;
-	href?: string;
+	action?: (entityId: string, entityData?: any) => void;
+	formAction?: string; // SvelteKit form action
+	formData?: Record<string, any>; // Additional form data
+	href?: string; // Navigation link
 	disabled?: boolean;
 	show?: boolean;
+	hidden?: boolean;
 	separator?: boolean;
+	confirmDialog?: {
+		title: string;
+		description: string;
+	};
 }
 
 export interface QuickAction {
@@ -77,9 +91,17 @@ export interface QuickAction {
 	icon: any; // ComponentType or Lucide icon component
 	label?: string;
 	variant?: 'default' | 'destructive' | 'secondary' | 'outline' | 'ghost';
-	action: (entityId: string, entityData?: any) => void;
+	action?: (entityId: string, entityData?: any) => void;
+	formAction?: string; // SvelteKit form action
+	formData?: Record<string, any>; // Additional form data
+	href?: string; // Navigation link
 	disabled?: boolean;
 	show?: boolean;
+	hidden?: boolean;
+	confirmDialog?: {
+		title: string;
+		description: string;
+	};
 }
 
 export interface EnhancedActionsConfig {
@@ -87,19 +109,19 @@ export interface EnhancedActionsConfig {
 	entityName: string;
 	entityData?: any;
 	deleteAction?: string;
-	
+
 	// Quick actions (shown as buttons)
 	quickActions?: QuickAction[];
-	
+
 	// Dropdown menu actions
 	dropdownActions?: ActionItem[];
-	
+
 	// Built-in actions control
 	showDelete?: boolean;
 	showCopyId?: boolean;
 	showViewDetails?: boolean;
 	viewDetailsRoute?: string;
-	
+
 	// Layout options
 	layout?: 'horizontal' | 'vertical' | 'compact';
 	showDropdownTrigger?: boolean;
@@ -118,7 +140,7 @@ export const CommonQuickActions = {
 		variant: 'ghost',
 		action
 	}),
-	
+
 	view: (icon: any, action: (id: string, data?: any) => void): QuickAction => ({
 		id: 'view',
 		icon,
@@ -126,7 +148,7 @@ export const CommonQuickActions = {
 		variant: 'ghost',
 		action
 	}),
-	
+
 	clone: (icon: any, action: (id: string, data?: any) => void): QuickAction => ({
 		id: 'clone',
 		icon,
@@ -143,21 +165,21 @@ export const CommonDropdownActions = {
 		icon,
 		action
 	}),
-	
+
 	exportData: (icon: any, action: (id: string, data?: any) => void): ActionItem => ({
 		id: 'export',
 		label: 'Export Data',
 		icon,
 		action
 	}),
-	
+
 	viewHistory: (icon: any, action: (id: string, data?: any) => void): ActionItem => ({
 		id: 'view-history',
 		label: 'View History',
 		icon,
 		action
 	}),
-	
+
 	toggleStatus: (
 		isActive: boolean,
 		activeIcon: any,
@@ -183,7 +205,7 @@ export const CommonBulkActions = {
 		requiresSelection: true,
 		action
 	}),
-	
+
 	export: (icon: any, action: (rows: Row<any>[]) => void): TableAction => ({
 		id: 'bulk-export',
 		label: 'Export Selected',
@@ -192,7 +214,7 @@ export const CommonBulkActions = {
 		requiresSelection: true,
 		action
 	}),
-	
+
 	archive: (icon: any, action: (rows: Row<any>[]) => void): TableAction => ({
 		id: 'bulk-archive',
 		label: 'Archive Selected',
@@ -201,12 +223,8 @@ export const CommonBulkActions = {
 		requiresSelection: true,
 		action
 	}),
-	
-	updateStatus: (
-		status: string,
-		icon: any,
-		action: (rows: Row<any>[]) => void
-	): TableAction => ({
+
+	updateStatus: (status: string, icon: any, action: (rows: Row<any>[]) => void): TableAction => ({
 		id: `bulk-update-${status}`,
 		label: `Mark as ${status}`,
 		icon,
@@ -224,20 +242,20 @@ export const CommonFilters = {
 		type: 'select',
 		options
 	}),
-	
+
 	role: (options: Array<{ value: string; label: string }>): FilterOption => ({
 		column: 'role',
 		placeholder: 'Filter by role',
 		type: 'select',
 		options
 	}),
-	
+
 	dateRange: (column: string): FilterOption => ({
 		column,
 		placeholder: 'Filter by date',
 		type: 'date'
 	}),
-	
+
 	category: (options: Array<{ value: string; label: string }>): FilterOption => ({
 		column: 'category',
 		placeholder: 'Filter by category',

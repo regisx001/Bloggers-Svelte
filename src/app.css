@@ -2,8 +2,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@import './claude-theme.css';
-/* @import './twitter-theme.css'; */
+/* @import './claude-theme.css'; */
+@import './twitter-theme.css';
 
 @custom-variant dark (&:is(.dark *));
 
