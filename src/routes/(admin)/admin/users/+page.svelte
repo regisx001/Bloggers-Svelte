@@ -43,6 +43,7 @@
 	import { toast } from 'svelte-sonner';
 	import TimeStamp from '$lib/components/time-stamp.svelte';
 	import { invalidate, invalidateAll } from '$app/navigation';
+	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	let { data, form }: PageProps = $props();
 
@@ -312,19 +313,7 @@
 	];
 
 	// Define header actions
-	const headerActions: TableAction[] = [
-		{
-			id: 'export-users',
-			label: 'Export',
-			icon: Download,
-			variant: 'outline',
-			action: (selectedRows: Row<any>[], allData: any[]) => {
-				const dataToExport =
-					selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
-				handleExport(allData, dataToExport);
-			}
-		}
-	];
+	const headerActions: TableAction[] = [];
 
 	// Define bulk actions for selected rows
 	const bulkActions: TableAction[] = [
@@ -410,84 +399,31 @@
 		}
 	}
 
-	function handleExport(allData: any[], selectedData: any[]) {
-		const dataToExport = selectedData.length > 0 ? selectedData : allData;
-
-		if (dataToExport.length === 0) {
-			toast.error('No data to export');
-			return;
-		}
-
+	async function handleExport(allData: any[], selectedData: any[]) {
 		try {
-			// Define CSV headers
-			const headers = [
-				'ID',
-				'Username',
-				'Email',
-				'Roles',
-				'Status',
-				'Enabled',
-				'Created At',
-				'Updated At'
-			];
+			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/users/export', {
+				method: 'GET',
+				headers: {
+					Authorization: 'Bearer ' + data.user.accessToken
+				}
+			});
 
-			// Convert data to CSV format
-			const csvRows = dataToExport.map((user) => [
-				user.id || '',
-				user.username || '',
-				user.email || '',
-				(user.roles || []).join('; ') || '',
-				user.enabled ? 'Active' : 'Disabled',
-				user.enabled ? 'true' : 'false',
-				user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
-				user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : ''
-			]);
-
-			// Create CSV content
-			const csvContent = [
-				headers.join(','),
-				...csvRows.map((row) =>
-					row
-						.map((field) => {
-							// Escape fields that contain commas, quotes, or newlines
-							if (
-								typeof field === 'string' &&
-								(field.includes(',') || field.includes('"') || field.includes('\n'))
-							) {
-								return `"${field.replace(/"/g, '""')}"`;
-							}
-							return field;
-						})
-						.join(',')
-				)
-			].join('\n');
-
-			// Create blob and download
-			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-			const link = document.createElement('a');
-
-			if (link.download !== undefined) {
-				const url = URL.createObjectURL(blob);
-				link.setAttribute('href', url);
-
-				// Generate filename with timestamp
-				const timestamp = new Date().toISOString().split('T')[0];
-				const filename =
-					selectedData.length > 0
-						? `users_selected_${timestamp}.csv`
-						: `users_all_${timestamp}.csv`;
-
-				link.setAttribute('download', filename);
-				link.style.visibility = 'hidden';
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
-
-				// Clean up the URL object
-				URL.revokeObjectURL(url);
+			if (!response.ok) {
+				alert('Download failed: ' + response.statusText);
+				return;
 			}
 
-			toast.success(`Successfully exported ${dataToExport.length} users to CSV`);
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'users.csv';
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			window.URL.revokeObjectURL(url);
+			toast.success(`Successfully exported users to CSV`);
 		} catch (error) {
 			console.error('Export error:', error);
 			toast.error('Failed to export users data');
