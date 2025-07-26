@@ -208,9 +208,6 @@
 	const selectedRows = $derived(table.getSelectedRowModel().rows);
 	const selectedCount = $derived(selectedRows.length);
 
-	// Server-side filter state
-	let serverFilters = $state<Record<string, string>>({});
-
 	// Server-side search state
 	let searchQuery = $state('');
 	let searchInput = $state(''); // Separate input value from search query
@@ -252,6 +249,9 @@
 		}
 	});
 
+	// Server-side filter state
+	let serverFilters = $state<Record<string, string>>({});
+
 	// Handle server-side filter changes
 	const handleServerFilterChange = async (filterKey: string, value: string, paramName?: string) => {
 		const key = paramName || filterKey;
@@ -266,12 +266,10 @@
 		const url = new URL($page.url);
 
 		// Clear existing filter params
-		additionalFilters
-			.filter((filter) => filter.mode === 'server')
-			.forEach((filter) => {
-				const param = filter.serverParam || filter.column;
-				url.searchParams.delete(param);
-			});
+		additionalFilters.forEach((filter) => {
+			const param = filter.serverParam || filter.column;
+			url.searchParams.delete(param);
+		});
 
 		// Add current filter params
 		Object.entries(serverFilters).forEach(([key, value]) => {
@@ -287,15 +285,13 @@
 		const params = $page.url.searchParams;
 		const newServerFilters: Record<string, string> = {};
 
-		additionalFilters
-			.filter((filter) => filter.mode === 'server')
-			.forEach((filter) => {
-				const param = filter.serverParam || filter.column;
-				const value = params.get(param);
-				if (value) {
-					newServerFilters[param] = value;
-				}
-			});
+		additionalFilters.forEach((filter) => {
+			const param = filter.serverParam || filter.column;
+			const value = params.get(param);
+			if (value) {
+				newServerFilters[param] = value;
+			}
+		});
 
 		serverFilters = newServerFilters;
 	}); // Watch for selection changes
@@ -432,38 +428,23 @@
 					{#each additionalFilters as filter}
 						<div class="flex flex-col gap-1">
 							{#if filter.type === 'select'}
-								{#if filter.mode === 'server'}
-									<!-- Server-side filter -->
-									<select
-										class="border-input bg-background rounded-md border px-3 py-2 text-sm"
-										value={serverFilters[filter.serverParam || filter.column] || ''}
-										onchange={(e) =>
-											handleServerFilterChange(
-												filter.column,
-												e.currentTarget.value,
-												filter.serverParam
-											)}
-									>
-										<option value="">{filter.placeholder}</option>
-										{#each filter.options || [] as option}
-											<option value={option.value}>{option.label}</option>
-										{/each}
-									</select>
-								{:else}
-									<!-- Client-side filter (default) -->
-									<select
-										class="border-input bg-background rounded-md border px-3 py-2 text-sm"
-										value={(table.getColumn(filter.column)?.getFilterValue() as string) || ''}
-										onchange={(e) =>
-											table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
-									>
-										<option value="">{filter.placeholder}</option>
-										{#each filter.options || [] as option}
-											<option value={option.value}>{option.label}</option>
-										{/each}
-									</select>
-								{/if}
-							{:else if filter.mode === 'server'}
+								<!-- Server-side select filter -->
+								<select
+									class="border-input bg-background rounded-md border px-3 py-2 text-sm"
+									value={serverFilters[filter.serverParam || filter.column] || ''}
+									onchange={(e) =>
+										handleServerFilterChange(
+											filter.column,
+											e.currentTarget.value,
+											filter.serverParam
+										)}
+								>
+									<option value="">{filter.placeholder}</option>
+									{#each filter.options || [] as option}
+										<option value={option.value}>{option.label}</option>
+									{/each}
+								</select>
+							{:else}
 								<!-- Server-side text filter -->
 								<Input
 									placeholder={filter.placeholder}
@@ -474,16 +455,6 @@
 											e.currentTarget.value,
 											filter.serverParam
 										)}
-									class="max-w-sm"
-								/>
-								<small class="text-muted-foreground text-xs">Server-side filter</small>
-							{:else}
-								<!-- Client-side text filter (default) -->
-								<Input
-									placeholder={filter.placeholder}
-									value={table.getColumn(filter.column)?.getFilterValue() as string}
-									onchange={(e) =>
-										table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
 									class="max-w-sm"
 								/>
 							{/if}

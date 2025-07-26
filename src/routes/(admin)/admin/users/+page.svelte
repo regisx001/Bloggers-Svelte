@@ -363,12 +363,13 @@
 		}
 	];
 
-	// Define additional filters
+	// Define additional filters (all server-side now)
 	const additionalFilters: FilterOption[] = [
 		{
 			column: 'roles',
 			placeholder: 'Filter by role',
 			type: 'select',
+			serverParam: 'role',
 			options: [
 				{ value: 'ROLE_ADMIN', label: 'Admin' },
 				{ value: 'ROLE_MODERATOR', label: 'Moderator' },
@@ -379,6 +380,7 @@
 			column: 'status',
 			placeholder: 'Filter by status',
 			type: 'select',
+			serverParam: 'enabled',
 			options: [
 				{ value: 'true', label: 'Active' },
 				{ value: 'false', label: 'Disabled' }

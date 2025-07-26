@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	}
 
 	if (searchTerms) {
-		queryParams.set('searchTerm', searchTerms);
+		queryParams.set('searchTerm', searchTerms); // API expects 'searchTerm' (singular)
 	}
 
 	const usersResponse = await fetch(`${ADMIN_USERS_URL}?${queryParams.toString()}`);
