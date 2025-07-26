@@ -22,6 +22,8 @@ export interface FilterOption {
 	placeholder: string;
 	type?: 'text' | 'select' | 'date';
 	options?: Array<{ value: string; label: string }>;
+	mode?: 'client' | 'server'; // New: specify filtering mode
+	serverParam?: string; // New: custom parameter name for server-side filtering
 }
 
 export interface EnhancedDataTableConfig {

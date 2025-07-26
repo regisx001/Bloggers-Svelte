@@ -23,6 +23,8 @@
 	import DeleteConfirmation from '$lib/components/dialogs/delete-confirmation-dialog.svelte';
 	import { Search, Filter, Download, RefreshCw, Settings } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import type { TableAction, FilterOption } from './types.js';
 
 	interface EnhancedDataTableProps {
@@ -198,10 +200,60 @@
 
 	let deleteDialogOpen = $state(false);
 
-	const selectedRows = $derived(table.getFilteredSelectedRowModel().rows);
+	// Reactive values for table state
+	const selectedRows = $derived(table.getSelectedRowModel().rows);
 	const selectedCount = $derived(selectedRows.length);
 
-	// Watch for selection changes
+	// Server-side filter state
+	let serverFilters = $state<Record<string, string>>({});
+
+	// Handle server-side filter changes
+	const handleServerFilterChange = async (filterKey: string, value: string, paramName?: string) => {
+		const key = paramName || filterKey;
+
+		if (value) {
+			serverFilters[key] = value;
+		} else {
+			delete serverFilters[key];
+		}
+
+		// Update URL with new filters
+		const url = new URL($page.url);
+
+		// Clear existing filter params
+		additionalFilters
+			.filter((filter) => filter.mode === 'server')
+			.forEach((filter) => {
+				const param = filter.serverParam || filter.column;
+				url.searchParams.delete(param);
+			});
+
+		// Add current filter params
+		Object.entries(serverFilters).forEach(([key, value]) => {
+			url.searchParams.set(key, value);
+		});
+
+		// Navigate to new URL (this will trigger load function re-run)
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+	};
+
+	// Initialize server filters from URL params
+	$effect(() => {
+		const params = $page.url.searchParams;
+		const newServerFilters: Record<string, string> = {};
+
+		additionalFilters
+			.filter((filter) => filter.mode === 'server')
+			.forEach((filter) => {
+				const param = filter.serverParam || filter.column;
+				const value = params.get(param);
+				if (value) {
+					newServerFilters[param] = value;
+				}
+			});
+
+		serverFilters = newServerFilters;
+	}); // Watch for selection changes
 	$effect(() => {
 		if (onSelectionChange) {
 			onSelectionChange(selectedRows);
@@ -309,17 +361,53 @@
 					{#each additionalFilters as filter}
 						<div class="flex flex-col gap-1">
 							{#if filter.type === 'select'}
-								<select
-									class="border-input bg-background rounded-md border px-3 py-2 text-sm"
+								{#if filter.mode === 'server'}
+									<!-- Server-side filter -->
+									<select
+										class="border-input bg-background rounded-md border px-3 py-2 text-sm"
+										value={serverFilters[filter.serverParam || filter.column] || ''}
+										onchange={(e) =>
+											handleServerFilterChange(
+												filter.column,
+												e.currentTarget.value,
+												filter.serverParam
+											)}
+									>
+										<option value="">{filter.placeholder}</option>
+										{#each filter.options || [] as option}
+											<option value={option.value}>{option.label}</option>
+										{/each}
+									</select>
+								{:else}
+									<!-- Client-side filter (default) -->
+									<select
+										class="border-input bg-background rounded-md border px-3 py-2 text-sm"
+										value={(table.getColumn(filter.column)?.getFilterValue() as string) || ''}
+										onchange={(e) =>
+											table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
+									>
+										<option value="">{filter.placeholder}</option>
+										{#each filter.options || [] as option}
+											<option value={option.value}>{option.label}</option>
+										{/each}
+									</select>
+								{/if}
+							{:else if filter.mode === 'server'}
+								<!-- Server-side text filter -->
+								<Input
+									placeholder={filter.placeholder}
+									value={serverFilters[filter.serverParam || filter.column] || ''}
 									onchange={(e) =>
-										table.getColumn(filter.column)?.setFilterValue(e.currentTarget.value)}
-								>
-									<option value="">{filter.placeholder}</option>
-									{#each filter.options || [] as option}
-										<option value={option.value}>{option.label}</option>
-									{/each}
-								</select>
+										handleServerFilterChange(
+											filter.column,
+											e.currentTarget.value,
+											filter.serverParam
+										)}
+									class="max-w-sm"
+								/>
+								<small class="text-muted-foreground text-xs">Server-side filter</small>
 							{:else}
+								<!-- Client-side text filter (default) -->
 								<Input
 									placeholder={filter.placeholder}
 									value={table.getColumn(filter.column)?.getFilterValue() as string}

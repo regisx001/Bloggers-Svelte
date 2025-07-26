@@ -100,6 +100,13 @@
 			enableSorting: false
 		},
 		{
+			accessorKey: 'username',
+			header: 'Username',
+			cell: ({ row }) => {
+				return row.original.username;
+			}
+		},
+		{
 			accessorKey: 'email',
 			header: 'Email Address',
 			cell: ({ row }) => {
@@ -136,6 +143,12 @@
 				});
 				return renderSnippet(rolesCellSnippet, '');
 			},
+			filterFn: (row, id, value) => {
+				// Custom filter function for array-based roles
+				if (!value) return true;
+				const roles = row.original.roles || [];
+				return roles.includes(value);
+			},
 			enableSorting: false
 		},
 		{
@@ -157,6 +170,12 @@
 					};
 				});
 				return renderSnippet(statusCellSnippet, '');
+			},
+			filterFn: (row, id, value) => {
+				// Custom filter function for boolean enabled status
+				if (!value) return true;
+				const isEnabled = row.original.enabled;
+				return String(isEnabled) === value;
 			},
 			enableSorting: false
 		},
@@ -294,29 +313,17 @@
 
 	// Define header actions
 	const headerActions: TableAction[] = [
-		{
-			id: 'export-users',
-			label: 'Export',
-			icon: Download,
-			variant: 'outline',
-			action: (selectedRows: Row<any>[], allData: any[]) => {
-				const dataToExport =
-					selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
-				console.log('Export users:', dataToExport);
-				handleExport(allData, dataToExport);
-			}
-		},
-		{
-			id: 'import-users',
-			label: 'Import',
-			icon: Upload,
-			variant: 'outline',
-			action: () => {
-				console.log('Import users');
-				// Open import dialog
-				toast.success('Import functionality would be implemented here');
-			}
-		}
+		// {
+		// 	id: 'export-users',
+		// 	label: 'Export',
+		// 	icon: Download,
+		// 	variant: 'outline',
+		// 	action: (selectedRows: Row<any>[], allData: any[]) => {
+		// 		const dataToExport =
+		// 			selectedRows.length > 0 ? selectedRows.map((row) => row.original) : allData;
+		// 		handleExport(allData, dataToExport);
+		// 	}
+		// }
 	];
 
 	// Define bulk actions for selected rows
@@ -358,10 +365,13 @@
 
 	// Define additional filters
 	const additionalFilters: FilterOption[] = [
+		// Server-side filters
 		{
 			column: 'roles',
 			placeholder: 'Filter by role',
 			type: 'select',
+			mode: 'server',
+			serverParam: 'role',
 			options: [
 				{ value: 'ROLE_ADMIN', label: 'Admin' },
 				{ value: 'ROLE_MODERATOR', label: 'Moderator' },
@@ -370,8 +380,10 @@
 		},
 		{
 			column: 'enabled',
-			placeholder: 'Filter by status',
+			placeholder: 'Filter by status ',
 			type: 'select',
+			mode: 'server',
+			serverParam: 'enabled',
 			options: [
 				{ value: 'true', label: 'Active' },
 				{ value: 'false', label: 'Disabled' }
@@ -395,7 +407,6 @@
 		toast.info('Refreshing users data...');
 		try {
 			await invalidateAll();
-
 			toast.success('Data refreshed successfully');
 		} catch (error) {
 			toast.error('Failed to refresh data');
@@ -404,9 +415,86 @@
 
 	function handleExport(allData: any[], selectedData: any[]) {
 		const dataToExport = selectedData.length > 0 ? selectedData : allData;
-		console.log('Exporting data:', dataToExport);
-		// Implement export logic
-		toast.success(`Exported ${dataToExport.length} users`);
+
+		if (dataToExport.length === 0) {
+			toast.error('No data to export');
+			return;
+		}
+
+		try {
+			// Define CSV headers
+			const headers = [
+				'ID',
+				'Username',
+				'Email',
+				'Roles',
+				'Status',
+				'Enabled',
+				'Created At',
+				'Updated At'
+			];
+
+			// Convert data to CSV format
+			const csvRows = dataToExport.map((user) => [
+				user.id || '',
+				user.username || '',
+				user.email || '',
+				(user.roles || []).join('; ') || '',
+				user.enabled ? 'Active' : 'Disabled',
+				user.enabled ? 'true' : 'false',
+				user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
+				user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : ''
+			]);
+
+			// Create CSV content
+			const csvContent = [
+				headers.join(','),
+				...csvRows.map((row) =>
+					row
+						.map((field) => {
+							// Escape fields that contain commas, quotes, or newlines
+							if (
+								typeof field === 'string' &&
+								(field.includes(',') || field.includes('"') || field.includes('\n'))
+							) {
+								return `"${field.replace(/"/g, '""')}"`;
+							}
+							return field;
+						})
+						.join(',')
+				)
+			].join('\n');
+
+			// Create blob and download
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const link = document.createElement('a');
+
+			if (link.download !== undefined) {
+				const url = URL.createObjectURL(blob);
+				link.setAttribute('href', url);
+
+				// Generate filename with timestamp
+				const timestamp = new Date().toISOString().split('T')[0];
+				const filename =
+					selectedData.length > 0
+						? `users_selected_${timestamp}.csv`
+						: `users_all_${timestamp}.csv`;
+
+				link.setAttribute('download', filename);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+
+				// Clean up the URL object
+				URL.revokeObjectURL(url);
+			}
+
+			toast.success(`Successfully exported ${dataToExport.length} users to CSV`);
+		} catch (error) {
+			console.error('Export error:', error);
+			toast.error('Failed to export users data');
+		}
 	}
 
 	function handleSelectionChange(selectedRows: any[]) {
@@ -487,35 +575,37 @@
 	</div>
 
 	<!-- Enhanced Data Table -->
-	<EnhancedDataTable
-		columns={columns as any}
-		data={data.users?.content || []}
-		entityName="user"
-		deleteBatchAction="?/deleteBatchUsers"
-		title="Users Management"
-		description="Manage user accounts, roles, and permissions across the platform"
-		{headerActions}
-		{bulkActions}
-		{additionalFilters}
-		enableSearch={true}
-		searchPlaceholder="Search users..."
-		primarySearchColumn="username"
-		enableExport={true}
-		enableRefresh={true}
-		enableColumnVisibility={true}
-		showRowNumbers={true}
-		stripedRows={true}
-		onRefresh={handleRefresh}
-		onExport={handleExport}
-		onSelectionChange={handleSelectionChange}
-	>
-		{#snippet triggerAdd()}
-			<Button onclick={handleCreateUser} class="flex items-center gap-2">
-				<Plus class="h-4 w-4" />
-				Add New User
-			</Button>
-		{/snippet}
-	</EnhancedDataTable>
+	<div class="space-y-4">
+		<EnhancedDataTable
+			columns={columns as any}
+			data={data.users?.content || []}
+			entityName="user"
+			deleteBatchAction="?/deleteBatchUsers"
+			title="Users Management"
+			description="Manage user accounts, roles, and permissions across the platform"
+			{headerActions}
+			{bulkActions}
+			{additionalFilters}
+			enableSearch={true}
+			searchPlaceholder="Search users..."
+			primarySearchColumn="username"
+			enableExport={true}
+			enableRefresh={true}
+			enableColumnVisibility={true}
+			showRowNumbers={true}
+			stripedRows={true}
+			onRefresh={handleRefresh}
+			onExport={handleExport}
+			onSelectionChange={handleSelectionChange}
+		>
+			{#snippet triggerAdd()}
+				<Button onclick={handleCreateUser} class="flex items-center gap-2">
+					<Plus class="h-4 w-4" />
+					Add New User
+				</Button>
+			{/snippet}
+		</EnhancedDataTable>
+	</div>
 </div>
 
 <!-- Create User Dialog -->

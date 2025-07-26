@@ -3,11 +3,30 @@ import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async ({ fetch }) => {
-	const usersResponse = await fetch(ADMIN_USERS_URL + '?sort=createdAt,desc');
+export const load: PageServerLoad = async ({ fetch, url }) => {
+	// Extract filter parameters from URL
+	const role = url.searchParams.get('role');
+	const enabled = url.searchParams.get('enabled');
+
+	// Build query parameters
+	const queryParams = new URLSearchParams();
+	queryParams.set('sort', 'createdAt,desc');
+
+	if (role) {
+		queryParams.set('role', role);
+	}
+
+	if (enabled !== null && enabled !== '') {
+		queryParams.set('enabled', enabled);
+	}
+
+	const usersResponse = await fetch(`${ADMIN_USERS_URL}?${queryParams.toString()}`);
 	const users: Page<User> = await usersResponse.json();
 
-	return { users };
+	return {
+		users,
+		appliedFilters: { role, enabled }
+	};
 };
 
 export let actions: Actions = {
