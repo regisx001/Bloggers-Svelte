@@ -31,7 +31,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -226,7 +226,9 @@
 				id: 'view',
 				icon: Eye,
 				label: 'View',
-				action: () => window.open(`${base}/admin/articles/${article.id}`, '_blank')
+				action: () => {
+					goto(`${base}/admin/articles/${article.id}`);
+				}
 			}
 		];
 	};
