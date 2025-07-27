@@ -1,14 +1,56 @@
 import { ADMIN_ARTICLES_URL, ARTICLES_URL, CATEGORIES_URL } from '$lib/urls';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch, url }) => {
 	try {
+		// Extract filter parameters from URL
+		const status = url.searchParams.get('status');
+		const searchTerm = url.searchParams.get('searchTerm');
+
+		// Extract sort parameters from URL
+		const sortParams = url.searchParams.getAll('sort');
+
+		// Build query parameters for articles
+		const articlesQueryParams = new URLSearchParams();
+
+		// Add default sorting if no sort params provided
+		if (sortParams.length === 0) {
+			articlesQueryParams.set('sort', 'createdAt,desc');
+		} else {
+			// Add all sort parameters
+			sortParams.forEach((sortParam) => {
+				articlesQueryParams.append('sort', sortParam);
+			});
+		}
+
+		if (status) {
+			articlesQueryParams.set('status', status);
+		}
+
+		if (searchTerm) {
+			articlesQueryParams.set('searchTerm', searchTerm); // API expects 'searchTerm' (singular)
+		}
+
 		const categoriesResponse = await fetch(CATEGORIES_URL + '/titles');
 		const categories: string[] = await categoriesResponse.json();
-		const articlesResponse = await fetch(ADMIN_ARTICLES_URL + '?sort=createdAt,desc');
+		const articlesResponse = await fetch(ADMIN_ARTICLES_URL + '?' + articlesQueryParams.toString());
 		const articles: Page<Article> = await articlesResponse.json();
-		return { articles, categories };
-	} catch (error) {}
+
+		return {
+			articles,
+			categories,
+			appliedFilters: { status, searchTerm },
+			appliedSorting: sortParams
+		};
+	} catch (error) {
+		console.error('Failed to load articles:', error);
+		return {
+			articles: { content: [], totalElements: 0 },
+			categories: [],
+			appliedFilters: { status: null, searchTerms: null },
+			appliedSorting: []
+		};
+	}
 };
 
 export const actions: Actions = {

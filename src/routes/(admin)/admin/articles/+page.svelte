@@ -31,6 +31,8 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
@@ -83,20 +85,21 @@
 		{
 			accessorKey: 'title',
 			header: 'Title',
-
 			cell: ({ row }) => {
 				// TODO: add tooltip Later
 				return row.original.title.length > 20
 					? row.original.title.slice(0, 20) + '...'
 					: row.original.title;
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'author',
 			header: 'Author',
 			cell: ({ row }) => {
 				return renderSnippet(AuthorCellSnippet, { row });
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'tags',
@@ -118,7 +121,8 @@
 			header: 'Status',
 			cell: ({ row }) => {
 				return renderSnippet(statusCellSnippet, { row });
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'publishedAt',
@@ -134,7 +138,8 @@
 							date: row.original.publishedAt
 						})
 					: 'Not Published';
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'createdAt',
@@ -148,7 +153,8 @@
 				return renderComponent(TimeStamp, {
 					date: row.original.createdAt
 				});
-			}
+			},
+			enableSorting: true
 		}
 
 		// {
@@ -175,7 +181,7 @@
 			icon: Download,
 			variant: 'outline',
 			action: (selectedRows, allData) => {
-				handleExportArticles(allData);
+				handleExportArticles();
 			}
 		},
 		{
@@ -216,6 +222,7 @@
 		column: 'status',
 		type: 'select',
 		placeholder: 'Filter by status...',
+		serverParam: 'status',
 		options: [
 			{ label: 'Published', value: 'PUBLISHED' },
 			{ label: 'Draft', value: 'DRAFT' },
@@ -295,14 +302,45 @@
 	};
 
 	// Action Handlers
-	const handleExportArticles = (data: Article[]) => {
-		const csv = convertToCSV(data);
-		downloadCSV(csv, 'articles.csv');
-		toast.success('Articles exported successfully');
+	const handleExportArticles = async () => {
+		try {
+			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/articles/export', {
+				method: 'GET',
+				headers: {
+					Authorization: 'Bearer ' + data.user?.accessToken
+				}
+			});
+
+			if (!response.ok) {
+				toast.error('Download failed: ' + response.statusText);
+				return;
+			}
+
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'articles.csv';
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			window.URL.revokeObjectURL(url);
+			toast.success('Successfully exported articles to CSV');
+		} catch (error) {
+			console.error('Export error:', error);
+			toast.error('Failed to export articles data');
+		}
 	};
 
-	const handleRefreshData = () => {
-		window.location.reload();
+	const handleRefreshData = async () => {
+		toast.info('Refreshing articles data...');
+		try {
+			await invalidateAll();
+			toast.success('Data refreshed successfully');
+		} catch (error) {
+			toast.error('Failed to refresh data');
+		}
 	};
 
 	const handleBulkApprove = (selectedRows: Row<Article>[]) => {
@@ -332,34 +370,7 @@
 		toast.success('Article deleted');
 	};
 
-	const convertToCSV = (data: Article[]): string => {
-		const headers = ['Title', 'Author', 'Status', 'Created At', 'Published At'];
-		const rows = data.map((article) => [
-			article.title,
-			article.author.username,
-			article.status,
-			new Date(article.createdAt).toLocaleDateString(),
-			article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Not Published'
-		]);
-
-		const csvContent = [headers, ...rows]
-			.map((row) => row.map((field) => `"${field}"`).join(','))
-			.join('\n');
-
-		return csvContent;
-	};
-
-	const downloadCSV = (csvContent: string, filename: string) => {
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-		const link = document.createElement('a');
-		const url = URL.createObjectURL(blob);
-		link.setAttribute('href', url);
-		link.setAttribute('download', filename);
-		link.style.visibility = 'hidden';
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	};
+	// Removed convertToCSV and downloadCSV functions since we're now using server-side export
 
 	$effect(() => {
 		if (form?.success) {
@@ -514,8 +525,12 @@
 		{columns}
 		entityName="article"
 		deleteBatchAction="?/deleteArticlesBatch"
-		primarySearchColumn="title"
+		enableSearch={true}
+		enableServerSearch={true}
+		searchParam="searchTerm"
 		searchPlaceholder="Search articles by title..."
+		enableServerSorting={true}
+		sortParam="sort"
 		additionalFilters={[statusFilters]}
 		{headerActions}
 		{bulkActions}
