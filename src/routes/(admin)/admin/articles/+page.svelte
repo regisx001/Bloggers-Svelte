@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import EnhancedDataTable from '$lib/components/data-tables/enhanced-data-table.svelte';
+	import ServerDataTable from '$lib/components/data-tables/server-data-table.svelte';
 	import EnhancedDataTableActions from '$lib/components/data-tables/enhanced-data-table-actions.svelte';
 	import type { ColumnDef, Row } from '@tanstack/table-core';
 	import { createRawSnippet, onMount } from 'svelte';
@@ -31,6 +31,8 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
@@ -78,32 +80,36 @@
 							: `<div class="h-8 w-14 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">No Image</div>`
 				}));
 				return renderSnippet(imageCellSnippet, '');
-			}
+			},
+			enableSorting: false
 		},
 		{
 			accessorKey: 'title',
 			header: 'Title',
-
 			cell: ({ row }) => {
 				// TODO: add tooltip Later
 				return row.original.title.length > 20
 					? row.original.title.slice(0, 20) + '...'
 					: row.original.title;
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'author',
 			header: 'Author',
 			cell: ({ row }) => {
 				return renderSnippet(AuthorCellSnippet, { row });
-			}
+			},
+			enableSorting: false
 		},
 		{
 			accessorKey: 'tags',
 			header: 'Tags',
 			cell: ({ row }) => {
 				return renderSnippet(TagsCellSnippet, { row });
-			}
+			},
+
+			enableSorting: false
 		},
 		// DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
 		// {
@@ -118,7 +124,8 @@
 			header: 'Status',
 			cell: ({ row }) => {
 				return renderSnippet(statusCellSnippet, { row });
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'publishedAt',
@@ -134,7 +141,8 @@
 							date: row.original.publishedAt
 						})
 					: 'Not Published';
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'createdAt',
@@ -148,7 +156,8 @@
 				return renderComponent(TimeStamp, {
 					date: row.original.createdAt
 				});
-			}
+			},
+			enableSorting: true
 		}
 
 		// {
@@ -168,26 +177,7 @@
 	];
 
 	// Enhanced Table Actions Configuration
-	const headerActions: TableAction[] = [
-		{
-			id: 'export-articles',
-			label: 'Export Articles',
-			icon: Download,
-			variant: 'outline',
-			action: (selectedRows, allData) => {
-				handleExportArticles(allData);
-			}
-		},
-		{
-			id: 'refresh-data',
-			label: 'Refresh Data',
-			icon: RefreshCw,
-			variant: 'outline',
-			action: () => {
-				handleRefreshData();
-			}
-		}
-	];
+	const headerActions: TableAction[] = [];
 
 	const bulkActions: TableAction[] = [
 		{
@@ -216,6 +206,7 @@
 		column: 'status',
 		type: 'select',
 		placeholder: 'Filter by status...',
+		serverParam: 'status',
 		options: [
 			{ label: 'Published', value: 'PUBLISHED' },
 			{ label: 'Draft', value: 'DRAFT' },
@@ -295,14 +286,45 @@
 	};
 
 	// Action Handlers
-	const handleExportArticles = (data: Article[]) => {
-		const csv = convertToCSV(data);
-		downloadCSV(csv, 'articles.csv');
-		toast.success('Articles exported successfully');
+	const handleExportArticles = async () => {
+		try {
+			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/articles/export', {
+				method: 'GET',
+				headers: {
+					Authorization: 'Bearer ' + data.user?.accessToken
+				}
+			});
+
+			if (!response.ok) {
+				toast.error('Download failed: ' + response.statusText);
+				return;
+			}
+
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'articles.csv';
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			window.URL.revokeObjectURL(url);
+			toast.success('Successfully exported articles to CSV');
+		} catch (error) {
+			console.error('Export error:', error);
+			toast.error('Failed to export articles data');
+		}
 	};
 
-	const handleRefreshData = () => {
-		window.location.reload();
+	const handleRefreshData = async () => {
+		toast.info('Refreshing articles data...');
+		try {
+			await invalidateAll();
+			toast.success('Data refreshed successfully');
+		} catch (error) {
+			toast.error('Failed to refresh data');
+		}
 	};
 
 	const handleBulkApprove = (selectedRows: Row<Article>[]) => {
@@ -332,34 +354,7 @@
 		toast.success('Article deleted');
 	};
 
-	const convertToCSV = (data: Article[]): string => {
-		const headers = ['Title', 'Author', 'Status', 'Created At', 'Published At'];
-		const rows = data.map((article) => [
-			article.title,
-			article.author.username,
-			article.status,
-			new Date(article.createdAt).toLocaleDateString(),
-			article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : 'Not Published'
-		]);
-
-		const csvContent = [headers, ...rows]
-			.map((row) => row.map((field) => `"${field}"`).join(','))
-			.join('\n');
-
-		return csvContent;
-	};
-
-	const downloadCSV = (csvContent: string, filename: string) => {
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-		const link = document.createElement('a');
-		const url = URL.createObjectURL(blob);
-		link.setAttribute('href', url);
-		link.setAttribute('download', filename);
-		link.style.visibility = 'hidden';
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	};
+	// Removed convertToCSV and downloadCSV functions since we're now using server-side export
 
 	$effect(() => {
 		if (form?.success) {
@@ -507,25 +502,25 @@
 {/snippet}
 
 <section class="p-6">
-	<EnhancedDataTable
+	<ServerDataTable
 		title="Articles Management"
 		description="Manage your blog articles, approve submissions, and track publishing status"
 		data={data.articles?.content || []}
 		{columns}
 		entityName="article"
 		deleteBatchAction="?/deleteArticlesBatch"
-		primarySearchColumn="title"
+		enableServerSearch={true}
+		searchParam="searchTerm"
 		searchPlaceholder="Search articles by title..."
+		enableServerSorting={true}
+		sortParam="sort"
 		additionalFilters={[statusFilters]}
-		{headerActions}
 		{bulkActions}
-		enableExport={true}
-		enableRefresh={true}
 		enableColumnVisibility={true}
-		pageSize={30}
 		showRowNumbers={true}
-		onExport={handleExportArticles}
+		stripedRows={true}
 		onRefresh={handleRefreshData}
+		onExport={handleExportArticles}
 	>
 		{#snippet triggerAdd()}
 			{@render addArticle()}
@@ -543,7 +538,7 @@
 				deleteAction="?/deleteArticle"
 			/>
 		{/snippet}
-	</EnhancedDataTable>
+	</ServerDataTable>
 </section>
 
 {#snippet statusCellSnippet({ row }: { row: Row<Article> })}
