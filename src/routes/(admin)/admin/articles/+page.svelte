@@ -241,8 +241,13 @@
 				id: 'approve',
 				icon: ThumbsUp,
 				label: 'Approve Article',
-				action: () => handleApproveArticle(article.id),
-				variant: 'default'
+				formAction: '?/approveArticle',
+				formData: { articleId: article.id },
+				variant: 'default',
+				confirmDialog: {
+					title: 'Approve Article',
+					description: `Are you sure you want to approve "${article.title}"? This will make it available for publishing.`
+				}
 			});
 		}
 
@@ -251,8 +256,13 @@
 				id: 'reject',
 				icon: CircleDashedX,
 				label: 'Reject Article',
-				action: () => handleRejectArticle(article.id),
-				variant: 'destructive'
+				formAction: '?/rejectArticle',
+				formData: { articleId: article.id },
+				variant: 'destructive',
+				confirmDialog: {
+					title: 'Reject Article',
+					description: `Are you sure you want to reject "${article.title}"? This will prevent it from being published.`
+				}
 			});
 		}
 
@@ -272,13 +282,6 @@
 				label: '',
 				action: () => {},
 				separator: true
-			},
-			{
-				id: 'delete',
-				icon: Trash,
-				label: 'Delete Article',
-				action: () => handleDeleteArticle(article.id),
-				variant: 'destructive'
 			}
 		);
 
@@ -288,7 +291,7 @@
 	// Action Handlers
 	const handleExportArticles = async () => {
 		try {
-			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/articles/export', {
+			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/²/export', {
 				method: 'GET',
 				headers: {
 					Authorization: 'Bearer ' + data.user?.accessToken
@@ -339,21 +342,6 @@
 		toast.success(`Archived ${articleIds.length} articles`);
 	};
 
-	const handleApproveArticle = (articleId: string) => {
-		// Implement approve logic here
-		toast.success('Article approved');
-	};
-
-	const handleRejectArticle = (articleId: string) => {
-		// Implement reject logic here
-		toast.success('Article rejected');
-	};
-
-	const handleDeleteArticle = (articleId: string) => {
-		// Implement delete logic here
-		toast.success('Article deleted');
-	};
-
 	// Removed convertToCSV and downloadCSV functions since we're now using server-side export
 
 	$effect(() => {
@@ -361,11 +349,16 @@
 			if (form?.action === 'createArticle') {
 				createDialogOpen = false;
 				toast.success(form?.message || 'Article created successfully');
+			} else if (form?.action === 'publish') {
+				// This handles both approve and reject actions
+				toast.success(form?.message || 'Article status updated successfully');
 			} else if (form?.action === 'delete') {
-				toast.error(form?.message);
+				toast.success(form?.message || 'Article deleted successfully');
 			} else {
-				toast.info(form?.message);
+				toast.success(form?.message || 'Action completed successfully');
 			}
+		} else if (form && !form.success && form.message) {
+			toast.error(form?.message);
 		}
 	});
 

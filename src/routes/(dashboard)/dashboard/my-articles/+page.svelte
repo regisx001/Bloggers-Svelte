@@ -33,6 +33,7 @@
 	let publishAlertDialogOpen = $state(false);
 	let deleteAlertDialogOpen = $state(false);
 	let sendForReviewAlertDialogOpen = $state(false);
+	let draftArticleAlertDialogOpen = $state(false);
 	let { data, form }: PageProps = $props();
 
 	$effect(() => {
@@ -253,9 +254,15 @@
 								<MoreHorizontal />
 							</Popover.Trigger>
 							<Popover.Content class="flex w-80 flex-col gap-2">
-								{@render publishConfirm(article.id)}
+								{#if article.status !== 'PUBLISHED'}
+									{@render publishConfirm(article.id)}
+								{/if}
+
 								{#if article.status !== 'PUBLISHED'}
 									{@render sendForReview(article.id)}
+								{/if}
+								{#if article.status !== 'PUBLISHED' && article.status !== 'DRAFT'}
+									{@render draftArticleConfirm(article.id)}
 								{/if}
 								<Button size="sm" variant="outline" class="w-full">Edit</Button>
 								{@render deleteConfirm(article.id)}
@@ -287,6 +294,41 @@
 		{/if}
 	</div>
 </div>
+
+{#snippet draftArticleConfirm(id: string)}
+	<AlertDialog.Root bind:open={draftArticleAlertDialogOpen}>
+		<!-- <AlertDialog.Root> -->
+		<AlertDialog.Trigger class="hover:bg-muted  flex w-full flex-row gap-2 hover:cursor-pointer">
+			<Button size="sm" variant="outline" class="w-full">Convert to draft</Button>
+		</AlertDialog.Trigger>
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+				<AlertDialog.Description>
+					This action cannot be undone. This Article will be send for reviwing by our admins ?.
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+				<form
+					action="?/draftArticle"
+					method="post"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								draftArticleAlertDialogOpen = false;
+							}
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="articleId" value={id} />
+					<AlertDialog.Action type="submit">Continue</AlertDialog.Action>
+				</form>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Root>
+{/snippet}
 
 {#snippet sendForReview(id: string)}
 	<AlertDialog.Root bind:open={sendForReviewAlertDialogOpen}>

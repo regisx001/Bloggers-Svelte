@@ -10,9 +10,8 @@
 	import ReportIcon from '@tabler/icons-svelte/icons/report';
 	import SearchIcon from '@tabler/icons-svelte/icons/search';
 	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
-	import Category from '@tabler/icons-svelte/icons/category';
-	import Article from '@tabler/icons-svelte/icons/article';
-	import Tag from '@lucide/svelte/icons/tag';
+	import { Settings } from '@lucide/svelte';
+
 	import NavMain from '../navigation/nav-main.svelte';
 
 	import NavUser from '../navigation/nav-user.svelte';
@@ -41,6 +40,11 @@
 				title: 'Review Articles',
 				url: '/dashboard/review-articles',
 				icon: ArticleFilled
+			},
+			{
+				title: 'Settings',
+				url: '/dashboard/settings',
+				icon: SettingsIcon
 			}
 
 			// {
@@ -64,11 +68,7 @@
 			// 	url: '/dashboard/profile',
 			// 	icon: ArticleFilled
 			// },
-			// {
-			// 	title: 'Settings',
-			// 	url: '/dashboard/settings',
-			// 	icon: ArticleFilled
-			// }
+
 			// {
 			// 	title: 'Lifecycle',
 			// 	url: '#',

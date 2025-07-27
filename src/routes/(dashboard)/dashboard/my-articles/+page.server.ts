@@ -30,6 +30,27 @@ export const actions: Actions = {
 			};
 		}
 	},
+
+	draftArticle: async ({ request, fetch }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+
+		const draftArticleResponse = await fetch(ARTICLES_URL + '/convert-draft/' + id, {
+			method: 'post'
+		});
+
+		if (draftArticleResponse.ok) {
+			return {
+				action: 'publish',
+				success: true,
+				message: 'Article Converted to draft successfully'
+			};
+		}
+	},
 	publishArticle: async ({ request, fetch }) => {
 		const id = (await request.formData()).get('articleId');
 		if (!id) {
