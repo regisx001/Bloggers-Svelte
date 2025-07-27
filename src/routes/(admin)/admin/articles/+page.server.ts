@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		return {
 			articles: { content: [], totalElements: 0 },
 			categories: [],
-			appliedFilters: { status: null, searchTerms: null },
+			appliedFilters: { status: null, searchTerm: null },
 			appliedSorting: []
 		};
 	}

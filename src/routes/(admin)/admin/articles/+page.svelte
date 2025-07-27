@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import EnhancedDataTable from '$lib/components/data-tables/enhanced-data-table.svelte';
+	import ServerDataTable from '$lib/components/data-tables/server-data-table.svelte';
 	import EnhancedDataTableActions from '$lib/components/data-tables/enhanced-data-table-actions.svelte';
 	import type { ColumnDef, Row } from '@tanstack/table-core';
 	import { createRawSnippet, onMount } from 'svelte';
@@ -80,7 +80,8 @@
 							: `<div class="h-8 w-14 bg-gray-200 flex items-center justify-center text-gray-500 text-xs">No Image</div>`
 				}));
 				return renderSnippet(imageCellSnippet, '');
-			}
+			},
+			enableSorting: false
 		},
 		{
 			accessorKey: 'title',
@@ -99,14 +100,16 @@
 			cell: ({ row }) => {
 				return renderSnippet(AuthorCellSnippet, { row });
 			},
-			enableSorting: true
+			enableSorting: false
 		},
 		{
 			accessorKey: 'tags',
 			header: 'Tags',
 			cell: ({ row }) => {
 				return renderSnippet(TagsCellSnippet, { row });
-			}
+			},
+
+			enableSorting: false
 		},
 		// DEPRECATED: WERE GOING TO TRY A DIFFRENT APPROCH WITH CATEGORIES
 		// {
@@ -174,26 +177,7 @@
 	];
 
 	// Enhanced Table Actions Configuration
-	const headerActions: TableAction[] = [
-		{
-			id: 'export-articles',
-			label: 'Export Articles',
-			icon: Download,
-			variant: 'outline',
-			action: (selectedRows, allData) => {
-				handleExportArticles();
-			}
-		},
-		{
-			id: 'refresh-data',
-			label: 'Refresh Data',
-			icon: RefreshCw,
-			variant: 'outline',
-			action: () => {
-				handleRefreshData();
-			}
-		}
-	];
+	const headerActions: TableAction[] = [];
 
 	const bulkActions: TableAction[] = [
 		{
@@ -518,29 +502,25 @@
 {/snippet}
 
 <section class="p-6">
-	<EnhancedDataTable
+	<ServerDataTable
 		title="Articles Management"
 		description="Manage your blog articles, approve submissions, and track publishing status"
 		data={data.articles?.content || []}
 		{columns}
 		entityName="article"
 		deleteBatchAction="?/deleteArticlesBatch"
-		enableSearch={true}
 		enableServerSearch={true}
 		searchParam="searchTerm"
 		searchPlaceholder="Search articles by title..."
 		enableServerSorting={true}
 		sortParam="sort"
 		additionalFilters={[statusFilters]}
-		{headerActions}
 		{bulkActions}
-		enableExport={true}
-		enableRefresh={true}
 		enableColumnVisibility={true}
-		pageSize={30}
 		showRowNumbers={true}
-		onExport={handleExportArticles}
+		stripedRows={true}
 		onRefresh={handleRefreshData}
+		onExport={handleExportArticles}
 	>
 		{#snippet triggerAdd()}
 			{@render addArticle()}
@@ -558,7 +538,7 @@
 				deleteAction="?/deleteArticle"
 			/>
 		{/snippet}
-	</EnhancedDataTable>
+	</ServerDataTable>
 </section>
 
 {#snippet statusCellSnippet({ row }: { row: Row<Article> })}

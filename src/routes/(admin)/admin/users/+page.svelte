@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import EnhancedDataTable from '$lib/components/data-tables/enhanced-data-table.svelte';
+	import ServerDataTable from '$lib/components/data-tables/server-data-table.svelte';
 	import EnhancedDataTableActions from '$lib/components/data-tables/enhanced-data-table-actions.svelte';
 	import type { ColumnDef, Row } from '@tanstack/table-core';
 	import type {
@@ -316,9 +316,6 @@
 		}
 	];
 
-	// Define header actions
-	const headerActions: TableAction[] = [];
-
 	// Define bulk actions for selected rows
 	const bulkActions: TableAction[] = [
 		{
@@ -513,24 +510,20 @@
 
 	<!-- Enhanced Data Table -->
 	<div class="space-y-4">
-		<EnhancedDataTable
+		<ServerDataTable
 			columns={columns as any}
 			data={data.users?.content || []}
 			entityName="user"
 			deleteBatchAction="?/deleteBatchUsers"
 			title="Users Management"
 			description="Manage user accounts, roles, and permissions across the platform"
-			{headerActions}
 			{bulkActions}
 			{additionalFilters}
-			enableSearch={true}
 			enableServerSearch={true}
 			searchParam="searchTerms"
 			searchPlaceholder="Search users..."
 			enableServerSorting={true}
 			sortParam="sort"
-			enableExport={true}
-			enableRefresh={true}
 			enableColumnVisibility={true}
 			showRowNumbers={true}
 			stripedRows={true}
@@ -544,7 +537,7 @@
 					Add New User
 				</Button>
 			{/snippet}
-		</EnhancedDataTable>
+		</ServerDataTable>
 	</div>
 </div>
 
