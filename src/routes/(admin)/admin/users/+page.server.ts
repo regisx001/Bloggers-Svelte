@@ -9,9 +9,21 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	const enabled = url.searchParams.get('enabled');
 	const searchTerms = url.searchParams.get('searchTerms');
 
+	// Extract sort parameters from URL
+	const sortParams = url.searchParams.getAll('sort');
+
 	// Build query parameters
 	const queryParams = new URLSearchParams();
-	// queryParams.set('sort', 'createdAt,desc');
+
+	// Add default sorting if no sort params provided
+	if (sortParams.length === 0) {
+		queryParams.set('sort', 'createdAt,desc');
+	} else {
+		// Add all sort parameters
+		sortParams.forEach((sortParam) => {
+			queryParams.append('sort', sortParam);
+		});
+	}
 
 	if (role) {
 		queryParams.set('role', role);
@@ -30,7 +42,8 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
 	return {
 		users,
-		appliedFilters: { role, enabled, searchTerms }
+		appliedFilters: { role, enabled, searchTerms },
+		appliedSorting: sortParams
 	};
 };
 

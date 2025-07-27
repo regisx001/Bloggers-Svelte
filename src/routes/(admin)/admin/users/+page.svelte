@@ -105,14 +105,16 @@
 			header: 'Username',
 			cell: ({ row }) => {
 				return row.original.username;
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'email',
 			header: 'Email Address',
 			cell: ({ row }) => {
 				return row.original.email;
-			}
+			},
+			enableSorting: true
 		},
 		{
 			id: 'roles',
@@ -178,7 +180,7 @@
 				const isEnabled = row.original.enabled;
 				return String(isEnabled) === value;
 			},
-			enableSorting: false
+			enableSorting: true
 		},
 		{
 			accessorKey: 'createdAt',
@@ -192,7 +194,8 @@
 				return renderComponent(TimeStamp, {
 					date: row.original.createdAt
 				});
-			}
+			},
+			enableSorting: true
 		},
 		{
 			accessorKey: 'updatedAt',
@@ -206,7 +209,8 @@
 				return renderComponent(TimeStamp, {
 					date: row.original.updatedAt
 				});
-			}
+			},
+			enableSorting: true
 		},
 		{
 			id: 'actions',
@@ -523,6 +527,8 @@
 			enableServerSearch={true}
 			searchParam="searchTerms"
 			searchPlaceholder="Search users..."
+			enableServerSorting={true}
+			sortParam="sort"
 			enableExport={true}
 			enableRefresh={true}
 			enableColumnVisibility={true}

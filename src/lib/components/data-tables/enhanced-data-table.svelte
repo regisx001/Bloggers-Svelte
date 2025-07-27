@@ -50,6 +50,10 @@
 		primarySearchColumn?: string; // Deprecated: use enableServerSearch instead
 		additionalFilters?: FilterOption[];
 
+		// Sorting
+		enableServerSorting?: boolean; // New: enable server-side sorting
+		sortParam?: string; // New: parameter name for server sorting (default: 'sort')
+
 		// Actions and controls
 		headerActions?: TableAction[];
 		bulkActions?: TableAction[];
@@ -104,6 +108,10 @@
 		primarySearchColumn = 'title', // Deprecated
 		additionalFilters = [],
 
+		// Sorting props
+		enableServerSorting = false,
+		sortParam = 'sort',
+
 		headerActions = [],
 		bulkActions = [],
 		enableColumnVisibility = true,
@@ -146,8 +154,9 @@
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
+		getSortedRowModel: enableServerSorting ? undefined : getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		manualSorting: enableServerSorting,
 		onPaginationChange: (updater) => {
 			if (typeof updater === 'function') {
 				pagination = updater(pagination);
@@ -156,10 +165,19 @@
 			}
 		},
 		onSortingChange: (updater) => {
+			let newSorting: SortingState;
 			if (typeof updater === 'function') {
-				sorting = updater(sorting);
+				newSorting = updater(sorting);
 			} else {
-				sorting = updater;
+				newSorting = updater;
+			}
+
+			// If server sorting is enabled, handle it server-side
+			if (enableServerSorting) {
+				handleServerSortingChange(newSorting);
+			} else {
+				// Otherwise, handle it client-side
+				sorting = newSorting;
 			}
 		},
 		onColumnFiltersChange: (updater) => {
@@ -294,7 +312,51 @@
 		});
 
 		serverFilters = newServerFilters;
-	}); // Watch for selection changes
+	});
+
+	// Server-side sorting state and functions
+	let serverSorting = $state<SortingState>([]);
+
+	// Handle server-side sorting changes
+	const handleServerSortingChange = async (newSorting: SortingState) => {
+		const url = new URL($page.url);
+
+		// Clear existing sort params
+		const keysToDelete = Array.from(url.searchParams.keys()).filter((key) => key === sortParam);
+		keysToDelete.forEach((key) => url.searchParams.delete(key));
+
+		// Add new sort params
+		newSorting.forEach((sort) => {
+			const direction = sort.desc ? 'desc' : 'asc';
+			url.searchParams.append(sortParam, `${sort.id},${direction}`);
+		});
+
+		// Navigate to new URL (this will trigger load function re-run)
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+	};
+
+	// Initialize server sorting from URL params
+	$effect(() => {
+		const params = $page.url.searchParams;
+		const sortParams = params.getAll(sortParam);
+
+		const newServerSorting: SortingState = sortParams.map((param) => {
+			const [id, direction] = param.split(',');
+			return {
+				id,
+				desc: direction === 'desc'
+			};
+		});
+
+		serverSorting = newServerSorting;
+
+		// Update local sorting state if server sorting is enabled
+		if (enableServerSorting) {
+			sorting = newServerSorting;
+		}
+	});
+
+	// Watch for selection changes
 	$effect(() => {
 		if (onSelectionChange) {
 			onSelectionChange(selectedRows);
@@ -584,10 +646,69 @@
 						{#each headerGroup.headers as header (header.id)}
 							<Table.Head colspan={header.colSpan}>
 								{#if !header.isPlaceholder}
-									<FlexRender
-										content={header.column.columnDef.header}
-										context={header.getContext()}
-									/>
+									{#if header.column.getCanSort()}
+										<Button
+											variant="ghost"
+											onclick={() => header.column.toggleSorting()}
+											class="h-auto p-0 font-medium hover:bg-transparent data-[state=open]:bg-transparent"
+										>
+											<FlexRender
+												content={header.column.columnDef.header}
+												context={header.getContext()}
+											/>
+											{#if header.column.getIsSorted() === 'asc'}
+												<svg
+													class="ml-1 h-4 w-4"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M5 15l7-7 7 7"
+													/>
+												</svg>
+											{:else if header.column.getIsSorted() === 'desc'}
+												<svg
+													class="ml-1 h-4 w-4"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M19 9l-7 7-7-7"
+													/>
+												</svg>
+											{:else}
+												<svg
+													class="ml-1 h-4 w-4 opacity-30"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													xmlns="http://www.w3.org/2000/svg"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+													/>
+												</svg>
+											{/if}
+										</Button>
+									{:else}
+										<FlexRender
+											content={header.column.columnDef.header}
+											context={header.getContext()}
+										/>
+									{/if}
 								{/if}
 							</Table.Head>
 						{/each}
