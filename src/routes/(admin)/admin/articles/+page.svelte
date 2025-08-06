@@ -11,6 +11,7 @@
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Plus, Eye, ThumbsUp, Trash, Download, RefreshCw } from '@lucide/svelte';
+	import Ai from '@tabler/icons-svelte/icons/ai';
 	import type {
 		TableAction,
 		FilterOption,
@@ -238,6 +239,19 @@
 		// Add conditional actions based on article status
 		if (article.status !== 'APPROVED' && article.status !== 'PUBLISHED') {
 			actions.push({
+				id: 'analyse',
+				icon: Ai,
+				label: 'AI Analysis',
+				formAction: '?/analyseArticle',
+				formData: { articleId: article.id },
+				variant: 'default',
+				confirmDialog: {
+					title: 'Analyse Article',
+					description: `Are you sure you want to analyse "${article.title}"? This will make it available for publishing.`
+				}
+			});
+
+			actions.push({
 				id: 'approve',
 				icon: ThumbsUp,
 				label: 'Approve Article',
@@ -291,7 +305,7 @@
 	// Action Handlers
 	const handleExportArticles = async () => {
 		try {
-			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/²/export', {
+			const response = await fetch(PUBLIC_BACKEND_URL + '/api/v1/admin/users/export', {
 				method: 'GET',
 				headers: {
 					Authorization: 'Bearer ' + data.user?.accessToken
@@ -340,6 +354,11 @@
 		const articleIds = selectedRows.map((row) => row.original.id);
 		// Implement bulk archive logic here
 		toast.success(`Archived ${articleIds.length} articles`);
+	};
+
+	const handleDeleteArticle = (articleId: string) => {
+		// Implement delete logic here
+		toast.success('Article deleted');
 	};
 
 	// Removed convertToCSV and downloadCSV functions since we're now using server-side export

@@ -195,5 +195,27 @@ export const actions: Actions = {
 		} else {
 			console.log(await batchDeleteResponse.json());
 		}
+	},
+	analyseArticle: async ({ fetch, request }) => {
+		const id = (await request.formData()).get('articleId');
+		if (!id) {
+			return {
+				message: 'Id Not provided'
+			};
+		}
+
+		const analyseArticleResponse = await fetch(ADMIN_ARTICLES_URL + '/analyse-by-ai/' + id, {
+			method: 'post'
+		});
+
+		const json = await analyseArticleResponse.json();
+
+		if (analyseArticleResponse.ok) {
+			return {
+				action: 'analyse',
+				success: true,
+				message: 'Article Submitted for analysis successfully'
+			};
+		}
 	}
 };

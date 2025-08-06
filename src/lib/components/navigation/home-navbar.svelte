@@ -324,7 +324,7 @@
 								</a>
 							</DropdownMenu.Item>
 							<DropdownMenu.Item>
-								<a href="{base}/profile" class="flex w-full items-center">
+								<a href="{base}/dashboard/settings" class="flex w-full items-center">
 									<Settings class="mr-2 h-4 w-4" />
 									<span>Settings</span>
 								</a>
