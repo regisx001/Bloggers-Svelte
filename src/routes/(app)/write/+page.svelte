@@ -1,7 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+	// OLD EDITOR - Commenting out for new implementation
+	// import RichTextEditor from '$lib/components/editor/rich-text-editor.svelte';
+
+	// NEW EDITOR - Article Inline Editor
+	import ArticleInlineEditor from '$lib/components/editor/article-inline-editor.svelte';
+
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -20,6 +25,11 @@
 	let featuredImage: File | null = $state(null);
 	let isSubmitting = $state(false);
 
+	// New editor state
+	let articleTags: string[] = $state([]);
+	let articleAuthor = $state(data.user.username || 'Anonymous'); // You can bind this to user data
+	let articleStatus: 'draft' | 'published' = $state('draft');
+
 	$effect(() => {
 		if (form?.success) {
 			toast.success(form.message);
@@ -27,6 +37,8 @@
 			content = '';
 			selectedCategory = { value: '', label: 'Select a category' };
 			featuredImage = null;
+			articleTags = [];
+			articleStatus = 'draft';
 		} else if (form?.success === false) {
 			toast.error(form.message);
 		}
@@ -68,12 +80,35 @@
 			toast.error('Failed to upload image. Please try again.');
 		}
 	}
+
+	// Handle new editor events
+	function handleEditorSave(event: CustomEvent) {
+		const { title: editorTitle, content: editorContent, tags } = event.detail;
+		title = editorTitle;
+		content = editorContent;
+		articleTags = tags;
+		toast.success('Article auto-saved!');
+	}
+
+	function handleEditorPublish(event: CustomEvent) {
+		const { title: editorTitle, content: editorContent, tags } = event.detail;
+		title = editorTitle;
+		content = editorContent;
+		articleTags = tags;
+		// Trigger form submission
+		const form = document.querySelector('form');
+		if (form) {
+			form.requestSubmit();
+		}
+	}
 </script>
 
-<section class="container mx-auto max-w-4xl px-4 py-8">
+<section class="container mx-auto max-w-6xl px-4 py-8">
 	<div class="mb-8 text-center">
-		<h1 class="mb-2 text-3xl font-bold">Quick Write</h1>
-		<p class="text-muted-foreground">Create and publish your blog article in minutes</p>
+		<h1 class="mb-2 text-3xl font-bold">Article Writer</h1>
+		<p class="text-muted-foreground">
+			Create and publish your blog article with our enhanced inline editor
+		</p>
 	</div>
 
 	<Card class="p-6">
@@ -90,8 +125,9 @@
 			enctype="multipart/form-data"
 			class="space-y-6"
 		>
-			<!-- Title Section -->
-			<div class="space-y-2">
+			<!-- Title Section - Keep for fallback and form submission -->
+			<!-- NOTE: The new editor has its own title input, but we keep this for form consistency -->
+			<div class="space-y-2" style="display: none;">
 				<div class="flex items-center gap-2">
 					<FileText class="h-4 w-4" />
 					<Label for="title" class="text-sm font-medium">Article Title</Label>
@@ -151,12 +187,32 @@
 
 			<Separator />
 
-			<!-- Content Section -->
-			<div class="space-y-2">
+			<!-- Content Section - New Article Inline Editor -->
+			<div class="space-y-4">
 				<div class="flex items-center gap-2">
 					<PenTool class="h-4 w-4" />
-					<Label class="text-sm font-medium">Content</Label>
+					<Label class="text-sm font-medium">Article Content</Label>
 				</div>
+
+				<!-- NEW EDITOR -->
+				<div class="rounded-lg border">
+					<ArticleInlineEditor
+						bind:title
+						bind:content
+						bind:tags={articleTags}
+						author={articleAuthor}
+						status={articleStatus}
+						autoSave={true}
+						showToolbar={true}
+						showStats={true}
+						on:save={handleEditorSave}
+						on:publish={handleEditorPublish}
+						on:imageUpload={handleImageUpload}
+					/>
+				</div>
+
+				<!-- OLD EDITOR - COMMENTED OUT -->
+				<!-- 
 				<div class="min-h-[400px] rounded-lg border">
 					<RichTextEditor
 						bind:content
@@ -164,17 +220,33 @@
 						on:imageUpload={handleImageUpload}
 						placeholder="Start writing your article..."
 					/>
-					<!-- <Input type="text" name="content" /> -->
 				</div>
+				-->
+
+				<!-- Hidden inputs for form submission -->
 				<textarea name="content" class="hidden" value={content}></textarea>
+				<input type="hidden" name="title" value={title} />
 			</div>
-			<div class="space-y-2">
-				<TagInput name="tags" placeholder="add tags" />
+			<!-- Tags Section - Now handled by the editor -->
+			<div class="space-y-2" style="display: none;">
+				<!-- OLD TAG INPUT - Editor now handles this -->
+				<!-- <TagInput name="tags" placeholder="add tags" /> -->
+
+				<!-- Hidden input for form submission -->
+				<input type="hidden" name="tags" value={articleTags.join(',')} />
 			</div>
 
+			<!-- Draft Status - Now integrated with editor -->
 			<div class="flex flex-row gap-2">
 				<Label>Draft</Label>
-				<Checkbox id="draft" name="draft" />
+				<Checkbox
+					id="draft"
+					name="draft"
+					checked={articleStatus === 'draft'}
+					onCheckedChange={(checked) => {
+						articleStatus = checked ? 'draft' : 'published';
+					}}
+				/>
 			</div>
 			<Separator />
 
@@ -190,6 +262,8 @@
 							content = '';
 							selectedCategory = { value: '', label: 'Select a category' };
 							featuredImage = null;
+							articleTags = [];
+							articleStatus = 'draft';
 						}}
 					>
 						Clear All
