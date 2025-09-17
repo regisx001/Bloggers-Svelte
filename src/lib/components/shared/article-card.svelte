@@ -27,13 +27,6 @@
 	{/if}
 
 	<Card.Content class="p-6">
-		<!-- Category Badge -->
-		<div class="mb-3">
-			<Badge variant="secondary" class="text-xs">
-				{article.category?.title || 'Uncategorized'}
-			</Badge>
-		</div>
-
 		<!-- Title -->
 		<a href="{base}/articles/{article.id}">
 			<h2
@@ -84,7 +77,7 @@
 		</div>
 
 		<!-- Status Indicator -->
-		<div class="flex items-center justify-between">
+		<!-- <div class="flex items-center justify-between">
 			<div class="flex items-center">
 				{#if article.isPublished}
 					<Badge variant="default" class="text-xs">Published</Badge>
@@ -93,7 +86,6 @@
 				{/if}
 			</div>
 
-			<!-- Read More Button -->
 			<Button
 				variant="ghost"
 				size="sm"
@@ -102,6 +94,6 @@
 			>
 				Read More →
 			</Button>
-		</div>
+		</div> -->
 	</Card.Content>
 </Card.Root>

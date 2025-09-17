@@ -40,8 +40,12 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	const usersResponse = await fetch(`${ADMIN_USERS_URL}?${queryParams.toString()}`);
 	const users: Page<User> = await usersResponse.json();
 
+	const usersAnalyticsResponse = await fetch(`${ADMIN_USERS_URL}/analytics`);
+	const usersAnalytics: UsersAnalytics = await usersAnalyticsResponse.json();
+
 	return {
 		users,
+		usersAnalytics,
 		appliedFilters: { role, enabled, searchTerms },
 		appliedSorting: sortParams
 	};

@@ -85,3 +85,9 @@ type Tag = {
 	articlesCount: number;
 	createdAt: string;
 };
+
+type UsersAnalytics = {
+	totalUsers: number;
+	activeUsers: number;
+	nonActiveUsers: number;
+};

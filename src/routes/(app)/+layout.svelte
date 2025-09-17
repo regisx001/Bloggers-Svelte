@@ -19,13 +19,13 @@
 			{@render children?.()}
 			<Footer user={data.user} />
 		</main>
-		<ResizableChat bind:isVisible={isChatVisible} user={data.user} />
+		<!-- <ResizableChat bind:isVisible={isChatVisible} user={data.user} /> -->
 	</div>
 {:else}
 	<!-- Full width layout when chat is closed -->
 	<main class="w-full">
 		{@render children?.()}
-		<ResizableChat bind:isVisible={isChatVisible} user={data.user} />
+		<!-- <ResizableChat bind:isVisible={isChatVisible} user={data.user} /> -->
 	</main>
 	<Footer user={data.user} />
 {/if}

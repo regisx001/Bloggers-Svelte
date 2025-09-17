@@ -111,7 +111,7 @@
 		</p>
 	</div>
 
-	<Card class="p-6">
+	<Card class="border-0 bg-transparent p-6">
 		<form
 			use:enhance={() => {
 				isSubmitting = true;

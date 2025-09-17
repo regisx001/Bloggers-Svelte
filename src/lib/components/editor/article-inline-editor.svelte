@@ -780,7 +780,7 @@
 <!-- Core Editor Component -->
 <div class="relative">
 	<!-- Editor Container -->
-	<Card class="relative">
+	<Card class="relative bg-transparent">
 		<!-- Floating Toolbar -->
 		{#if showToolbar}
 			<EditorToolbar

@@ -434,6 +434,26 @@
 	function handleSelectionChange(selectedRows: any[]) {
 		console.log('Selection changed:', selectedRows.length, 'users selected');
 	}
+
+	// CHART RELATED
+	import { PieChart } from 'layerchart';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+
+	const chartData = [
+		{ key: 'Active', value: data.usersAnalytics.activeUsers, color: 'var(--chart-2)' },
+		{
+			key: 'Non Active',
+			value: data.usersAnalytics.nonActiveUsers,
+			color: 'var(--chart-3)'
+		}
+	];
+
+	const chartConfig = {
+		value: { label: 'Users' },
+		key: { label: 'Status' }
+	} satisfies Chart.ChartConfig;
 </script>
 
 <svelte:head>
@@ -507,6 +527,35 @@
 			</div>
 		</div>
 	</div>
+
+	<Card.Root class="flex flex-col">
+		<Card.Header class="items-center">
+			<Card.Title>Users Status</Card.Title>
+		</Card.Header>
+		<Card.Content class="flex-1">
+			<Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[250px]">
+				<PieChart
+					data={chartData}
+					key="key"
+					value="value"
+					cRange={chartData.map((d) => d.color)}
+					c="color"
+					props={{
+						pie: {
+							motion: 'tween'
+						}
+					}}
+				>
+					{#snippet tooltip()}
+						<Chart.Tooltip />
+					{/snippet}
+				</PieChart>
+			</Chart.Container>
+		</Card.Content>
+		<Card.Footer class="flex-col gap-2 text-sm">
+			<div class="text-muted-foreground leading-none">Showing total Users spllitted by Status</div>
+		</Card.Footer>
+	</Card.Root>
 
 	<!-- Enhanced Data Table -->
 	<div class="space-y-4">
