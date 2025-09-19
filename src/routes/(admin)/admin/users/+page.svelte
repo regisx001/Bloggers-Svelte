@@ -437,22 +437,37 @@
 
 	// CHART RELATED
 	import { PieChart } from 'layerchart';
-	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 
-	const userStatusChart = [
-		{ key: 'Active', value: 144, color: 'var(--chart-1)' },
-		{
-			key: 'Non Active',
-			value: 33,
-			color: 'var(--chart-4)'
-		}
+	const userStatusChartData = [
+		{ key: 'active', value: data.usersAnalytics.activeUsers, color: 'var(--chart-1)' },
+		{ key: 'non-active', value: data.usersAnalytics.nonActiveUsers, color: 'var(--chart-2)' }
 	];
 
 	const userStatusChartConfig = {
-		value: { label: 'Users' },
-		key: { label: 'Status' }
+		value: { label: 'Value' },
+		active: { label: 'Active' },
+		'non-active': { label: 'Non Active' }
+	} satisfies Chart.ChartConfig;
+
+	import { scaleUtc } from 'd3-scale';
+	import { curveNatural } from 'd3-shape';
+	import { Area, AreaChart, LinearGradient } from 'layerchart';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+
+	const chartData = [
+		{ date: new Date('2024-01-01'), desktop: 186, mobile: 80 },
+		{ date: new Date('2024-02-01'), desktop: 305, mobile: 200 },
+		{ date: new Date('2024-03-01'), desktop: 237, mobile: 120 },
+		{ date: new Date('2024-04-01'), desktop: 73, mobile: 190 },
+		{ date: new Date('2024-05-01'), desktop: 209, mobile: 130 },
+		{ date: new Date('2024-06-01'), desktop: 214, mobile: 140 }
+	];
+
+	const chartConfig = {
+		desktop: { label: 'Desktop', color: 'var(--chart-1)' },
+		mobile: { label: 'Mobile', color: 'var(--chart-2)' }
 	} satisfies Chart.ChartConfig;
 </script>
 
@@ -483,10 +498,10 @@
 			<Card.Content class="flex-1">
 				<Chart.Container config={userStatusChartConfig} class="mx-auto aspect-square max-h-[250px]">
 					<PieChart
-						data={userStatusChart}
+						data={userStatusChartData}
 						key="key"
 						value="value"
-						cRange={userStatusChart.map((d) => d.color)}
+						cRange={userStatusChartData.map((d) => d.color)}
 						c="color"
 						props={{
 							pie: {
@@ -495,7 +510,7 @@
 						}}
 					>
 						{#snippet tooltip()}
-							<Chart.Tooltip />
+							<Chart.Tooltip hideLabel />
 						{/snippet}
 					</PieChart>
 				</Chart.Container>
@@ -506,63 +521,80 @@
 				</div>
 			</Card.Footer>
 		</Card.Root>
-		<Card.Root class="flex flex-col">
-			<Card.Header class="items-center">
-				<Card.Title>Users Status</Card.Title>
+		<Card.Root class="col-span-2 flex">
+			<Card.Header>
+				<Card.Title>Area Chart - Gradient</Card.Title>
+				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
 			</Card.Header>
-			<Card.Content class="flex-1">
-				<Chart.Container config={userStatusChartConfig} class="mx-auto aspect-square max-h-[250px]">
-					<PieChart
-						data={userStatusChart}
-						key="key"
-						value="value"
-						cRange={userStatusChart.map((d) => d.color)}
-						c="color"
-						props={{
-							pie: {
-								motion: 'tween'
+			<Card.Content>
+				<Chart.Container config={chartConfig} class="aspect-auto h-[250px] w-full">
+					<AreaChart
+						data={chartData}
+						x="date"
+						xScale={scaleUtc()}
+						yPadding={[0, 25]}
+						series={[
+							{
+								key: 'mobile',
+								label: 'Mobile',
+								color: 'var(--color-mobile)'
+							},
+							{
+								key: 'desktop',
+								label: 'Desktop',
+								color: 'var(--color-desktop)'
 							}
+						]}
+						seriesLayout="stack"
+						props={{
+							area: {
+								curve: curveNatural,
+								'fill-opacity': 0.4,
+								line: { class: 'stroke-1' },
+								motion: 'tween'
+							},
+							xAxis: {
+								format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short' }),
+								ticks: chartData.length
+							},
+							yAxis: { format: () => '' }
 						}}
 					>
 						{#snippet tooltip()}
-							<Chart.Tooltip />
+							<Chart.Tooltip
+								indicator="dot"
+								labelFormatter={(v: Date) => {
+									return v.toLocaleDateString('en-US', {
+										month: 'long'
+									});
+								}}
+							/>
 						{/snippet}
-					</PieChart>
+						{#snippet marks({ series, getAreaProps })}
+							{#each series as s, i (s.key)}
+								<LinearGradient
+									stops={[s.color ?? '', 'color-mix(in lch, ' + s.color + ' 10%, transparent)']}
+									vertical
+								>
+									{#snippet children({ gradient })}
+										<Area {...getAreaProps(s, i)} fill={gradient} />
+									{/snippet}
+								</LinearGradient>
+							{/each}
+						{/snippet}
+					</AreaChart>
 				</Chart.Container>
 			</Card.Content>
-			<Card.Footer class="flex-col gap-2 text-sm">
-				<div class="text-muted-foreground leading-none">
-					Showing total Users spllitted by Status
-				</div>
-			</Card.Footer>
-		</Card.Root>
-		<Card.Root class="flex flex-col">
-			<Card.Header class="items-center">
-				<Card.Title>Users Status</Card.Title>
-			</Card.Header>
-			<Card.Content class="flex-1">
-				<Chart.Container config={userStatusChartConfig} class="mx-auto aspect-square max-h-[250px]">
-					<PieChart
-						data={userStatusChart}
-						key="key"
-						value="value"
-						cRange={userStatusChart.map((d) => d.color)}
-						c="color"
-						props={{
-							pie: {
-								motion: 'tween'
-							}
-						}}
-					>
-						{#snippet tooltip()}
-							<Chart.Tooltip />
-						{/snippet}
-					</PieChart>
-				</Chart.Container>
-			</Card.Content>
-			<Card.Footer class="flex-col gap-2 text-sm">
-				<div class="text-muted-foreground leading-none">
-					Showing total Users spllitted by Status
+			<Card.Footer>
+				<div class="flex w-full items-start gap-2 text-sm">
+					<div class="grid gap-2">
+						<div class="flex items-center gap-2 leading-none font-medium">
+							Trending up by 5.2% this month <TrendingUpIcon class="size-4" />
+						</div>
+						<div class="text-muted-foreground flex items-center gap-2 leading-none">
+							January - June 2024
+						</div>
+					</div>
 				</div>
 			</Card.Footer>
 		</Card.Root>
