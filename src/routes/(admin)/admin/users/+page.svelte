@@ -490,8 +490,8 @@
 </svelte:head>
 
 <div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
-	<Card.Root class="grid grid-cols-3 border-0 bg-transparent">
-		<Card.Root class="flex flex-col">
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent">
+		<Card.Root class=" flex flex-col ">
 			<Card.Header class="items-center">
 				<Card.Title>Users Status</Card.Title>
 			</Card.Header>
@@ -523,8 +523,8 @@
 		</Card.Root>
 		<Card.Root class="col-span-2 flex">
 			<Card.Header>
-				<Card.Title>Area Chart - Gradient</Card.Title>
-				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
+				<Card.Title>Users commitment</Card.Title>
+				<Card.Description>Showing users commitment in the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				<Chart.Container config={chartConfig} class="aspect-auto h-[250px] w-full">
@@ -589,7 +589,7 @@
 				<div class="flex w-full items-start gap-2 text-sm">
 					<div class="grid gap-2">
 						<div class="flex items-center gap-2 leading-none font-medium">
-							Trending up by 5.2% this month <TrendingUpIcon class="size-4" />
+							Users commitment up by 5.2% this month <TrendingUpIcon class="size-4" />
 						</div>
 						<div class="text-muted-foreground flex items-center gap-2 leading-none">
 							January - June 2024
