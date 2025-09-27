@@ -399,6 +399,53 @@
 			triggerRef.focus();
 		});
 	}
+
+	import { LineChart } from 'layerchart';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import { curveLinearClosed } from 'd3-shape';
+	import { scaleBand } from 'd3-scale';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+
+	const chartData01 = [
+		{ month: 'January', desktop: 186 },
+		{ month: 'February', desktop: 305 },
+		{ month: 'March', desktop: 237 },
+		{ month: 'April', desktop: 273 },
+		{ month: 'May', desktop: 209 },
+		{ month: 'June', desktop: 214 }
+	];
+
+	const chartConfig01 = {
+		desktop: { label: 'Desktop', color: 'var(--chart-1)' }
+	} satisfies Chart.ChartConfig;
+
+	import { scaleUtc } from 'd3-scale';
+	import { curveNatural } from 'd3-shape';
+	import { Area, AreaChart, LinearGradient } from 'layerchart';
+
+	const chartData02 = [
+		{ date: new Date('2024-01-01'), desktop: 186, mobile: 80 },
+		{ date: new Date('2024-02-01'), desktop: 305, mobile: 200 },
+		{ date: new Date('2024-03-01'), desktop: 237, mobile: 120 },
+		{ date: new Date('2024-04-01'), desktop: 73, mobile: 190 },
+		{ date: new Date('2024-05-01'), desktop: 209, mobile: 130 },
+		{ date: new Date('2024-06-01'), desktop: 214, mobile: 140 }
+	];
+
+	const chartConfig02 = {
+		desktop: { label: 'Desktop', color: 'var(--chart-1)' },
+		mobile: { label: 'Mobile', color: 'var(--chart-2)' }
+	} satisfies Chart.ChartConfig;
+
+	import { ArcChart, Text } from 'layerchart';
+
+	const chartData03 = [{ browser: 'safari', visitors: 1260, color: 'var(--color-safari)' }];
+
+	const chartConfig03 = {
+		visitors: { label: 'Visitors' },
+		safari: { label: 'Safari', color: 'var(--chart-2)' }
+	} satisfies Chart.ChartConfig;
 </script>
 
 <!-- <pre>
@@ -513,7 +560,210 @@
 	</AlertDialog.Root>
 {/snippet}
 
-<section class="p-6">
+<section class="flex-1 space-y-4 p-4 pt-6 md:p-8">
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent pb-0">
+		<Card.Root>
+			<Card.Header class="items-center">
+				<Card.Title>Radar Chart</Card.Title>
+				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
+			</Card.Header>
+			<Card.Content class="flex-1">
+				<Chart.Container config={chartConfig01} class="mx-auto aspect-square max-h-[220px]">
+					<LineChart
+						data={chartData01}
+						series={[
+							{
+								key: 'desktop',
+								label: 'Desktop',
+								color: chartConfig01.desktop.color
+							}
+						]}
+						radial
+						x="month"
+						xScale={scaleBand()}
+						padding={12}
+						props={{
+							spline: {
+								curve: curveLinearClosed,
+								fill: 'var(--color-desktop)',
+								fillOpacity: 0.6,
+								stroke: '0',
+								motion: 'tween'
+							},
+							xAxis: {
+								tickLength: 0
+							},
+							yAxis: {
+								format: () => ''
+							},
+							grid: {
+								radialY: 'linear'
+							},
+							tooltip: {
+								context: {
+									mode: 'voronoi'
+								}
+							},
+							highlight: {
+								lines: false
+							}
+						}}
+					>
+						{#snippet tooltip()}
+							<Chart.Tooltip />
+						{/snippet}
+					</LineChart>
+				</Chart.Container>
+			</Card.Content>
+			<Card.Footer class="flex-col gap-2 text-sm">
+				<div class="flex items-center gap-2 leading-none font-medium">
+					Trending up by 5.2% this month <TrendingUpIcon class="size-4" />
+				</div>
+				<div class="text-muted-foreground flex items-center gap-2 leading-none">
+					January - June 2024
+				</div>
+			</Card.Footer>
+		</Card.Root>
+		<Card.Root class="col-span-2 flex">
+			<Card.Header>
+				<Card.Title>Article Engagement</Card.Title>
+				<Card.Description>Showing users commitment in the last 6 months</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<Chart.Container config={chartConfig02} class="aspect-auto h-[220px] w-full">
+					<AreaChart
+						data={chartData02}
+						x="date"
+						xScale={scaleUtc()}
+						yPadding={[0, 25]}
+						series={[
+							{
+								key: 'mobile',
+								label: 'Mobile',
+								color: 'var(--color-mobile)'
+							},
+							{
+								key: 'desktop',
+								label: 'Desktop',
+								color: 'var(--color-desktop)'
+							}
+						]}
+						seriesLayout="stack"
+						props={{
+							area: {
+								curve: curveNatural,
+								'fill-opacity': 0.4,
+								line: { class: 'stroke-1' },
+								motion: 'tween'
+							},
+							xAxis: {
+								format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short' }),
+								ticks: chartData01.length
+							},
+							yAxis: { format: () => '' }
+						}}
+					>
+						{#snippet tooltip()}
+							<Chart.Tooltip
+								indicator="dot"
+								labelFormatter={(v: Date) => {
+									return v.toLocaleDateString('en-US', {
+										month: 'long'
+									});
+								}}
+							/>
+						{/snippet}
+						{#snippet marks({ series, getAreaProps })}
+							{#each series as s, i (s.key)}
+								<LinearGradient
+									stops={[s.color ?? '', 'color-mix(in lch, ' + s.color + ' 10%, transparent)']}
+									vertical
+								>
+									{#snippet children({ gradient })}
+										<Area {...getAreaProps(s, i)} fill={gradient} />
+									{/snippet}
+								</LinearGradient>
+							{/each}
+						{/snippet}
+					</AreaChart>
+				</Chart.Container>
+			</Card.Content>
+			<Card.Footer>
+				<div class="flex w-full items-start gap-2 text-sm">
+					<div class="grid gap-2">
+						<div class="flex items-center gap-2 leading-none font-medium">
+							Users commitment up by 5.2% this month <TrendingUpIcon class="size-4" />
+						</div>
+						<div class="text-muted-foreground flex items-center gap-2 leading-none">
+							January - June 2024
+						</div>
+					</div>
+				</div>
+			</Card.Footer>
+		</Card.Root>
+	</Card.Root>
+
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent">
+		<Card.Root class="col-span-1 flex">
+			<Card.Header class="items-center">
+				<Card.Title>Radial Chart - Shape</Card.Title>
+				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
+			</Card.Header>
+			<Card.Content class="flex-1">
+				<Chart.Container config={chartConfig03} class="mx-auto aspect-square max-h-[120px]">
+					<ArcChart
+						label="browser"
+						value="visitors"
+						outerRadius={88}
+						innerRadius={66}
+						trackOuterRadius={83}
+						trackInnerRadius={72}
+						padding={40}
+						range={[90, -270]}
+						maxValue={chartData03[0].visitors * 4}
+						series={chartData03.map((d) => ({
+							key: d.browser,
+							color: d.color,
+							data: [d]
+						}))}
+						props={{
+							arc: { track: { fill: 'var(--muted)' }, motion: 'tween' },
+							tooltip: { context: { hideDelay: 350 } }
+						}}
+						tooltip={false}
+					>
+						{#snippet belowMarks()}
+							<circle cx="0" cy="0" r="80" class="fill-background" />
+						{/snippet}
+						{#snippet aboveMarks()}
+							<Text
+								value={String(chartData03[0].visitors)}
+								textAnchor="middle"
+								verticalAnchor="middle"
+								class="fill-foreground text-4xl! font-bold"
+								dy={3}
+							/>
+							<Text
+								value="Visitors"
+								textAnchor="middle"
+								verticalAnchor="middle"
+								class="fill-muted-foreground!"
+								dy={22}
+							/>
+						{/snippet}
+					</ArcChart>
+				</Chart.Container>
+			</Card.Content>
+			<Card.Footer class="flex-col gap-2 text-sm">
+				<div class="flex items-center gap-2 leading-none font-medium">
+					Trending up by 5.2% this month <TrendingUpIcon class="size-4" />
+				</div>
+				<div class="text-muted-foreground flex items-center gap-2 leading-none">
+					January - June 2024
+				</div>
+			</Card.Footer>
+		</Card.Root>
+	</Card.Root>
 	<ServerDataTable
 		title="Articles Management"
 		description="Manage your blog articles, approve submissions, and track publishing status"

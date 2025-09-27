@@ -489,14 +489,67 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<div class="flex-1 space-y-4 p-4 pt-6 md:p-8">
+<section class="flex-1 space-y-4 p-4 pt-6 md:p-8">
+	<!-- Stats Cards -->
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
+			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+				<h3 class="text-sm font-medium tracking-tight">Total Users</h3>
+				<Users class="text-muted-foreground h-4 w-4" />
+			</div>
+			<div class="p-6 pt-0">
+				<div class="text-2xl font-bold">{data.users?.totalElements || 0}</div>
+				<p class="text-muted-foreground text-xs">Registered accounts</p>
+			</div>
+		</div>
+
+		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
+			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+				<h3 class="text-sm font-medium tracking-tight">Active Users</h3>
+				<UserCheck class="h-4 w-4 text-green-600" />
+			</div>
+			<div class="p-6 pt-0">
+				<div class="text-2xl font-bold text-green-600">
+					{data.users?.content?.filter((user) => user.enabled).length || 0}
+				</div>
+				<p class="text-muted-foreground text-xs">Currently active</p>
+			</div>
+		</div>
+
+		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
+			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+				<h3 class="text-sm font-medium tracking-tight">Administrators</h3>
+				<Crown class="h-4 w-4 text-red-600" />
+			</div>
+			<div class="p-6 pt-0">
+				<div class="text-2xl font-bold text-red-600">
+					{data.users?.content?.filter((user) => user.roles?.includes('ROLE_ADMIN')).length || 0}
+				</div>
+				<p class="text-muted-foreground text-xs">Admin accounts</p>
+			</div>
+		</div>
+
+		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
+			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
+				<h3 class="text-sm font-medium tracking-tight">Disabled Users</h3>
+				<UserX class="h-4 w-4 text-red-600" />
+			</div>
+			<div class="p-6 pt-0">
+				<div class="text-2xl font-bold text-red-600">
+					{data.users?.content?.filter((user) => !user.enabled).length || 0}
+				</div>
+				<p class="text-muted-foreground text-xs">Inactive accounts</p>
+			</div>
+		</div>
+	</div>
+	<!-- Analytics Cards -->
 	<Card.Root class="grid grid-cols-3  border-0 bg-transparent">
 		<Card.Root class=" flex flex-col ">
 			<Card.Header class="items-center">
 				<Card.Title>Users Status</Card.Title>
 			</Card.Header>
 			<Card.Content class="flex-1">
-				<Chart.Container config={userStatusChartConfig} class="mx-auto aspect-square max-h-[250px]">
+				<Chart.Container config={userStatusChartConfig} class="mx-auto aspect-square max-h-[220px]">
 					<PieChart
 						data={userStatusChartData}
 						key="key"
@@ -527,7 +580,7 @@
 				<Card.Description>Showing users commitment in the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={chartConfig} class="aspect-auto h-[250px] w-full">
+				<Chart.Container config={chartConfig} class="aspect-auto h-[220px] w-full">
 					<AreaChart
 						data={chartData}
 						x="date"
@@ -600,59 +653,6 @@
 		</Card.Root>
 	</Card.Root>
 
-	<!-- Stats Cards -->
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
-			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
-				<h3 class="text-sm font-medium tracking-tight">Total Users</h3>
-				<Users class="text-muted-foreground h-4 w-4" />
-			</div>
-			<div class="p-6 pt-0">
-				<div class="text-2xl font-bold">{data.users?.totalElements || 0}</div>
-				<p class="text-muted-foreground text-xs">Registered accounts</p>
-			</div>
-		</div>
-
-		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
-			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
-				<h3 class="text-sm font-medium tracking-tight">Active Users</h3>
-				<UserCheck class="h-4 w-4 text-green-600" />
-			</div>
-			<div class="p-6 pt-0">
-				<div class="text-2xl font-bold text-green-600">
-					{data.users?.content?.filter((user) => user.enabled).length || 0}
-				</div>
-				<p class="text-muted-foreground text-xs">Currently active</p>
-			</div>
-		</div>
-
-		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
-			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
-				<h3 class="text-sm font-medium tracking-tight">Administrators</h3>
-				<Crown class="h-4 w-4 text-red-600" />
-			</div>
-			<div class="p-6 pt-0">
-				<div class="text-2xl font-bold text-red-600">
-					{data.users?.content?.filter((user) => user.roles?.includes('ROLE_ADMIN')).length || 0}
-				</div>
-				<p class="text-muted-foreground text-xs">Admin accounts</p>
-			</div>
-		</div>
-
-		<div class="bg-card text-card-foreground rounded-lg border shadow-sm">
-			<div class="flex flex-row items-center justify-between space-y-0 p-6 pb-2">
-				<h3 class="text-sm font-medium tracking-tight">Disabled Users</h3>
-				<UserX class="h-4 w-4 text-red-600" />
-			</div>
-			<div class="p-6 pt-0">
-				<div class="text-2xl font-bold text-red-600">
-					{data.users?.content?.filter((user) => !user.enabled).length || 0}
-				</div>
-				<p class="text-muted-foreground text-xs">Inactive accounts</p>
-			</div>
-		</div>
-	</div>
-
 	<!-- Enhanced Data Table -->
 	<div class="space-y-4">
 		<ServerDataTable
@@ -684,7 +684,7 @@
 			{/snippet}
 		</ServerDataTable>
 	</div>
-</div>
+</section>
 
 <!-- Create User Dialog -->
 <AlertDialog.Root bind:open={isCreateDialogOpen}>
