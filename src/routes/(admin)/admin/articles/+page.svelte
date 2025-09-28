@@ -574,14 +574,14 @@
 {/snippet}
 
 <section class="flex-1 space-y-4 p-4 pt-6 md:p-8">
-	<Card.Root class="grid grid-cols-3  border-0 bg-transparent pb-0">
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent p-0 shadow-none">
 		<Card.Root>
 			<Card.Header class="items-center">
 				<Card.Title>Radar Chart</Card.Title>
 				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex-1">
-				<Chart.Container config={chartConfig01} class="mx-auto aspect-square max-h-[220px]">
+				<Chart.Container config={chartConfig01} class="mx-auto aspect-square max-h-[200px]">
 					<LineChart
 						data={chartData01}
 						series={[
@@ -643,7 +643,7 @@
 				<Card.Description>Showing users commitment in the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={chartConfig02} class="aspect-auto h-[220px] w-full">
+				<Chart.Container config={chartConfig02} class="aspect-auto h-[200px] w-full">
 					<AreaChart
 						data={chartData02}
 						x="date"
@@ -716,14 +716,14 @@
 		</Card.Root>
 	</Card.Root>
 
-	<Card.Root class="grid grid-cols-3  border-0 bg-transparent">
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent p-0 shadow-none">
 		<Card.Root class="col-span-2 flex">
 			<Card.Header>
 				<Card.Title>Line Chart - Label</Card.Title>
 				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<Chart.Container config={chartConfig04} class="aspect-auto h-[220px] w-full">
+				<Chart.Container config={chartConfig04} class="aspect-auto h-[200px] w-full">
 					<LineChart
 						points={{ r: 4 }}
 						labels={{ offset: 12 }}
@@ -785,7 +785,7 @@
 				<Card.Description>Showing total visitors for the last 6 months</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex-1">
-				<Chart.Container config={chartConfig03} class="mx-auto aspect-square max-h-[120px]">
+				<Chart.Container config={chartConfig03} class="mx-auto aspect-square max-h-[200px]">
 					<ArcChart
 						label="browser"
 						value="visitors"

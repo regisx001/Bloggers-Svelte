@@ -543,7 +543,7 @@
 		</div>
 	</div>
 	<!-- Analytics Cards -->
-	<Card.Root class="grid grid-cols-3  border-0 bg-transparent">
+	<Card.Root class="grid grid-cols-3  border-0 bg-transparent p-0 shadow-none">
 		<Card.Root class=" flex flex-col ">
 			<Card.Header class="items-center">
 				<Card.Title>Users Status</Card.Title>
