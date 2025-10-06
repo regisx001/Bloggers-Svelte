@@ -1,12 +1,6 @@
 <script lang="ts">
 	import { ChartContainer, ChartTooltip } from '$lib/components/ui/chart/index.js';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card/index.js';
+	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
@@ -25,6 +19,29 @@
 		ArrowUpRight,
 		ArrowDownRight
 	} from '@lucide/svelte';
+
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import { curveLinearClosed } from 'd3-shape';
+	import { scaleBand } from 'd3-scale';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import { scaleUtc } from 'd3-scale';
+	import { curveNatural } from 'd3-shape';
+	import { Area, AreaChart, LinearGradient } from 'layerchart';
+	import { Root } from '$lib/components/ui/separator';
+
+	const usersEngagementsStats = [
+		{ date: new Date('2024-01-01'), desktop: 186, mobile: 80 },
+		{ date: new Date('2024-02-01'), desktop: 305, mobile: 200 },
+		{ date: new Date('2024-03-01'), desktop: 237, mobile: 120 },
+		{ date: new Date('2024-04-01'), desktop: 73, mobile: 190 },
+		{ date: new Date('2024-05-01'), desktop: 209, mobile: 130 },
+		{ date: new Date('2024-06-01'), desktop: 214, mobile: 140 }
+	];
+
+	const usersEngagementsStatsConfig = {
+		desktop: { label: 'Desktop', color: 'var(--chart-1)' },
+		mobile: { label: 'Mobile', color: 'var(--chart-2)' }
+	} satisfies Chart.ChartConfig;
 
 	// Sample data for analytics
 	const stats = [
@@ -70,148 +87,12 @@
 		{ month: 'May', articles: 55, views: 10100, engagement: 4900 },
 		{ month: 'Jun', articles: 67, views: 12800, engagement: 6400 }
 	];
-
-	// Chart configurations
-	const trendsChartConfig = {
-		articles: {
-			label: 'Articles',
-			color: 'hsl(var(--chart-1))'
-		},
-		views: {
-			label: 'Views',
-			color: 'hsl(var(--chart-2))'
-		},
-		engagement: {
-			label: 'Engagement',
-			color: 'hsl(var(--chart-3))'
-		}
-	};
-
-	// User growth data for the past 12 months
-	const userGrowthData = [
-		{ month: 'Jul 2024', users: 1250, newUsers: 125 },
-		{ month: 'Aug 2024', users: 1380, newUsers: 130 },
-		{ month: 'Sep 2024', users: 1520, newUsers: 140 },
-		{ month: 'Oct 2024', users: 1685, newUsers: 165 },
-		{ month: 'Nov 2024', users: 1842, newUsers: 157 },
-		{ month: 'Dec 2024', users: 2018, newUsers: 176 },
-		{ month: 'Jan 2025', users: 2205, newUsers: 187 },
-		{ month: 'Feb 2025', users: 2396, newUsers: 191 },
-		{ month: 'Mar 2025', users: 2583, newUsers: 187 },
-		{ month: 'Apr 2025', users: 2754, newUsers: 171 },
-		{ month: 'May 2025', users: 2847, newUsers: 93 },
-		{ month: 'Jun 2025', users: 2847, newUsers: 0 }
-	];
-
-	const userGrowthConfig = {
-		users: {
-			label: 'Total Users',
-			color: 'hsl(var(--chart-1))'
-		},
-		newUsers: {
-			label: 'New Users',
-			color: 'hsl(var(--chart-2))'
-		}
-	};
-
-	// Page views by device type
-	const deviceData = [
-		{ device: 'Desktop', percentage: 45, visitors: 12450 },
-		{ device: 'Mobile', percentage: 38, visitors: 10534 },
-		{ device: 'Tablet', percentage: 17, visitors: 4708 }
-	];
-
-	const deviceConfig = {
-		visitors: {
-			label: 'Visitors',
-			color: 'hsl(var(--chart-1))'
-		}
-	};
-
-	// Article performance over time
-	const articlePerformanceData = [
-		{ week: 'Week 1', published: 12, drafts: 8, reviews: 15 },
-		{ week: 'Week 2', published: 15, drafts: 12, reviews: 18 },
-		{ week: 'Week 3', published: 18, drafts: 10, reviews: 22 },
-		{ week: 'Week 4', published: 14, drafts: 15, reviews: 19 },
-		{ week: 'Week 5', published: 20, drafts: 9, reviews: 25 },
-		{ week: 'Week 6', published: 16, drafts: 11, reviews: 21 },
-		{ week: 'Week 7', published: 22, drafts: 7, reviews: 28 },
-		{ week: 'Week 8', published: 19, drafts: 13, reviews: 24 }
-	];
-
-	const articlePerformanceConfig = {
-		published: {
-			label: 'Published',
-			color: 'hsl(var(--chart-1))'
-		},
-		drafts: {
-			label: 'Drafts',
-			color: 'hsl(var(--chart-2))'
-		},
-		reviews: {
-			label: 'Under Review',
-			color: 'hsl(var(--chart-3))'
-		}
-	};
-
 	const categoryData = [
 		{ category: 'Technology', articles: 245, percentage: 34 },
 		{ category: 'Lifestyle', articles: 186, percentage: 26 },
 		{ category: 'Business', articles: 142, percentage: 20 },
 		{ category: 'Health', articles: 98, percentage: 14 },
 		{ category: 'Travel', articles: 43, percentage: 6 }
-	];
-
-	const recentActivity = [
-		{
-			id: 1,
-			type: 'article',
-			title: 'New article published: "Advanced Svelte Patterns"',
-			user: 'Sarah Johnson',
-			time: '2 minutes ago',
-			status: 'success'
-		},
-		{
-			id: 2,
-			type: 'user',
-			title: 'New user registration: john.doe@example.com',
-			user: 'System',
-			time: '15 minutes ago',
-			status: 'info'
-		},
-		{
-			id: 3,
-			type: 'comment',
-			title: 'High engagement on "React vs Svelte Comparison"',
-			user: 'Analytics Bot',
-			time: '1 hour ago',
-			status: 'success'
-		},
-		{
-			id: 4,
-			type: 'warning',
-			title: 'Server response time spike detected',
-			user: 'Monitoring',
-			time: '2 hours ago',
-			status: 'warning'
-		},
-		{
-			id: 5,
-			type: 'article',
-			title: 'Article draft saved: "Machine Learning Basics"',
-			user: 'Mike Chen',
-			time: '3 hours ago',
-			status: 'info'
-		}
-	];
-
-	const topAuthors = [
-		{ name: 'Sarah Johnson', articles: 42, views: 15600, avatar: 'SJ' },
-		{ name: 'Mike Chen', articles: 38, views: 14200, avatar: 'MC' },
-		{ name: 'Emily Davis', articles: 35, views: 13800, avatar: 'ED' },
-		{ name: 'Alex Rodriguez', articles: 29, views: 11400, avatar: 'AR' },
-		{ name: 'Jennifer Kim', articles: 26, views: 9800, avatar: 'JK' }
 	];
 </script>
 
@@ -231,250 +112,323 @@
 		content="Comprehensive admin dashboard with analytics and insights"
 	/>
 </svelte:head>
-
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Admin Overview</h1>
-			<p class="text-muted-foreground">
-				Comprehensive analytics and insights for your blog platform
-			</p>
+<section class="flex-1 space-y-4 p-4 pt-6 md:p-8">
+	<div class="flex flex-1 flex-col gap-4 pt-0">
+		<!-- Header -->
+		<div class="flex items-center justify-between pb-6">
+			<div>
+				<h1 class="text-3xl font-bold tracking-tight">Admin Overview</h1>
+				<p class="text-muted-foreground">
+					Comprehensive analytics and insights for your blog platform
+				</p>
+			</div>
+			<div class="flex items-center gap-2">
+				<Button variant="outline" size="sm">
+					<Calendar class="mr-2 h-4 w-4" />
+					Last 30 days
+				</Button>
+				<Button variant="outline" size="sm">
+					<Download class="mr-2 h-4 w-4" />
+					Export
+				</Button>
+				<Button size="sm">
+					<RefreshCw class="mr-2 h-4 w-4" />
+					Refresh
+				</Button>
+			</div>
 		</div>
-		<div class="flex items-center gap-2">
-			<Button variant="outline" size="sm">
-				<Calendar class="mr-2 h-4 w-4" />
-				Last 30 days
-			</Button>
-			<Button variant="outline" size="sm">
-				<Download class="mr-2 h-4 w-4" />
-				Export
-			</Button>
-			<Button size="sm">
-				<RefreshCw class="mr-2 h-4 w-4" />
-				Refresh
-			</Button>
-		</div>
-	</div>
 
-	<!-- Statistics Cards -->
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-		{#each stats as stat}
-			<Card>
-				<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle class="text-sm font-medium">{stat.title}</CardTitle>
-					<stat.icon class="text-muted-foreground h-4 w-4" />
-				</CardHeader>
-				<CardContent>
-					<div class="text-2xl font-bold">{stat.value}</div>
-					<div class="text-muted-foreground flex items-center space-x-2 text-xs">
-						<span class="flex items-center">
-							{#if stat.trend === 'up'}
-								<ArrowUpRight class="mr-1 h-3 w-3 text-green-500" />
-								<span class="text-green-500">{stat.change}</span>
-							{:else}
-								<ArrowDownRight class="mr-1 h-3 w-3 text-red-500" />
-								<span class="text-red-500">{stat.change}</span>
-							{/if}
-						</span>
-						<span>from last month</span>
-					</div>
-					<p class="text-muted-foreground mt-1 text-xs">{stat.description}</p>
-				</CardContent>
-			</Card>
-		{/each}
-	</div>
-
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-		<!-- Monthly Trends Chart -->
-		<Card class="col-span-4">
-			<CardHeader>
-				<CardTitle class="flex items-center gap-2">
-					<LineChart class="h-5 w-5" />
-					Content & Engagement Trends
-				</CardTitle>
-				<CardDescription>
-					Monthly overview of articles published, page views, and user engagement
-				</CardDescription>
-			</CardHeader>
-			<CardContent class="pl-2">
-				<div class="space-y-4">
-					<!-- Chart placeholder with data summary -->
-					<div
-						class="flex h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-gray-200"
-					>
-						<div class="text-center">
-							<BarChart3 class="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-							<p class="text-muted-foreground mb-2 text-sm">Interactive Chart Display</p>
-							<p class="text-muted-foreground text-xs">Analytics visualization would appear here</p>
+		<!-- Statistics Cards -->
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			{#each stats as stat}
+				<Card.Root>
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+						<Card.Title class="text-sm font-medium">{stat.title}</Card.Title>
+						<stat.icon class="text-muted-foreground h-4 w-4" />
+					</Card.Header>
+					<Card.Content>
+						<div class="text-2xl font-bold">{stat.value}</div>
+						<div class="text-muted-foreground flex items-center space-x-2 text-xs">
+							<span class="flex items-center">
+								{#if stat.trend === 'up'}
+									<ArrowUpRight class="mr-1 h-3 w-3 text-green-500" />
+									<span class="text-green-500">{stat.change}</span>
+								{:else}
+									<ArrowDownRight class="mr-1 h-3 w-3 text-red-500" />
+									<span class="text-red-500">{stat.change}</span>
+								{/if}
+							</span>
+							<span>from last month</span>
 						</div>
-					</div>
+						<p class="text-muted-foreground mt-1 text-xs">{stat.description}</p>
+					</Card.Content>
+				</Card.Root>
+			{/each}
+		</div>
 
-					<!-- Data table for monthly trends -->
-					<div class="overflow-x-auto">
-						<table class="w-full text-sm">
-							<thead>
-								<tr class="border-b">
-									<th class="py-2 text-left">Month</th>
-									<th class="py-2 text-right">Articles</th>
-									<th class="py-2 text-right">Views</th>
-									<th class="py-2 text-right">Engagement</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each monthlyData as data}
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+			<!-- Monthly Trends Chart -->
+			<Card.Root class="col-span-4">
+				<Card.Header>
+					<Card.Title class="flex items-center gap-2">
+						<LineChart class="h-5 w-5" />
+						Content & Engagement Trends
+					</Card.Title>
+					<Card.Description>
+						Monthly overview of articles published, page views, and user engagement
+					</Card.Description>
+				</Card.Header>
+				<Card.Content class="pl-2">
+					<div class="space-y-4">
+						<!-- Chart placeholder with data summary -->
+
+						<Card.Content>
+							<Chart.Container
+								config={usersEngagementsStatsConfig}
+								class="aspect-auto h-[200px] w-full"
+							>
+								<AreaChart
+									data={usersEngagementsStats}
+									x="date"
+									xScale={scaleUtc()}
+									yPadding={[0, 25]}
+									series={[
+										{
+											key: 'mobile',
+											label: 'Mobile',
+											color: 'var(--color-mobile)'
+										},
+										{
+											key: 'desktop',
+											label: 'Desktop',
+											color: 'var(--color-desktop)'
+										}
+									]}
+									seriesLayout="stack"
+									props={{
+										area: {
+											curve: curveNatural,
+											'fill-opacity': 0.4,
+											line: { class: 'stroke-1' },
+											motion: 'tween'
+										},
+										xAxis: {
+											format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short' }),
+											ticks: usersEngagementsStats.length
+										},
+										yAxis: { format: () => '' }
+									}}
+								>
+									{#snippet tooltip()}
+										<Chart.Tooltip
+											indicator="dot"
+											labelFormatter={(v: Date) => {
+												return v.toLocaleDateString('en-US', {
+													month: 'long'
+												});
+											}}
+										/>
+									{/snippet}
+									{#snippet marks({ series, getAreaProps })}
+										{#each series as s, i (s.key)}
+											<LinearGradient
+												stops={[
+													s.color ?? '',
+													'color-mix(in lch, ' + s.color + ' 10%, transparent)'
+												]}
+												vertical
+											>
+												{#snippet children({ gradient })}
+													<Area {...getAreaProps(s, i)} fill={gradient} />
+												{/snippet}
+											</LinearGradient>
+										{/each}
+									{/snippet}
+								</AreaChart>
+							</Chart.Container>
+						</Card.Content>
+						<Card.Footer>
+							<div class="flex w-full items-start gap-2 text-sm">
+								<div class="grid gap-2">
+									<div class="flex items-center gap-2 leading-none font-medium">
+										Users commitment up by 5.2% this month <TrendingUpIcon class="size-4" />
+									</div>
+									<div class="text-muted-foreground flex items-center gap-2 leading-none">
+										January - June 2024
+									</div>
+								</div>
+							</div>
+						</Card.Footer>
+
+						<!-- Data table for monthly trends -->
+						<div class="overflow-x-auto p-4">
+							<table class="w-full text-sm">
+								<thead>
 									<tr class="border-b">
-										<td class="py-2 font-medium">{data.month}</td>
-										<td class="py-2 text-right">
-											<Badge variant="outline">{data.articles}</Badge>
-										</td>
-										<td class="text-muted-foreground py-2 text-right">
-											{data.views.toLocaleString()}
-										</td>
-										<td class="text-muted-foreground py-2 text-right">
-											{data.engagement.toLocaleString()}
-										</td>
+										<th class="py-2 text-left">Month</th>
+										<th class="py-2 text-right">Articles</th>
+										<th class="py-2 text-right">Views</th>
+										<th class="py-2 text-right">Engagement</th>
 									</tr>
-								{/each}
-							</tbody>
-						</table>
+								</thead>
+								<tbody>
+									{#each monthlyData as data}
+										<tr class="border-b">
+											<td class="py-2 font-medium">{data.month}</td>
+											<td class="py-2 text-right">
+												<Badge variant="outline">{data.articles}</Badge>
+											</td>
+											<td class="text-muted-foreground py-2 text-right">
+												{data.views.toLocaleString()}
+											</td>
+											<td class="text-muted-foreground py-2 text-right">
+												{data.engagement.toLocaleString()}
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
 					</div>
-				</div>
-			</CardContent>
-		</Card>
-	</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
 
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-		<!-- Category Distribution -->
-		<Card class="col-span-3">
-			<CardHeader>
-				<CardTitle class="flex items-center gap-2">
-					<PieChart class="h-5 w-5" />
-					Content Categories
-				</CardTitle>
-				<CardDescription>Distribution of articles by category</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div class="space-y-3">
-					{#each categoryData as category}
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+			<!-- Category Distribution -->
+			<Card.Root class="col-span-3">
+				<Card.Header>
+					<Card.Title class="flex items-center gap-2">
+						<PieChart class="h-5 w-5" />
+						Content Categories
+					</Card.Title>
+					<Card.Description>Distribution of articles by category</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<div class="space-y-3">
+						{#each categoryData as category}
+							<div class="flex items-center justify-between">
+								<div class="flex items-center space-x-3">
+									<div class="h-2 w-2 rounded-full bg-blue-500"></div>
+									<span class="text-sm font-medium">{category.category}</span>
+								</div>
+								<div class="flex items-center space-x-2">
+									<span class="text-muted-foreground text-sm">{category.articles}</span>
+									<Badge variant="secondary" class="text-xs">
+										{category.percentage}%
+									</Badge>
+								</div>
+							</div>
+							<div class="bg-secondary h-1 w-full rounded-full">
+								<div
+									class="h-1 rounded-full bg-blue-500"
+									style="width: {category.percentage}%"
+								></div>
+							</div>
+						{/each}
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
+
+		<!-- Performance Metrics -->
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title class="text-lg">System Performance</Card.Title>
+					<Card.Description>Server and database metrics</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<div class="space-y-4">
 						<div class="flex items-center justify-between">
-							<div class="flex items-center space-x-3">
-								<div class="h-2 w-2 rounded-full bg-blue-500"></div>
-								<span class="text-sm font-medium">{category.category}</span>
+							<span class="text-muted-foreground text-sm">Response Time</span>
+							<span class="text-sm font-medium">127ms</span>
+						</div>
+						<div class="bg-secondary h-2 w-full rounded-full">
+							<div class="h-2 rounded-full bg-green-500" style="width: 85%"></div>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Database Load</span>
+							<span class="text-sm font-medium">34%</span>
+						</div>
+						<div class="bg-secondary h-2 w-full rounded-full">
+							<div class="h-2 rounded-full bg-blue-500" style="width: 34%"></div>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Memory Usage</span>
+							<span class="text-sm font-medium">67%</span>
+						</div>
+						<div class="bg-secondary h-2 w-full rounded-full">
+							<div class="h-2 rounded-full bg-yellow-500" style="width: 67%"></div>
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root>
+				<Card.Header>
+					<Card.Title class="text-lg">Content Statistics</Card.Title>
+					<Card.Description>Latest content metrics</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<div class="space-y-4">
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Articles Today</span>
+							<Badge variant="outline">12</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Pending Reviews</span>
+							<Badge variant="secondary">8</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Draft Articles</span>
+							<Badge variant="outline">24</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Comments Today</span>
+							<Badge variant="outline">89</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">New Categories</span>
+							<Badge variant="outline">3</Badge>
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root>
+				<Card.Header>
+					<Card.Title class="text-lg">User Activity</Card.Title>
+					<Card.Description>Recent user engagement</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<div class="space-y-4">
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Online Users</span>
+							<div class="flex items-center gap-2">
+								<div class="h-2 w-2 rounded-full bg-green-500"></div>
+								<Badge variant="outline">284</Badge>
 							</div>
-							<div class="flex items-center space-x-2">
-								<span class="text-muted-foreground text-sm">{category.articles}</span>
-								<Badge variant="secondary" class="text-xs">
-									{category.percentage}%
-								</Badge>
-							</div>
 						</div>
-						<div class="bg-secondary h-1 w-full rounded-full">
-							<div class="h-1 rounded-full bg-blue-500" style="width: {category.percentage}%"></div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">New Signups</span>
+							<Badge variant="secondary">23</Badge>
 						</div>
-					{/each}
-				</div>
-			</CardContent>
-		</Card>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Active Sessions</span>
+							<Badge variant="outline">1,247</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Avg. Session</span>
+							<span class="text-sm font-medium">4m 32s</span>
+						</div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Bounce Rate</span>
+							<span class="text-sm font-medium">31.7%</span>
+						</div>
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</div>
 	</div>
-
-	<!-- Performance Metrics -->
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-		<Card>
-			<CardHeader>
-				<CardTitle class="text-lg">System Performance</CardTitle>
-				<CardDescription>Server and database metrics</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div class="space-y-4">
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Response Time</span>
-						<span class="text-sm font-medium">127ms</span>
-					</div>
-					<div class="bg-secondary h-2 w-full rounded-full">
-						<div class="h-2 rounded-full bg-green-500" style="width: 85%"></div>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Database Load</span>
-						<span class="text-sm font-medium">34%</span>
-					</div>
-					<div class="bg-secondary h-2 w-full rounded-full">
-						<div class="h-2 rounded-full bg-blue-500" style="width: 34%"></div>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Memory Usage</span>
-						<span class="text-sm font-medium">67%</span>
-					</div>
-					<div class="bg-secondary h-2 w-full rounded-full">
-						<div class="h-2 rounded-full bg-yellow-500" style="width: 67%"></div>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-
-		<Card>
-			<CardHeader>
-				<CardTitle class="text-lg">Content Statistics</CardTitle>
-				<CardDescription>Latest content metrics</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div class="space-y-4">
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Articles Today</span>
-						<Badge variant="outline">12</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Pending Reviews</span>
-						<Badge variant="secondary">8</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Draft Articles</span>
-						<Badge variant="outline">24</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Comments Today</span>
-						<Badge variant="outline">89</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">New Categories</span>
-						<Badge variant="outline">3</Badge>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-
-		<Card>
-			<CardHeader>
-				<CardTitle class="text-lg">User Activity</CardTitle>
-				<CardDescription>Recent user engagement</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div class="space-y-4">
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Online Users</span>
-						<div class="flex items-center gap-2">
-							<div class="h-2 w-2 rounded-full bg-green-500"></div>
-							<Badge variant="outline">284</Badge>
-						</div>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">New Signups</span>
-						<Badge variant="secondary">23</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Active Sessions</span>
-						<Badge variant="outline">1,247</Badge>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Avg. Session</span>
-						<span class="text-sm font-medium">4m 32s</span>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Bounce Rate</span>
-						<span class="text-sm font-medium">31.7%</span>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
-	</div>
-</div>
+</section>
